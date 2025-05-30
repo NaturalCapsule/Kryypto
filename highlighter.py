@@ -23,7 +23,7 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
         
         for keyword in keywords:
             pattern = QRegularExpression(f'\\b{keyword}\\b')
-            self.highlighting_rules.append((pattern, keyword_format))
+            self.highlighting_rules.append((pattern, keyword_format, None))
 
         builtin_format = QTextCharFormat()
         builtin_format.setForeground(QColor(170, 85, 0))  # Orange
@@ -38,39 +38,39 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
         
         for builtin in builtins:
             pattern = QRegularExpression(f'\\b{builtin}\\b')
-            self.highlighting_rules.append((pattern, builtin_format))
+            self.highlighting_rules.append((pattern, builtin_format, None))
 
         string_format = QTextCharFormat()
         string_format.setForeground(QColor(0, 128, 0))  # Green
         
-        self.highlighting_rules.append((QRegularExpression('"[^"\\\\]*(\\\\.[^"\\\\]*)*"'), string_format))
-        self.highlighting_rules.append((QRegularExpression("'[^'\\\\]*(\\\\.[^'\\\\]*)*'"), string_format))
+        self.highlighting_rules.append((QRegularExpression('"[^"\\\\]*(\\\\.[^"\\\\]*)*"'), string_format, None))
+        self.highlighting_rules.append((QRegularExpression("'[^'\\\\]*(\\\\.[^'\\\\]*)*'"), string_format, None))
         
-        self.highlighting_rules.append((QRegularExpression('""".*"""'), string_format))
-        self.highlighting_rules.append((QRegularExpression("'''.*'''"), string_format))
+        self.highlighting_rules.append((QRegularExpression('""".*"""'), string_format, 'string'))
+        self.highlighting_rules.append((QRegularExpression("'''.*'''"), string_format, 'string'))
 
         comment_format = QTextCharFormat()
         comment_format.setForeground(QColor(128, 128, 128))  # Gray
         comment_format.setFontItalic(True)
-        self.highlighting_rules.append((QRegularExpression('#[^\n]*'), comment_format))
+        self.highlighting_rules.append((QRegularExpression('#[^\n]*'), comment_format, 'comment'))
 
         number_format = QTextCharFormat()
         number_format.setForeground(QColor(255, 0, 255))  # Magenta
-        self.highlighting_rules.append((QRegularExpression('\\b\\d+\\.?\\d*\\b'), number_format))
+        self.highlighting_rules.append((QRegularExpression('\\b\\d+\\.?\\d*\\b'), number_format, 'number'))
 
         function_format = QTextCharFormat()
         function_format.setForeground(QColor(0, 0, 255))  # Blue
         function_format.setFontWeight(QFont.Weight.Bold)
-        self.highlighting_rules.append((QRegularExpression('\\bdef\\s+(\\w+)'), function_format))
+        self.highlighting_rules.append((QRegularExpression('\\bdef\\s+(\\w+)'), function_format, 'function'))
 
         class_format = QTextCharFormat()
         class_format.setForeground(QColor(128, 0, 128))  # Purple
         class_format.setFontWeight(QFont.Weight.Bold)
-        self.highlighting_rules.append((QRegularExpression('\\bclass\\s+(\\w+)'), class_format))
+        self.highlighting_rules.append((QRegularExpression('\\bclass\\s+(\\w+)'), class_format, 'class'))
 
-        assignment_format = QTextCharFormat()
-        assignment_format.setForeground(QColor(0, 128, 0))  # Dark green
-        assignment_format.setFontWeight(QFont.Weight.Bold)
+        variable_formar = QTextCharFormat()
+        variable_formar.setForeground(QColor(0, 128, 0))  # Dark green
+        # assignment_format.setFontWeight(QFont.Weight.Bold)
 
         # Regex explanation:
         #   \b       = word boundary
@@ -78,21 +78,37 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
         #   \s*=\s*  = equals with optional spaces
         #   \w+      = class or identifier
 
-        
-        assignment_regex = QRegularExpression(r'\b(\w+)w+')
-        self.highlighting_rules.append((assignment_regex, assignment_format))
+
+
+        # assignment_regex = QRegularExpression(r'\b(\w+)\s*=\s*')
+        # this works try it on..!!
+        # assignment_regex = QRegularExpression(r'\b(\w+)\s*=')
+        variable_regex = QRegularExpression(r'\b(\w+)\s*=')
+
+        self.highlighting_rules.append((variable_regex, variable_formar, 'variable'))
 
     def highlightBlock(self, text):
-        for pattern, format in self.highlighting_rules:
+        for pattern, format, name in self.highlighting_rules:
             expression = pattern
             iterator = expression.globalMatch(text)
             
             while iterator.hasNext():
                 match = iterator.next()
-                self.setFormat(match.capturedStart(), match.capturedLength(), format)
+
+
+                if name == 'variable':
+                    start = match.capturedStart(1)
+                    length = match.capturedLength(1)
+
+                else:
+                    start = match.capturedStart()
+                    length = match.capturedLength()
+
+                self.setFormat(start, length, format)
+
 
         self.setCurrentBlockState(0)
-        
+
         start_expression = QRegularExpression('"""')
         start_match = start_expression.match(text)
         
