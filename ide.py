@@ -12,13 +12,10 @@ class IDE(QMainWindow):
 
         self.setGeometry(100, 100, 800, 600)
         
-        # central_widget = QWidget()
         self.setCentralWidget(widgets.central_widget)
         
-        # self.text_edit = QPlainTextEdit()
 
-        widgets.main_text.setFont(QFont("JetBrains Mono", 12))
-        # self.text_edit.setFont(QFont("JetBrains Mono", 12))
+        widgets.main_text.setFont(QFont("JetBrains Mono", 19))
         widgets.layout.addWidget(widgets.main_text)
         
         self.highlighter = PythonSyntaxHighlighter(widgets.main_text.document())

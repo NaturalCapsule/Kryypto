@@ -68,6 +68,20 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
         class_format.setFontWeight(QFont.Weight.Bold)
         self.highlighting_rules.append((QRegularExpression('\\bclass\\s+(\\w+)'), class_format))
 
+        assignment_format = QTextCharFormat()
+        assignment_format.setForeground(QColor(0, 128, 0))  # Dark green
+        assignment_format.setFontWeight(QFont.Weight.Bold)
+
+        # Regex explanation:
+        #   \b       = word boundary
+        #   \w+      = variable name
+        #   \s*=\s*  = equals with optional spaces
+        #   \w+      = class or identifier
+
+        
+        assignment_regex = QRegularExpression(r'\b(\w+)w+')
+        self.highlighting_rules.append((assignment_regex, assignment_format))
+
     def highlightBlock(self, text):
         for pattern, format in self.highlighting_rules:
             expression = pattern
