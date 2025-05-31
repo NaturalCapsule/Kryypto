@@ -84,7 +84,6 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
         # this works try it on..!!
         # assignment_regex = QRegularExpression(r'\b(\w+)\s*=')
         variable_regex = QRegularExpression(r'\b(\w+)\s*=')
-
         self.highlighting_rules.append((variable_regex, variable_formar, 'variable'))
 
     def highlightBlock(self, text):
@@ -105,7 +104,6 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
                     length = match.capturedLength()
 
                 self.setFormat(start, length, format)
-
 
         self.setCurrentBlockState(0)
 
