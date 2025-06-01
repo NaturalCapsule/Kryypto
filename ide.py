@@ -1,6 +1,6 @@
 import sys
 from PyQt6.QtWidgets import QApplication, QMainWindow
-from PyQt6.QtGui import QFont, QShortcut, QKeySequence
+from PyQt6.QtGui import QFont
 from highlighter import PythonSyntaxHighlighter
 from shortcuts import *
 
@@ -8,7 +8,6 @@ class IDE(QMainWindow):
     def __init__(self):
         super().__init__()
         import widgets
-        # from shortcuts import *
 
         self.setWindowTitle("IDE")
 
@@ -16,13 +15,12 @@ class IDE(QMainWindow):
         
         self.setCentralWidget(widgets.central_widget)
         
-
-        main_text = widgets.AutoCompleteTextEdit()
+        main_text = widgets.MainText()
         main_text.setFont(QFont("JetBrains Mono", 19))
         widgets.layout.addWidget(main_text)
 
         self.highlighter = PythonSyntaxHighlighter(main_text.document())
-        self.remove_line = RemoveLine(main_text)
+        self.remove_line = MainTextShortcuts(main_text)
 
 
 if __name__ == '__main__':

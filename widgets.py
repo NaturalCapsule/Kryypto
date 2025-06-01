@@ -6,7 +6,7 @@ central_widget = QWidget()
 
 layout = QVBoxLayout(central_widget)
 
-class AutoCompleteTextEdit(QPlainTextEdit):
+class MainText(QPlainTextEdit):
     def __init__(self):
         super().__init__()
 

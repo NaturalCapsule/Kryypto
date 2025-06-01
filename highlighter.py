@@ -87,6 +87,8 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
         self.highlighting_rules.append((variable_regex, variable_formar, 'variable'))
 
     def highlightBlock(self, text):
+        used_ranges = set()
+
         for pattern, format, name in self.highlighting_rules:
             expression = pattern
             iterator = expression.globalMatch(text)
@@ -103,7 +105,13 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
                     start = match.capturedStart()
                     length = match.capturedLength()
 
+                if any(start < r[1] and (start + length) > r[0] for r in used_ranges):
+                    continue
+
+        # self.setFormat(start, length, format)
+
                 self.setFormat(start, length, format)
+                used_ranges.add((start, start + length))
 
         self.setCurrentBlockState(0)
 
