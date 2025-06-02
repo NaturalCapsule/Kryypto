@@ -6,17 +6,17 @@ class MainTextShortcuts:
     def __init__(self, parent):
         self.font_size = 19
 
-        shortcut = QShortcut(QKeySequence("Ctrl+Shift+K"), parent)
-        shortcut.activated.connect(lambda: self.remove_current_line(parent))
+        delete_line = QShortcut(QKeySequence("Ctrl+Shift+K"), parent)
+        delete_line.activated.connect(lambda: self.remove_current_line(parent))
 
-        shortcut_ = QShortcut(QKeySequence("Ctrl+Return"), parent)
-        shortcut_.activated.connect(lambda: self.goto_next_block(parent))
+        new_line = QShortcut(QKeySequence("Ctrl+Return"), parent)
+        new_line.activated.connect(lambda: self.goto_next_block(parent))
 
-        shortcut__ = QShortcut(QKeySequence("Ctrl+="), parent)
-        shortcut__.activated.connect(lambda: self.increase_font(parent))
+        increase_font = QShortcut(QKeySequence("Ctrl+="), parent)
+        increase_font.activated.connect(lambda: self.increase_font(parent))
 
-        shortcut___ = QShortcut(QKeySequence("Ctrl+-"), parent)
-        shortcut___.activated.connect(lambda: self.reduce_font(parent))
+        reduce_font = QShortcut(QKeySequence("Ctrl+-"), parent)
+        reduce_font.activated.connect(lambda: self.reduce_font(parent))
 
 
     def remove_current_line(self, text_edit):
@@ -37,6 +37,7 @@ class MainTextShortcuts:
     def increase_font(self, text_edit):
         self.font_size += 1
         text_edit.setFont(QFont("JetBrains Mono", self.font_size))
+        print("Done")
 
     def reduce_font(self, text_edit):
         self.font_size -= 1

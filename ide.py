@@ -15,6 +15,12 @@ class IDE(QMainWindow):
         
         main_text = widgets.MainText()
         
+        main_text.setStyleSheet("""
+            QPlainTextEdit {
+                background-color: black;
+            }
+        """)
+
         widgets.layout.addWidget(main_text)
 
         self.highlighter = PythonSyntaxHighlighter(main_text.document())

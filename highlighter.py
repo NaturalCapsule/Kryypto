@@ -68,8 +68,23 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
         class_format.setFontWeight(QFont.Weight.Bold)
         self.highlighting_rules.append((QRegularExpression('\\bclass\\s+(\\w+)'), class_format, 'class'))
 
-        variable_formar = QTextCharFormat()
-        variable_formar.setForeground(QColor(0, 128, 0))  # Dark green
+
+        for punctuation in ['!', '@', '$', '%', '^', '&', '*', '-', '=', '+']:
+            punction_format = QTextCharFormat()
+            punction_format.setForeground(QColor(255, 0, 0))  # Red
+            escaped = QRegularExpression.escape(punctuation)
+            punction_regex = QRegularExpression(escaped)
+            self.highlighting_rules.append((punction_regex, punction_format, 'punctuation'))
+
+        for bracket in ['(', ')', '{', '}', '[', ']']:
+            bracket_format = QTextCharFormat()
+            bracket_format.setForeground(QColor(255, 255, 255))  # Red
+            escaped = QRegularExpression.escape(bracket)
+            bracket_regex = QRegularExpression(escaped)
+            self.highlighting_rules.append((bracket_regex, bracket_format, 'bracket'))
+
+        # variable_formar = QTextCharFormat()
+        # variable_formar.setForeground(QColor(0, 128, 0))  # Dark green
         # assignment_format.setFontWeight(QFont.Weight.Bold)
 
         # Regex explanation:
@@ -83,10 +98,14 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
         # assignment_regex = QRegularExpression(r'\b(\w+)\s*=\s*')
         # this works try it on..!!
         # assignment_regex = QRegularExpression(r'\b(\w+)\s*=')
-        variable_regex = QRegularExpression(r'\b(\w+)\s*=')
-        self.highlighting_rules.append((variable_regex, variable_formar, 'variable'))
+        # variable_regex = QRegularExpression(r'\b(\w+)\s*=')
+        # self.highlighting_rules.append((variable_regex, variable_formar, 'variable'))
 
     def highlightBlock(self, text):
+        default_format = QTextCharFormat()
+        default_format.setForeground(QColor("white"))
+        self.setFormat(0, len(text), default_format)
+
         used_ranges = set()
 
         for pattern, format, name in self.highlighting_rules:
@@ -97,13 +116,13 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
                 match = iterator.next()
 
 
-                if name == 'variable':
-                    start = match.capturedStart(1)
-                    length = match.capturedLength(1)
+                # if name == 'variable':
+                #     start = match.capturedStart(1)
+                #     length = match.capturedLength(1)
 
-                else:
-                    start = match.capturedStart()
-                    length = match.capturedLength()
+                # else:
+                start = match.capturedStart()
+                length = match.capturedLength()
 
                 if any(start < r[1] and (start + length) > r[0] for r in used_ranges):
                     continue
