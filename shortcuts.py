@@ -1,13 +1,23 @@
 from PyQt6.QtGui import QShortcut, QKeySequence, QTextCursor
+from PyQt6.QtGui import QFont
 
 
 class MainTextShortcuts:
     def __init__(self, parent):
+        self.font_size = 19
+
         shortcut = QShortcut(QKeySequence("Ctrl+Shift+K"), parent)
         shortcut.activated.connect(lambda: self.remove_current_line(parent))
 
         shortcut_ = QShortcut(QKeySequence("Ctrl+Return"), parent)
         shortcut_.activated.connect(lambda: self.goto_next_block(parent))
+
+        shortcut__ = QShortcut(QKeySequence("Ctrl+="), parent)
+        shortcut__.activated.connect(lambda: self.increase_font(parent))
+
+        shortcut___ = QShortcut(QKeySequence("Ctrl+-"), parent)
+        shortcut___.activated.connect(lambda: self.reduce_font(parent))
+
 
     def remove_current_line(self, text_edit):
         cursor = text_edit.textCursor()
@@ -23,3 +33,15 @@ class MainTextShortcuts:
         cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock)
         cursor.insertBlock()
         text_edit.setTextCursor(cursor)
+
+    def increase_font(self, text_edit):
+        self.font_size += 1
+        text_edit.setFont(QFont("JetBrains Mono", self.font_size))
+
+    def reduce_font(self, text_edit):
+        self.font_size -= 1
+
+        if self.font_size <= 1:
+            self.font_size = 1
+        text_edit.setFont(QFont("JetBrains Mono", self.font_size))
+        

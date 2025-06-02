@@ -10,17 +10,16 @@ class IDE(QMainWindow):
         import widgets
 
         self.setWindowTitle("IDE")
-
         self.setGeometry(100, 100, 800, 600)
-        
         self.setCentralWidget(widgets.central_widget)
         
         main_text = widgets.MainText()
-        main_text.setFont(QFont("JetBrains Mono", 19))
+        
         widgets.layout.addWidget(main_text)
 
         self.highlighter = PythonSyntaxHighlighter(main_text.document())
         self.remove_line = MainTextShortcuts(main_text)
+        main_text.setFont(QFont("JetBrains Mono", self.remove_line.font_size))
 
 
 if __name__ == '__main__':
