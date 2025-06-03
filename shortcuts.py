@@ -37,7 +37,6 @@ class MainTextShortcuts:
     def increase_font(self, text_edit):
         self.font_size += 1
         text_edit.setFont(QFont("JetBrains Mono", self.font_size))
-        print("Done")
 
     def reduce_font(self, text_edit):
         self.font_size -= 1

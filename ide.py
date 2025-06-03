@@ -21,6 +21,9 @@ class IDE(QMainWindow):
             }
         """)
 
+        with open('widgets.py', 'r') as f:
+            main_text.setPlainText(f.read())
+
         widgets.layout.addWidget(main_text)
 
         self.highlighter = PythonSyntaxHighlighter(main_text.document())

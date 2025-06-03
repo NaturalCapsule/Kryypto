@@ -95,7 +95,7 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
 
 
 
-        # assignment_regex = QRegularExpression(r'\b(\w+)\s*=\s*')
+        #assignment_regex = QRegularExpression(r'\b(\w+)\s*=\s*')
         # this works try it on..!!
         # assignment_regex = QRegularExpression(r'\b(\w+)\s*=')
         # variable_regex = QRegularExpression(r'\b(\w+)\s*=')
@@ -104,30 +104,38 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
     def highlightBlock(self, text):
         default_format = QTextCharFormat()
         default_format.setForeground(QColor("white"))
+        default_format.setFontWeight(QFont.Weight.Bold)
+
         self.setFormat(0, len(text), default_format)
 
         used_ranges = set()
 
+        comment_format = QTextCharFormat()
+        comment_format.setForeground(QColor(128, 128, 128))
+        comment_format.setFontItalic(True)
+
+        comment_regex = QRegularExpression('#[^\n]*')
+        comment_matcher = comment_regex.globalMatch(text)
+
+        while comment_matcher.hasNext():
+            match = comment_matcher.next()
+            start = match.capturedStart()
+            length = match.capturedLength()
+            self.setFormat(start, length, comment_format)
+            used_ranges.add((start, start + length))
+
         for pattern, format, name in self.highlighting_rules:
-            expression = pattern
-            iterator = expression.globalMatch(text)
-            
+            if name == 'comment':
+                continue
+
+            iterator = pattern.globalMatch(text)
             while iterator.hasNext():
                 match = iterator.next()
-
-
-                # if name == 'variable':
-                #     start = match.capturedStart(1)
-                #     length = match.capturedLength(1)
-
-                # else:
                 start = match.capturedStart()
                 length = match.capturedLength()
 
-                if any(start < r[1] and (start + length) > r[0] for r in used_ranges):
+                if any(start < end and (start + length) > begin for (begin, end) in used_ranges):
                     continue
-
-        # self.setFormat(start, length, format)
 
                 self.setFormat(start, length, format)
                 used_ranges.add((start, start + length))
@@ -136,7 +144,7 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
 
         start_expression = QRegularExpression('"""')
         start_match = start_expression.match(text)
-        
+
         if self.previousBlockState() != 1:
             start_index = start_match.capturedStart() if start_match.hasMatch() else -1
         else:
@@ -145,7 +153,7 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
         while start_index >= 0:
             end_expression = QRegularExpression('"""')
             end_match = end_expression.match(text, start_index + 3)
-            
+
             if end_match.hasMatch():
                 length = end_match.capturedStart() - start_index + end_match.capturedLength()
                 self.setCurrentBlockState(0)
@@ -154,8 +162,8 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
                 length = len(text) - start_index
 
             string_format = QTextCharFormat()
-            string_format.setForeground(QColor(0, 128, 0))
+            string_format.setForeground(QColor(0, 128, 0))  # Green
             self.setFormat(start_index, length, string_format)
-            
+
             start_match = start_expression.match(text, start_index + length)
             start_index = start_match.capturedStart() if start_match.hasMatch() else -1
