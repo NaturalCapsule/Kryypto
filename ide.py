@@ -17,7 +17,9 @@ class IDE(QMainWindow):
         self.doc_panel = QTextEdit()
         self.doc_panel.setReadOnly(True)
         self.doc_panel.setMinimumHeight(120)
-        self.doc_panel.setMinimumWidth(900)
+        # self.doc_panel.setMinimumWidth(900)
+        # self.doc_panel.setFixedWidth(900)
+
 
         main_text = widgets.MainText(self.doc_panel)
 

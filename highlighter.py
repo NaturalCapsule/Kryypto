@@ -59,7 +59,7 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
         self.highlighting_rules.append((QRegularExpression('\\b\\d+\\.?\\d*\\b'), number_format, 'number'))
 
         function_format = QTextCharFormat()
-        function_format.setForeground(QColor(0, 0, 255))  # Blue
+        function_format.setForeground(QColor(0, 255, 255))  # Blue
         function_format.setFontWeight(QFont.Weight.Bold)
         self.highlighting_rules.append((QRegularExpression('\\bdef\\s+(\\w+)'), function_format, 'function'))
 
@@ -67,7 +67,6 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
         class_format.setForeground(QColor(128, 0, 128))  # Purple
         class_format.setFontWeight(QFont.Weight.Bold)
         self.highlighting_rules.append((QRegularExpression('\\bclass\\s+(\\w+)'), class_format, 'class'))
-
 
         for punctuation in ['!', '@', '$', '%', '^', '&', '*', '-', '=', '+']:
             punction_format = QTextCharFormat()
@@ -78,7 +77,7 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
 
         for bracket in ['(', ')', '{', '}', '[', ']']:
             bracket_format = QTextCharFormat()
-            bracket_format.setForeground(QColor(255, 255, 255))  # Red
+            bracket_format.setForeground(QColor(255, 0, 255))  # Red
             escaped = QRegularExpression.escape(bracket)
             bracket_regex = QRegularExpression(escaped)
             self.highlighting_rules.append((bracket_regex, bracket_format, 'bracket'))
@@ -105,18 +104,16 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
         default_format = QTextCharFormat()
         default_format.setForeground(QColor("white"))
         default_format.setFontWeight(QFont.Weight.Bold)
-
         self.setFormat(0, len(text), default_format)
 
         used_ranges = set()
 
         comment_format = QTextCharFormat()
-        comment_format.setForeground(QColor(128, 128, 128))
+        comment_format.setForeground(QColor(128, 128, 128))  # Gray
         comment_format.setFontItalic(True)
 
-        comment_regex = QRegularExpression('#[^\n]*')
+        comment_regex = QRegularExpression(r'#[^\n]*')
         comment_matcher = comment_regex.globalMatch(text)
-
         while comment_matcher.hasNext():
             match = comment_matcher.next()
             start = match.capturedStart()
@@ -124,20 +121,24 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
             self.setFormat(start, length, comment_format)
             used_ranges.add((start, start + length))
 
-        for pattern, format, name in self.highlighting_rules:
+        for pattern, fmt, name in self.highlighting_rules:
             if name == 'comment':
                 continue
 
-            iterator = pattern.globalMatch(text)
-            while iterator.hasNext():
-                match = iterator.next()
-                start = match.capturedStart()
-                length = match.capturedLength()
+            matches = pattern.globalMatch(text)
+            while matches.hasNext():
+                match = matches.next()
+                if name == 'class' or name == 'function':
+                    start = match.capturedStart(1)
+                    length = match.capturedLength(1)
+                else:
+                    start = match.capturedStart()
+                    length = match.capturedLength()
 
                 if any(start < end and (start + length) > begin for (begin, end) in used_ranges):
                     continue
 
-                self.setFormat(start, length, format)
+                self.setFormat(start, length, fmt)
                 used_ranges.add((start, start + length))
 
         self.setCurrentBlockState(0)

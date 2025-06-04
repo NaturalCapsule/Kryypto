@@ -73,7 +73,7 @@ class MainText(QPlainTextEdit):
                 event.ignore()
                 self.insert_completion(self.completer.currentCompletion())
                 self.completer.popup().hide()
-                return  # Stop processing
+                return
             elif key == Qt.Key.Key_Escape:
                 self.completer.popup().hide()
                 return
