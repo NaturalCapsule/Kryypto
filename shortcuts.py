@@ -3,7 +3,7 @@ from PyQt6.QtGui import QFont
 
 
 class MainTextShortcuts:
-    def __init__(self, parent):
+    def __init__(self, parent, completer):
         self.font_size = 19
 
         delete_line = QShortcut(QKeySequence("Ctrl+Shift+K"), parent)
@@ -18,6 +18,8 @@ class MainTextShortcuts:
         reduce_font = QShortcut(QKeySequence("Ctrl+-"), parent)
         reduce_font.activated.connect(lambda: self.reduce_font(parent))
 
+        show_completer = QShortcut(QKeySequence("Ctrl+Space"), parent)
+        show_completer.activated.connect(lambda: self.pressed(completer))
 
     def remove_current_line(self, text_edit):
         cursor = text_edit.textCursor()
@@ -45,3 +47,6 @@ class MainTextShortcuts:
             self.font_size = 1
         text_edit.setFont(QFont("Maple Mono", self.font_size))
     
+    def pressed(self, completer):
+        # print("Ctrl + Space has been pressed")
+        completer.popup().show()

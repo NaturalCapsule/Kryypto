@@ -56,7 +56,7 @@ class IDE(QMainWindow):
         widgets.layout.addWidget(main_text)
 
         self.highlighter = PythonSyntaxHighlighter(main_text.document())
-        self.remove_line = MainTextShortcuts(main_text)
+        self.remove_line = MainTextShortcuts(main_text, main_text.completer)
         main_text.setFont(QFont("Maple Mono", self.remove_line.font_size))
 
         dock = QDockWidget("Docstring", self)

@@ -1,6 +1,6 @@
-from PyQt6.QtCore import QSize, Qt, QStringListModel, QObject, QThread, pyqtSignal
+from PyQt6.QtCore import Qt, QStringListModel
 from PyQt6.QtGui import QTextCursor, QKeyEvent
-from PyQt6.QtWidgets import QPlainTextEdit, QPushButton, QLabel, QVBoxLayout, QWidget, QCompleter
+from PyQt6.QtWidgets import QPlainTextEdit, QVBoxLayout, QWidget, QCompleter
 import jedi
 
 central_widget = QWidget()
