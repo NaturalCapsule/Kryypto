@@ -22,11 +22,11 @@ class MainTextShortcuts:
         show_completer.activated.connect(lambda: self.pressed(completer))
 
         indent_line = QShortcut(QKeySequence("Ctrl+]"), parent)
-        indent_line.activated.connect(lambda: self.more_space(parent))
+        indent_line.activated.connect(lambda: self.add_indentation(parent))
 
 
         remove_indent = QShortcut(QKeySequence("Ctrl+["), parent)
-        remove_indent.activated.connect(lambda: self.less_space(parent))
+        remove_indent.activated.connect(lambda: self.remove_indentation(parent))
 
     def remove_current_line(self, text_edit):
         cursor = text_edit.textCursor()
@@ -45,7 +45,7 @@ class MainTextShortcuts:
         text_edit.setTextCursor(cursor)
 
 
-    def more_space(self, text_edit):
+    def add_indentation(self, text_edit):
         cursor = text_edit.textCursor()
         cursor.beginEditBlock()
 
@@ -59,7 +59,7 @@ class MainTextShortcuts:
         cursor.insertText(new_line)
         cursor.endEditBlock()
 
-    def less_space(self, text_edit):
+    def remove_indentation(self, text_edit):
         cursor = text_edit.textCursor()
         cursor.beginEditBlock()
 
