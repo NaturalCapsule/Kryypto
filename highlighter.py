@@ -23,7 +23,7 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
         
         for keyword in keywords:
             pattern = QRegularExpression(f'\\b{keyword}\\b')
-            self.highlighting_rules.append((pattern, keyword_format, None))
+            self.highlighting_rules.append((pattern, keyword_format, 'keywords'))
 
         builtin_format = QTextCharFormat()
         builtin_format.setForeground(QColor(170, 85, 0))  # Orange
@@ -38,7 +38,7 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
         
         for builtin in builtins:
             pattern = QRegularExpression(f'\\b{builtin}\\b')
-            self.highlighting_rules.append((pattern, builtin_format, None))
+            self.highlighting_rules.append((pattern, builtin_format, 'builtins'))
 
         string_format = QTextCharFormat()
         string_format.setForeground(QColor(0, 128, 0))  # Green

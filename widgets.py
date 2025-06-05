@@ -12,7 +12,9 @@ class MainText(QPlainTextEdit):
         super().__init__()
         self.completer = QCompleter()
         self.doc_panel = doc_panel
+        self.class_or_function = {}
         self.cursorPositionChanged.connect(self.update_docstring)
+
 
         popup = self.completer.popup()
         popup.setStyleSheet("""
@@ -45,6 +47,8 @@ class MainText(QPlainTextEdit):
         column = cursor.positionInBlock()
         code = self.toPlainText()
 
+
+
         doc = self.get_definition_docstring(code, line, column)
         doc = doc or ""
         if doc == "":
@@ -57,6 +61,8 @@ class MainText(QPlainTextEdit):
         try:
             script = jedi.Script(code=code, path="example.py")
             definitions = script.help(line, column)
+            self.cursorPositionChanged.connect(lambda: self.class_or_func(script, line, column))
+
             if definitions:
                 return definitions[0].docstring()
         except Exception as e:
@@ -77,7 +83,7 @@ class MainText(QPlainTextEdit):
             elif key == Qt.Key.Key_Escape:
                 self.completer.popup().hide()
                 return
-
+            
         if text in pairs:
             cursor = self.textCursor()
             closing_char = pairs[text]
@@ -120,64 +126,26 @@ class MainText(QPlainTextEdit):
             print("Autocomplete error:", e)
             self.completer.popup().hide()
 
-    # def keyPressEvent(self, event: QKeyEvent):
-    #     key = event.key()
-    #     text = event.text()
-    #     pairs = {'"': '"', "'": "'", '(': ')', '[': ']', '{': '}'}
+    def class_or_func(self, script, line, column):
+        try:
+            inferred = script.infer(line, column)
 
-    #     if self.completer.popup().isVisible() and key in (
-    #         Qt.Key.Key_Enter, Qt.Key.Key_Return, Qt.Key.Key_Tab
-    #     ):
-    #         self.insert_completion(self.completer.currentCompletion())
-    #         self.completer.popup().hide()
-    #         return
+            if inferred:
+                # print("--------------------------------")
+                # print(inferred[0].name)
+                # print(inferred[0].type)
+                # print("--------------------------------")
+                self.class_or_function[inferred[0].name] = inferred[0].type
+                # print(self.class_or_function)
+                # print(self.class_or_function)
+                
+        except ValueError:
+            pass
 
-    #     if text in pairs:
-    #         cursor = self.textCursor()
-    #         closing_char = pairs[text]
-    #         cursor.insertText(text + closing_char)
-    #         cursor.movePosition(QTextCursor.MoveOperation.Left)
-    #         self.setTextCursor(cursor)
-    #         return
 
-    #     super().keyPressEvent(event)
 
-    #     typing_keys = (
-    #         Qt.Key.Key_A, Qt.Key.Key_Z,
-    #         Qt.Key.Key_0, Qt.Key.Key_9,
-    #         Qt.Key.Key_Period, Qt.Key.Key_Underscore,
-    #     )
-    #     if not (Qt.Key.Key_A <= key <= Qt.Key.Key_Z or 
-    #             Qt.Key.Key_0 <= key <= Qt.Key.Key_9 or 
-    #             key in (Qt.Key.Key_Period, Qt.Key.Key_Underscore)):
-    #         self.completer.popup().hide()
-    #         return
+        # pass
 
-    #     code = self.toPlainText()
-    #     cursor = self.textCursor()
-    #     pos = cursor.position()
-
-    #     try:
-    #         line, column = self.cursor_to_line_column(pos)
-    #         script = jedi.Script(code=code, path="example.py")
-    #         completions = script.complete(line, column)
-    #         words = [c.name for c in completions][:30]
-
-    #         if words:
-    #             cursor.select(cursor.SelectionType.WordUnderCursor)
-    #             prefix = cursor.selectedText()
-    #             model = QStringListModel(words)
-    #             self.completer.setModel(model)
-    #             self.completer.setCompletionPrefix(prefix)
-    #             cr = self.cursorRect()
-    #             cr.setWidth(self.completer.popup().sizeHintForColumn(0) + 10)
-    #             self.completer.complete(cr)
-    #         else:
-    #             self.completer.popup().hide()
-
-    #     except Exception as e:
-    #         print("Autocomplete error:", e)
-    #         self.completer.popup().hide()
 
     def cursor_to_line_column(self, pos):
         text = self.toPlainText()

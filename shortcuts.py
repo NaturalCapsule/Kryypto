@@ -21,6 +21,13 @@ class MainTextShortcuts:
         show_completer = QShortcut(QKeySequence("Ctrl+Space"), parent)
         show_completer.activated.connect(lambda: self.pressed(completer))
 
+        indent_line = QShortcut(QKeySequence("Ctrl+]"), parent)
+        indent_line.activated.connect(lambda: self.more_space(parent))
+
+
+        remove_indent = QShortcut(QKeySequence("Ctrl+["), parent)
+        remove_indent.activated.connect(lambda: self.less_space(parent))
+
     def remove_current_line(self, text_edit):
         cursor = text_edit.textCursor()
         cursor.select(QTextCursor.SelectionType.LineUnderCursor)
@@ -32,9 +39,39 @@ class MainTextShortcuts:
     
     def goto_next_block(self, text_edit):
         cursor = text_edit.textCursor()
+
         cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock)
         cursor.insertBlock()
         text_edit.setTextCursor(cursor)
+
+
+    def more_space(self, text_edit):
+        cursor = text_edit.textCursor()
+        cursor.beginEditBlock()
+
+        cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock)
+        cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock, QTextCursor.MoveMode.KeepAnchor)
+
+        line_text = cursor.selectedText()
+
+        new_line = "    " + line_text
+
+        cursor.insertText(new_line)
+        cursor.endEditBlock()
+
+    def less_space(self, text_edit):
+        cursor = text_edit.textCursor()
+        cursor.beginEditBlock()
+
+        cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock)
+        cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock, QTextCursor.MoveMode.KeepAnchor)
+
+        line_text = cursor.selectedText()
+
+        stripped_line = line_text[4:] if line_text.startswith("    ") else line_text.lstrip()
+
+        cursor.insertText(stripped_line)
+        cursor.endEditBlock()
 
     def increase_font(self, text_edit):
         self.font_size += 1
@@ -48,5 +85,4 @@ class MainTextShortcuts:
         text_edit.setFont(QFont("Maple Mono", self.font_size))
     
     def pressed(self, completer):
-        # print("Ctrl + Space has been pressed")
         completer.popup().show()

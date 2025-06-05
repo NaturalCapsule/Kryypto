@@ -5,6 +5,7 @@ from PyQt6.QtCore import Qt
 from highlighter import PythonSyntaxHighlighter
 from shortcuts import *
 
+
 class IDE(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -94,6 +95,7 @@ class IDE(QMainWindow):
                 height: 0px;
             }
         """)
+
 
 
 if __name__ == '__main__':
