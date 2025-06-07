@@ -30,14 +30,29 @@ class MainTextShortcuts:
         remove_indent.activated.connect(lambda: self.remove_indentation(parent))
 
     def remove_current_line(self, text_edit):
-        cursor = text_edit.textCursor()
-        cursor.select(QTextCursor.SelectionType.LineUnderCursor)
-        cursor.movePosition(QTextCursor.MoveOperation.Right, QTextCursor.MoveMode.KeepAnchor, 1)
-        cursor.removeSelectedText()
-        if not cursor.atEnd():
-            cursor.deleteChar()
-        text_edit.setTextCursor(cursor)
+        # cursor = text_edit.textCursor()
+        # cursor.select(QTextCursor.SelectionType.LineUnderCursor)
+        # cursor.movePosition(QTextCursor.MoveOperation.Right, QTextCursor.MoveMode.KeepAnchor, 1)
+        # cursor.removeSelectedText()
+        # if not cursor.atEnd():
+        #     cursor.deleteChar()
+        # text_edit.setTextCursor(cursor)
     
+        cursor = text_edit.textCursor()
+        cursor.beginEditBlock()
+
+        # Move to start of the line
+        cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock)
+        
+        # Select to the end of the line including the newline
+        cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock, QTextCursor.MoveMode.KeepAnchor)
+        cursor.movePosition(QTextCursor.MoveOperation.Right, QTextCursor.MoveMode.KeepAnchor)  # capture newline
+
+        cursor.removeSelectedText()
+
+        cursor.endEditBlock()
+        text_edit.setTextCursor(cursor)
+
     def goto_next_block(self, text_edit):
         cursor = text_edit.textCursor()
 
@@ -77,7 +92,7 @@ class MainTextShortcuts:
     def increase_font(self, text_edit):
         self.font_size += 1
         text_edit.setFont(QFont("Maple Mono", self.font_size))
-        # self.num_lines.setFont(QFont('Maple Mono'), self.font_size)
+        # self.num_lines = QFont('Maple Mono'), self.font_size
 
 
     def reduce_font(self, text_edit):

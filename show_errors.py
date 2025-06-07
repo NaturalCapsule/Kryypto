@@ -4,7 +4,6 @@ from PyQt6.QtCore import QTimer
 
 class ShowErrors:
     def __init__(self, parent):
-        # self.textChanged.connect(self.schedule_check)
         parent.textChanged.connect(self.schedule_check)
 
         self.timer = QTimer()
@@ -17,7 +16,6 @@ class ShowErrors:
             self.timer.start(500)
 
     def check_syntax(self):
-        # code = self.toPlainText()
         code = self.parent.toPlainText()
 
         self.clear_error_highlighting()
@@ -31,7 +29,6 @@ class ShowErrors:
             self.underline_error(e.lineno, e.offset)
 
     def clear_error_highlighting(self):
-        # cursor = self.textCursor()
         cursor = self.parent.textCursor()
 
         cursor.select(QTextCursor.SelectionType.Document)
@@ -40,7 +37,6 @@ class ShowErrors:
         cursor.setCharFormat(fmt)
 
     def underline_error(self, line, column):
-        # cursor = self.textCursor()
         cursor = self.parent.textCursor()
 
         cursor.movePosition(QTextCursor.MoveOperation.Start)

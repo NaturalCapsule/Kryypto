@@ -1,5 +1,6 @@
 import ast
 import jedi
+import re
 from PyQt6.QtCore import Qt, QStringListModel, QRect, QSize, Qt, QTimer
 from PyQt6.QtGui import QTextCursor, QKeyEvent, QPainter, QTextFormat, QColor, QFont, QFontMetrics, QTextCharFormat, QTextCursor, QColor
 from PyQt6.QtWidgets import QPlainTextEdit, QVBoxLayout, QWidget, QCompleter
@@ -19,19 +20,19 @@ class MainText(QPlainTextEdit):
         self.class_or_function = {}
         self.cursorPositionChanged.connect(self.update_docstring)
 
-        # self.textChanged.connect(self.schedule_check)
-        # self.timer = QTimer()
-        # self.timer.setSingleShot(True)
-        # self.timer.timeout.connect(self.check_syntax)
-        # self.error_label = None
         self.show_erros = ShowErrors(self)
+        # self.num_lines_font = None
+        # self.painter = QP
+
 
         self.line_number_area = ShowLines(self)
         self.blockCountChanged.connect(self.update_line_number_area_width)
         self.updateRequest.connect(self.update_line_number_area)
 
         self.update_line_number_area_width(0)
-
+        # print(self.painter)
+        # self.painter = QPainter(self.line_number_area)
+        # self.painter.
 
         popup = self.completer.popup()
         popup.setStyleSheet("""
@@ -106,8 +107,45 @@ class MainText(QPlainTextEdit):
             cursor.movePosition(QTextCursor.MoveOperation.Left)
             self.setTextCursor(cursor)
             return
+        
+
+        # if event.key() == Qt.Key.Key_Return or event.key() == Qt.Key.Key_Enter:
+        #     cursor = self.textCursor()
+        #     cursor.select(cursor.SelectionType.BlockUnderCursor)
+        #     previous_line = cursor.selectedText()
+
+        #     indent_match = re.match(r'^(\s*)', previous_line)
+        #     current_indent = indent_match.group(1) if indent_match else ""
+
+
+        #     if previous_line.strip().endswith(":"):
+        #         new_indent = current_indent + " " * 4
+        #     else:
+        #         new_indent = current_indent
+
+        #     self.insertPlainText(new_indent)
+
+        if key in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
+            cursor = self.textCursor()
+            block_text = cursor.block().text()
+
+            # Get current indentation
+            indent_match = re.match(r'^(\s*)', block_text)
+            current_indent = indent_match.group(1) if indent_match else ""
+
+            if block_text.strip().endswith(":"):
+                new_indent = current_indent + " " * 4
+            else:
+                new_indent = current_indent
+
+            cursor.insertText("\n" + new_indent)
+            return  # Skip super()
 
         super().keyPressEvent(event)
+
+
+
+
 
         if not (Qt.Key.Key_A <= key <= Qt.Key.Key_Z or 
                 Qt.Key.Key_0 <= key <= Qt.Key.Key_9 or 
@@ -188,7 +226,7 @@ class MainText(QPlainTextEdit):
     def line_number_area_paint_event(self, event):
         painter = QPainter(self.line_number_area)
         painter.fillRect(event.rect(), QColor(30, 30, 30))
-
+        
         num_lines_font = QFont("Maple Mono", 19)
         painter.setFont(num_lines_font)
         font_metrics = QFontMetrics(num_lines_font)
