@@ -1,5 +1,5 @@
 import sys
-from PyQt6.QtWidgets import QApplication, QMainWindow, QDockWidget, QTextEdit
+from PyQt6.QtWidgets import QLabel, QApplication, QMainWindow, QDockWidget, QTextEdit
 from PyQt6.QtGui import QFont
 from PyQt6.QtCore import Qt
 from highlighter import PythonSyntaxHighlighter
@@ -50,15 +50,21 @@ class IDE(QMainWindow):
 
         """)
 
-        with open('widgets.py', 'r') as f:
+        with open('widgets.py', 'r', encoding='utf-8') as f:
             main_text.setPlainText(f.read())
+
+        self.error_label = QLabel("Ready")
+        main_text.show_erros.error_label = self.error_label
 
 
         widgets.layout.addWidget(main_text)
+        widgets.layout.addWidget(self.error_label)
 
         self.highlighter = PythonSyntaxHighlighter(main_text.document())
         self.remove_line = MainTextShortcuts(main_text, main_text.completer)
         main_text.setFont(QFont("Maple Mono", self.remove_line.font_size))
+
+
 
         dock = QDockWidget("Docstring", self)
         dock.setWidget(self.doc_panel)

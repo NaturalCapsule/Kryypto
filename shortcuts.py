@@ -5,6 +5,7 @@ from PyQt6.QtGui import QFont
 class MainTextShortcuts:
     def __init__(self, parent, completer):
         self.font_size = 19
+        # self.num_lines = num_lines
 
         delete_line = QShortcut(QKeySequence("Ctrl+Shift+K"), parent)
         delete_line.activated.connect(lambda: self.remove_current_line(parent))
@@ -76,6 +77,8 @@ class MainTextShortcuts:
     def increase_font(self, text_edit):
         self.font_size += 1
         text_edit.setFont(QFont("Maple Mono", self.font_size))
+        # self.num_lines.setFont(QFont('Maple Mono'), self.font_size)
+
 
     def reduce_font(self, text_edit):
         self.font_size -= 1
