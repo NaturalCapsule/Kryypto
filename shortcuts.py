@@ -30,31 +30,48 @@ class MainTextShortcuts:
         remove_indent.activated.connect(lambda: self.remove_indentation(parent))
 
     def remove_current_line(self, text_edit):
-
-    
         cursor = text_edit.textCursor()
+
+        # Disable updates temporarily to avoid flicker/freezing
+        text_edit.setUpdatesEnabled(False)
+        text_edit.blockSignals(True)
         cursor.beginEditBlock()
 
+        # Select the entire line
         cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock)
-        
         cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock, QTextCursor.MoveMode.KeepAnchor)
-        cursor.movePosition(QTextCursor.MoveOperation.Right, QTextCursor.MoveMode.KeepAnchor)  # capture newline
+
+        # Also remove the newline character, if any
+        cursor.movePosition(QTextCursor.MoveOperation.Right, QTextCursor.MoveMode.KeepAnchor)
 
         cursor.removeSelectedText()
 
+        # Move cursor to beginning of next line
+        cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock)
+
         cursor.endEditBlock()
         text_edit.setTextCursor(cursor)
+        text_edit.setUpdatesEnabled(True)
+        text_edit.blockSignals(False)
 
     def goto_next_block(self, text_edit):
         cursor = text_edit.textCursor()
-
+        text_edit.setUpdatesEnabled(False)
+        text_edit.blockSignals(True)
+        cursor.beginEditBlock()
+        
         cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock)
         cursor.insertBlock()
         text_edit.setTextCursor(cursor)
 
+        cursor.endEditBlock()
+        text_edit.setUpdatesEnabled(True)
+        text_edit.blockSignals(False)
 
     def add_indentation(self, text_edit):
         cursor = text_edit.textCursor()
+        text_edit.setUpdatesEnabled(False)
+        text_edit.blockSignals(True)
         cursor.beginEditBlock()
 
         cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock)
@@ -65,10 +82,16 @@ class MainTextShortcuts:
         new_line = "    " + line_text
 
         cursor.insertText(new_line)
+
         cursor.endEditBlock()
+        text_edit.setUpdatesEnabled(True)
+        text_edit.blockSignals(False)
 
     def remove_indentation(self, text_edit):
         cursor = text_edit.textCursor()
+        text_edit.setUpdatesEnabled(False)
+        text_edit.blockSignals(True)
+
         cursor.beginEditBlock()
 
         cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock)
@@ -80,6 +103,10 @@ class MainTextShortcuts:
 
         cursor.insertText(stripped_line)
         cursor.endEditBlock()
+
+        text_edit.setUpdatesEnabled(True)
+        text_edit.blockSignals(False)
+
 
     def increase_font(self, text_edit):
         self.font_size += 1

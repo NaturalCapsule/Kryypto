@@ -1,6 +1,6 @@
 import sys
 from PyQt6.QtWidgets import QLabel, QApplication, QMainWindow, QDockWidget, QTextEdit
-from PyQt6.QtGui import QFont
+from PyQt6.QtGui import QFont, QSurfaceFormat
 from PyQt6.QtCore import Qt
 from highlighter import PythonSyntaxHighlighter
 from shortcuts import *
@@ -105,6 +105,13 @@ class IDE(QMainWindow):
 
 
 if __name__ == '__main__':
+    format = QSurfaceFormat()
+    format.setRenderableType(QSurfaceFormat.RenderableType.OpenGL)
+    format.setProfile(QSurfaceFormat.OpenGLContextProfile.CoreProfile)
+    format.setVersion(3, 3)  # OpenGL 3.3 or higher
+    format.setSwapBehavior(QSurfaceFormat.SwapBehavior.DoubleBuffer)
+    format.setDepthBufferSize(24)
+    QSurfaceFormat.setDefaultFormat(format)
     app = QApplication(sys.argv)
     window = IDE()
     window.show()
