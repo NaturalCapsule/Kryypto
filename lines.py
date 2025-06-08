@@ -1,6 +1,5 @@
 from PyQt6.QtWidgets import QWidget
-from PyQt6.QtCore import QRect, QSize, Qt
-from PyQt6.QtGui import QPainter, QColor, QFont
+from PyQt6.QtCore import QSize
 
 class ShowLines(QWidget):
     def __init__(self, editor):

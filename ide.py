@@ -1,10 +1,9 @@
 import sys
 from PyQt6.QtWidgets import QLabel, QApplication, QMainWindow, QDockWidget, QTextEdit
 from PyQt6.QtGui import QFont, QSurfaceFormat
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, QTimer
 from highlighter import PythonSyntaxHighlighter
 from shortcuts import *
-
 
 class IDE(QMainWindow):
     def __init__(self):
@@ -64,6 +63,11 @@ class IDE(QMainWindow):
         self.remove_line = MainTextShortcuts(main_text, main_text.completer)
         main_text.setFont(QFont("Maple Mono", self.remove_line.font_size))
 
+        self.highligh_timer = QTimer()
+        self.highligh_timer.setSingleShot(True)
+        self.highligh_timer.timeout.connect(lambda: self.analyze_code(main_text))
+
+        main_text.textChanged.connect(self.queue_analysis)
 
 
         dock = QDockWidget("Docstring", self)
@@ -102,13 +106,19 @@ class IDE(QMainWindow):
             }
         """)
 
+    def queue_analysis(self):
+        self.highligh_timer.start(300)
 
+    def analyze_code(self, main_text):
+        code = main_text.toPlainText()
+        self.highlighter.set_code(code)
+        self.highlighter.rehighlight()
 
 if __name__ == '__main__':
     format = QSurfaceFormat()
     format.setRenderableType(QSurfaceFormat.RenderableType.OpenGL)
     format.setProfile(QSurfaceFormat.OpenGLContextProfile.CoreProfile)
-    format.setVersion(3, 3)  # OpenGL 3.3 or higher
+    format.setVersion(3, 3)
     format.setSwapBehavior(QSurfaceFormat.SwapBehavior.DoubleBuffer)
     format.setDepthBufferSize(24)
     QSurfaceFormat.setDefaultFormat(format)

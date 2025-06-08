@@ -5,7 +5,6 @@ from PyQt6.QtCore import QTimer
 class ShowErrors:
     def __init__(self, parent):
         parent.textChanged.connect(self.schedule_check)
-
         self.timer = QTimer()
         self.timer.setSingleShot(True)
         self.timer.timeout.connect(self.check_syntax)
@@ -13,7 +12,8 @@ class ShowErrors:
         self.parent = parent
 
     def schedule_check(self):
-            self.timer.start(500)
+            self.timer.start(250)
+
 
     def check_syntax(self):
         code = self.parent.toPlainText()
@@ -23,9 +23,12 @@ class ShowErrors:
             ast.parse(code)
             if self.error_label:
                 self.error_label.setText("✅ No syntax errors")
-        except SyntaxError as e:
+
+        except (SyntaxError, NameError) as e:
             if self.error_label:
                 self.error_label.setText(f"❌ Line {e.lineno}: {e.msg}")
+                print("Detected")
+
             self.underline_error(e.lineno, e.offset)
 
     def clear_error_highlighting(self):

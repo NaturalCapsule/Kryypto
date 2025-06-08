@@ -1,6 +1,6 @@
 from PyQt6.QtGui import QSyntaxHighlighter, QTextCharFormat, QColor, QFont
 from PyQt6.QtCore import QRegularExpression, Qt
-
+import ast
 
 class PythonSyntaxHighlighter(QSyntaxHighlighter):
     def __init__(self, parent=None):
@@ -82,6 +82,13 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
             bracket_regex = QRegularExpression(escaped)
             self.highlighting_rules.append((bracket_regex, bracket_format, 'bracket'))
 
+        self.arg_def_format = QTextCharFormat()
+        self.arg_def_format.setForeground(QColor("purple"))
+
+        self.arg_usage_format = QTextCharFormat()
+        self.arg_usage_format.setForeground(QColor("darkMagenta"))
+
+
         # variable_formar = QTextCharFormat()
         # variable_formar.setForeground(QColor(0, 128, 0))  # Dark green
         # assignment_format.setFontWeight(QFont.Weight.Bold)
@@ -99,6 +106,19 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
         # assignment_regex = QRegularExpression(r'\b(\w+)\s*=')
         # variable_regex = QRegularExpression(r'\b(\w+)\s*=')
         # self.highlighting_rules.append((variable_regex, variable_formar, 'variable'))
+
+        self.function_args = set()
+
+    def set_code(self, code: str):
+        try:
+            tree = ast.parse(code)
+            self.function_args.clear()
+            for node in ast.walk(tree):
+                if isinstance(node, ast.FunctionDef):
+                    for arg in node.args.args:
+                        self.function_args.add(arg.arg)
+        except Exception:
+            self.function_args.clear()
 
     def highlightBlock(self, text):
         default_format = QTextCharFormat()
@@ -168,3 +188,22 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
 
             start_match = start_expression.match(text, start_index + length)
             start_index = start_match.capturedStart() if start_match.hasMatch() else -1
+
+
+        arg_match = QRegularExpression(r"\bdef\s+\w+\s*\(([^)]*)\)").match(text)
+        if arg_match.hasMatch():
+            args_str = arg_match.captured(1)
+            args_start = arg_match.capturedStart(1)
+            for arg in args_str.split(','):
+                arg_name = arg.strip().split('=')[0].strip()
+                if arg_name:
+                    pos = text.find(arg_name, args_start)
+                    if pos != -1:
+                        self.setFormat(pos, len(arg_name), self.arg_def_format)
+
+        for arg in self.function_args:
+            pattern = QRegularExpression(fr"\b{arg}\b")
+            it = pattern.globalMatch(text)
+            while it.hasNext():
+                match = it.next()
+                self.setFormat(match.capturedStart(), match.capturedLength(), self.arg_usage_format)

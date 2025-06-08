@@ -1,6 +1,6 @@
 import jedi
 import re
-from PyQt6.QtCore import Qt, QStringListModel, QRect, Qt
+from PyQt6.QtCore import Qt, QStringListModel, QRect, Qt, QTimer
 from PyQt6.QtGui import QTextCursor, QKeyEvent, QPainter, QColor, QFont, QFontMetrics, QTextCursor, QColor, QCursor
 from PyQt6.QtWidgets import QPlainTextEdit, QVBoxLayout, QWidget, QCompleter
 
