@@ -3,20 +3,23 @@ from PyQt6.QtGui import QTextCursor, QColor, QTextCharFormat, QTextCursor, QColo
 from PyQt6.QtCore import QTimer
 
 class ShowErrors:
-    def __init__(self, parent):
+    def __init__(self, parent, highlighter):
         parent.textChanged.connect(self.schedule_check)
         self.timer = QTimer()
         self.timer.setSingleShot(True)
         self.timer.timeout.connect(self.check_syntax)
         self.error_label = None
         self.parent = parent
+        self.highlighter = highlighter
 
     def schedule_check(self):
-            self.timer.start(250)
+            self.timer.start(500)
 
 
     def check_syntax(self):
         code = self.parent.toPlainText()
+
+        self.analyze_code(self.parent)
 
         self.clear_error_highlighting()
         try:
@@ -26,8 +29,7 @@ class ShowErrors:
 
         except (SyntaxError, NameError) as e:
             if self.error_label:
-                self.error_label.setText(f"❌ Line {e.lineno}: {e.msg}")
-                print("Detected")
+                self.error_label.setText(f"❌ Line {e.lineno}: {e.msg} | {e.text}")
 
             self.underline_error(e.lineno, e.offset)
 
@@ -53,3 +55,11 @@ class ShowErrors:
         fmt.setUnderlineStyle(QTextCharFormat.UnderlineStyle.SpellCheckUnderline)
         fmt.setUnderlineColor(QColor("red"))
         cursor.setCharFormat(fmt)
+
+    # def queue_analysis(self):
+    #     self.highligh_timer.start(300)
+
+    def analyze_code(self, main_text):
+        code = main_text.toPlainText()
+        self.highlighter.set_code(code)
+        self.highlighter.rehighlight()

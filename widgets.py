@@ -19,7 +19,8 @@ class MainText(QPlainTextEdit):
         self.class_or_function = {}
         self.cursorPositionChanged.connect(self.update_docstring)
 
-        self.show_erros = ShowErrors(self)
+
+        # self.show_erros = ShowErrors(self)
         self.line_number_area = ShowLines(self)
         self.blockCountChanged.connect(self.update_line_number_area_width)
         self.updateRequest.connect(self.update_line_number_area)

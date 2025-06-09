@@ -207,3 +207,4 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
             while it.hasNext():
                 match = it.next()
                 self.setFormat(match.capturedStart(), match.capturedLength(), self.arg_usage_format)
+

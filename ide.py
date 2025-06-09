@@ -4,6 +4,7 @@ from PyQt6.QtGui import QFont, QSurfaceFormat
 from PyQt6.QtCore import Qt, QTimer
 from highlighter import PythonSyntaxHighlighter
 from shortcuts import *
+from show_errors import ShowErrors
 
 class IDE(QMainWindow):
     def __init__(self):
@@ -52,22 +53,21 @@ class IDE(QMainWindow):
         with open('widgets.py', 'r', encoding='utf-8') as f:
             main_text.setPlainText(f.read())
 
-        self.error_label = QLabel("Ready")
-        main_text.show_erros.error_label = self.error_label
+
 
 
         widgets.layout.addWidget(main_text)
-        widgets.layout.addWidget(self.error_label)
 
         self.highlighter = PythonSyntaxHighlighter(main_text.document())
         self.remove_line = MainTextShortcuts(main_text, main_text.completer)
+        self.show_error = ShowErrors(main_text, self.highlighter)
         main_text.setFont(QFont("Maple Mono", self.remove_line.font_size))
 
-        self.highligh_timer = QTimer()
-        self.highligh_timer.setSingleShot(True)
-        self.highligh_timer.timeout.connect(lambda: self.analyze_code(main_text))
 
-        main_text.textChanged.connect(self.queue_analysis)
+        self.error_label = QLabel("Ready")
+        self.show_error.error_label = self.error_label
+        widgets.layout.addWidget(self.error_label)
+
 
 
         dock = QDockWidget("Docstring", self)
@@ -105,14 +105,7 @@ class IDE(QMainWindow):
                 height: 0px;
             }
         """)
-
-    def queue_analysis(self):
-        self.highligh_timer.start(300)
-
-    def analyze_code(self, main_text):
-        code = main_text.toPlainText()
-        self.highlighter.set_code(code)
-        self.highlighter.rehighlight()
+        
 
 if __name__ == '__main__':
     format = QSurfaceFormat()
