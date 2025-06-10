@@ -66,6 +66,7 @@ class ShowErrors:
 
         instances = list_classes_functions(main_text.toPlainText())
         self.highlighter.highlight_class_instance(instances)
+        self.highlighter.highlight_function_calls(instances)
 
         self.highlighter.rehighlight()
 

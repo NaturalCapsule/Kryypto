@@ -94,6 +94,9 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
         self.c_instance_foramt = QTextCharFormat()
         self.c_instance_foramt.setForeground(QColor('cyan'))
 
+        self.function_calls_format = QTextCharFormat()
+        self.function_calls_format.setForeground(QColor(0, 255, 255))
+
         # variable_formar = QTextCharFormat()
         # variable_formar.setForeground(QColor(0, 128, 0))  # Dark green
         # assignment_format.setFontWeight(QFont.Weight.Bold)
@@ -116,6 +119,8 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
 
         self.c_instances = set()
 
+        self.function_calls = set()
+
     def set_code(self, code: str):
         try:
             tree = ast.parse(code)
@@ -130,10 +135,21 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
 
     def highlight_class_instance(self, instances: str):
         try:
-            self.c_instances = instances
+            for key, value in instances.items():
+                if value == 'class':
+                # self.c_instances = instances.keys()
+                    self.c_instances.add(key)
         except Exception:
             self.c_instances.clear()
 
+    def highlight_function_calls(self, calls):
+        try:
+            for key, value in calls.items():
+                if value == 'function':
+                # self.c_instances = instances.keys()
+                    self.function_calls.add(key)
+        except Exception:
+            self.c_instances.clear()
 
     def highlightBlock(self, text):
         default_format = QTextCharFormat()
@@ -234,3 +250,12 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
                 match = it.next()
                 self.setFormat(match.capturedStart(), match.capturedLength(), self.c_instance_foramt)
                 used_ranges.add((match.capturedStart(), match.capturedStart() + length))
+
+
+        for call in self.function_calls:
+            pattern = QRegularExpression(fr"\b{call}\b")
+            it = pattern.globalMatch(text)
+            while it.hasNext():
+                match = it.next()
+                self.setFormat(match.capturedStart(), match.capturedLength(), self.function_calls_format)
+                # used_ranges.add((match.capturedStart(), match.capturedStart() + length))

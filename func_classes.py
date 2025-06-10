@@ -1,13 +1,15 @@
 import ast
 
-get_c_instances = set()
-get_funcs = set()
+# get_c_instances = set()
+# get_funcs = set()
+
+func_class_instances = {}
 
 
 
 def list_classes_functions(code):
     try:
-        get_c_instances.clear()
+        func_class_instances.clear()
         tree = ast.parse(code)
 
         for node in ast.walk(tree):
@@ -17,17 +19,19 @@ def list_classes_functions(code):
                     if class_name == 'int' or class_name == 'len' or class_name == 'str':
                         continue
                     else:
-                        get_c_instances.add(class_name)
-
-                elif isinstance(node, ast.Call):
-                    func = node.func
-                    if isinstance(func, ast.Attribute):
-                        get_funcs.add(func.attr)
-                        # print(f"{func.attr}")
+                        # func_class_instances.add(class_name)
+                        func_class_instances[class_name] = 'class'
 
 
-        return get_c_instances
+            elif isinstance(node, ast.Call):
+                func = node.func
+                if isinstance(func, ast.Attribute):
+                    func_class_instances[func.attr] = 'function'
+
+        # print(func_class_instances.keys())
+
+        return func_class_instances
 
     except Exception:
-        get_c_instances.clear()
-        return get_c_instances
+        func_class_instances.clear()
+        return func_class_instances

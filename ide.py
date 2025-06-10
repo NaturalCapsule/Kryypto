@@ -22,6 +22,17 @@ class IDE(QMainWindow):
         # self.doc_panel.setMinimumWidth(900)
         # self.doc_panel.setFixedWidth(900)
 
+        self.setStyleSheet("""
+            QMainWindow {
+                background-color: #1e1e1e;
+                color: #ffffff;
+                selection-background-color: #007acc;
+                padding: 2px;
+                margin: 2px;
+            }
+
+    """)
+
 
         main_text = widgets.MainText(self.doc_panel)
 
@@ -33,6 +44,9 @@ class IDE(QMainWindow):
                 padding: 2px;
                 margin: 2px;
             }
+                                
+
+                                
             QScrollBar:vertical {
                 background: #2d2d2d;
                 width: 10px;
