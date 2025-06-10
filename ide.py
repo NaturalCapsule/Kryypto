@@ -1,10 +1,11 @@
 import sys
 from PyQt6.QtWidgets import QLabel, QApplication, QMainWindow, QDockWidget, QTextEdit
 from PyQt6.QtGui import QFont, QSurfaceFormat
-from PyQt6.QtCore import Qt, QTimer
+from PyQt6.QtCore import Qt
 from highlighter import PythonSyntaxHighlighter
 from shortcuts import *
 from show_errors import ShowErrors
+
 
 class IDE(QMainWindow):
     def __init__(self):
@@ -50,9 +51,10 @@ class IDE(QMainWindow):
 
         """)
 
-        with open('widgets.py', 'r', encoding='utf-8') as f:
-            main_text.setPlainText(f.read())
 
+
+        with open('show_errors.py', 'r', encoding='utf-8') as f:
+            main_text.setPlainText(f.read())
 
 
 

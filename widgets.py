@@ -1,10 +1,9 @@
 import jedi
 import re
-from PyQt6.QtCore import Qt, QStringListModel, QRect, Qt, QTimer
-from PyQt6.QtGui import QTextCursor, QKeyEvent, QPainter, QColor, QFont, QFontMetrics, QTextCursor, QColor, QCursor
+from PyQt6.QtCore import Qt, QStringListModel, QRect, Qt
+from PyQt6.QtGui import QTextCursor, QKeyEvent, QPainter, QColor, QFont, QFontMetrics, QTextCursor, QColor
 from PyQt6.QtWidgets import QPlainTextEdit, QVBoxLayout, QWidget, QCompleter
 
-from show_errors import ShowErrors
 from lines import ShowLines
 
 central_widget = QWidget()
@@ -156,14 +155,17 @@ class MainText(QPlainTextEdit):
 
     def class_or_func(self, script, line, column):
         try:
-            inferred = script.infer(line, column)
+            # inferred = script.infer(line, column)
+            pass
 
-            if inferred:
+            # if inferred:
                 # print("--------------------------------")
                 # print(inferred[0].name)
                 # print(inferred[0].type)
                 # print("--------------------------------")
-                self.class_or_function[inferred[0].name] = inferred[0].type
+                # if inferred[0].type == 'class' or inferred[0].type == 'function':
+                #     self.class_or_function[inferred[0].name] = inferred[0].type
+                #     print(self.class_or_function)
                 
         except ValueError:
             pass
@@ -201,7 +203,7 @@ class MainText(QPlainTextEdit):
     def line_number_area_paint_event(self, event):
         painter = QPainter(self.line_number_area)
         painter.fillRect(event.rect(), QColor(30, 30, 30))
-        
+
         num_lines_font = QFont("Maple Mono", 19)
         painter.setFont(num_lines_font)
         font_metrics = QFontMetrics(num_lines_font)

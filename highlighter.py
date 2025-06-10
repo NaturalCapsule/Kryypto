@@ -1,5 +1,5 @@
 from PyQt6.QtGui import QSyntaxHighlighter, QTextCharFormat, QColor, QFont
-from PyQt6.QtCore import QRegularExpression, Qt
+from PyQt6.QtCore import QRegularExpression
 import ast
 
 class PythonSyntaxHighlighter(QSyntaxHighlighter):
@@ -12,13 +12,16 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
         keyword_format = QTextCharFormat()
         keyword_format.setForeground(QColor(85, 85, 255))  # Blue
         keyword_format.setFontWeight(QFont.Weight.Bold)
-        
+
+
         keywords = [
             'and', 'as', 'assert', 'break', 'class', 'continue', 'def',
             'del', 'elif', 'else', 'except', 'exec', 'finally', 'for',
             'from', 'global', 'if', 'import', 'in', 'is', 'lambda',
             'not', 'or', 'pass', 'print', 'raise', 'return', 'try',
-            'while', 'with', 'yield', 'True', 'False', 'None'
+            'while', 'with', 'yield', 'True', 'False', 'None', 'Execption', 'SyntaxError', 'NameError', 'IndexError', 'AssertionError', 'AttributeError',
+            'ZeroDivisionError', 'BaseException', 'TypeError', 'UnboundLocalError', 'ArithmeticError', 'FileNotFoundError', 'FileExistsError', 'FloatingPointError',
+            'DeprecationWarning', 'ConnectionAbortedError', 'ConnectionError', 'ConnectionRefusedError', 'ConnectionResetError', 'EOFError'
         ]
         
         for keyword in keywords:
@@ -88,6 +91,8 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
         self.arg_usage_format = QTextCharFormat()
         self.arg_usage_format.setForeground(QColor("darkMagenta"))
 
+        self.c_instance_foramt = QTextCharFormat()
+        self.c_instance_foramt.setForeground(QColor('cyan'))
 
         # variable_formar = QTextCharFormat()
         # variable_formar.setForeground(QColor(0, 128, 0))  # Dark green
@@ -109,6 +114,8 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
 
         self.function_args = set()
 
+        self.c_instances = set()
+
     def set_code(self, code: str):
         try:
             tree = ast.parse(code)
@@ -119,6 +126,14 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
                         self.function_args.add(arg.arg)
         except Exception:
             self.function_args.clear()
+
+
+    def highlight_class_instance(self, instances: str):
+        try:
+            self.c_instances = instances
+        except Exception:
+            self.c_instances.clear()
+
 
     def highlightBlock(self, text):
         default_format = QTextCharFormat()
@@ -200,6 +215,9 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
                     pos = text.find(arg_name, args_start)
                     if pos != -1:
                         self.setFormat(pos, len(arg_name), self.arg_def_format)
+                        # used_ranges.add((pos, len(arg_name)))
+                        used_ranges.add((match.capturedStart(), match.capturedLength()))
+
 
         for arg in self.function_args:
             pattern = QRegularExpression(fr"\b{arg}\b")
@@ -207,4 +225,12 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
             while it.hasNext():
                 match = it.next()
                 self.setFormat(match.capturedStart(), match.capturedLength(), self.arg_usage_format)
+                used_ranges.add((match.capturedStart(), match.capturedStart() + match.capturedLength()))
 
+        for instance in self.c_instances:
+            pattern = QRegularExpression(fr"\b{instance}\b")
+            it = pattern.globalMatch(text)
+            while it.hasNext():
+                match = it.next()
+                self.setFormat(match.capturedStart(), match.capturedLength(), self.c_instance_foramt)
+                used_ranges.add((match.capturedStart(), match.capturedStart() + length))

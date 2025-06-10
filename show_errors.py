@@ -2,6 +2,9 @@ import ast
 from PyQt6.QtGui import QTextCursor, QColor, QTextCharFormat, QTextCursor, QColor
 from PyQt6.QtCore import QTimer
 
+from func_classes import list_classes_functions
+
+
 class ShowErrors:
     def __init__(self, parent, highlighter):
         parent.textChanged.connect(self.schedule_check)
@@ -14,6 +17,7 @@ class ShowErrors:
 
     def schedule_check(self):
             self.timer.start(500)
+
 
 
     def check_syntax(self):
@@ -29,7 +33,7 @@ class ShowErrors:
 
         except (SyntaxError, NameError) as e:
             if self.error_label:
-                self.error_label.setText(f"❌ Line {e.lineno}: {e.msg} | {e.text}")
+                self.error_label.setText(f"❌ Line {e.lineno}: {e.msg} : {e.text}")
 
             self.underline_error(e.lineno, e.offset)
 
@@ -56,10 +60,12 @@ class ShowErrors:
         fmt.setUnderlineColor(QColor("red"))
         cursor.setCharFormat(fmt)
 
-    # def queue_analysis(self):
-    #     self.highligh_timer.start(300)
-
     def analyze_code(self, main_text):
         code = main_text.toPlainText()
         self.highlighter.set_code(code)
+
+        instances = list_classes_functions(main_text.toPlainText())
+        self.highlighter.highlight_class_instance(instances)
+
         self.highlighter.rehighlight()
+
