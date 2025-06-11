@@ -129,7 +129,7 @@ class IDE(QMainWindow):
                 height: 0px;
             }
         """)
-        
+
 
 if __name__ == '__main__':
     format = QSurfaceFormat()
