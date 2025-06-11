@@ -81,6 +81,14 @@ class IDE(QMainWindow):
 
 
         self.error_label = QLabel("Ready")
+
+        self.error_label.setStyleSheet("""
+                QLabel {
+                    color: white;
+
+                }
+""")
+
         self.show_error.error_label = self.error_label
         widgets.layout.addWidget(self.error_label)
 

@@ -29,24 +29,23 @@ class MainTextShortcuts:
         remove_indent = QShortcut(QKeySequence("Ctrl+["), parent)
         remove_indent.activated.connect(lambda: self.remove_indentation(parent))
 
+        comment = QShortcut(QKeySequence("Ctrl+/"), parent)
+        comment.activated.connect(lambda: self.comment(parent))
+
     def remove_current_line(self, text_edit):
         cursor = text_edit.textCursor()
 
-        # Disable updates temporarily to avoid flicker/freezing
         text_edit.setUpdatesEnabled(False)
         text_edit.blockSignals(True)
         cursor.beginEditBlock()
 
-        # Select the entire line
         cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock)
         cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock, QTextCursor.MoveMode.KeepAnchor)
 
-        # Also remove the newline character, if any
         cursor.movePosition(QTextCursor.MoveOperation.Right, QTextCursor.MoveMode.KeepAnchor)
 
         cursor.removeSelectedText()
 
-        # Move cursor to beginning of next line
         cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock)
 
         cursor.endEditBlock()
@@ -123,3 +122,29 @@ class MainTextShortcuts:
     
     def pressed(self, completer):
         completer.popup().show()
+
+    def comment(self, text_edit):
+        cursor = text_edit.textCursor()
+        text_edit.setUpdatesEnabled(False)
+        text_edit.blockSignals(True)
+        cursor.beginEditBlock()
+
+        cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock)
+        cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock, QTextCursor.MoveMode.KeepAnchor)
+
+        line_text = cursor.selectedText()
+
+        leading_spaces = len(line_text) - len(line_text.lstrip())
+        indent = line_text[:leading_spaces]
+        content = line_text[leading_spaces:]
+
+        if content.startswith("#"):
+            new_line = indent + content[1:].lstrip()
+        else:
+            new_line = indent + "# " + content
+
+        cursor.insertText(new_line)
+
+        cursor.endEditBlock()
+        text_edit.setUpdatesEnabled(True)
+        text_edit.blockSignals(False)
