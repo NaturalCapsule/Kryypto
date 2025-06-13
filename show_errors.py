@@ -21,13 +21,15 @@ class ShowErrors:
     def check_syntax(self):
         code = self.parent.toPlainText()
 
-        self.analyze_code(self.parent)
 
         self.clear_error_highlighting()
         try:
             ast.parse(code)
             if self.error_label:
                 self.error_label.setText("✅ No syntax errors")
+
+            self.analyze_code(self.parent)
+
 
         except (SyntaxError, NameError) as e:
             if self.error_label:

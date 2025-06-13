@@ -32,6 +32,11 @@ class MainTextShortcuts:
         comment = QShortcut(QKeySequence("Ctrl+/"), parent)
         comment.activated.connect(lambda: self.comment(parent))
 
+        # save_file = QShortcut(QKeySequence("Ctrl+S"), parent)
+        # save_file.activated.connect(lambda: self.save_file(parent))
+
+
+
     def remove_current_line(self, text_edit):
         cursor = text_edit.textCursor()
 
@@ -148,3 +153,20 @@ class MainTextShortcuts:
         cursor.endEditBlock()
         text_edit.setUpdatesEnabled(True)
         text_edit.blockSignals(False)
+
+    # def save_file(self, text_edit):
+    #     code = text_edit.toPlainText()
+    #     with open ('test.txt', 'w') as f:
+    #         f.write(code)
+    #         f.close()
+
+class FileDockShortcut:
+    def __init__(self, parent, file_dock):
+        show_hide_file_dock = QShortcut(QKeySequence('Ctrl+B'), parent)
+        show_hide_file_dock.activated.connect(lambda: self.showHideFile(file_dock))
+    
+    def showHideFile(self, file_dock):
+        if file_dock.isVisible():
+            file_dock.hide()
+        else:
+            file_dock.show()

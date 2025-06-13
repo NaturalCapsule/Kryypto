@@ -1,8 +1,8 @@
 import jedi
 import re
-from PyQt6.QtCore import Qt, QStringListModel, QRect, Qt
-from PyQt6.QtGui import QTextCursor, QKeyEvent, QPainter, QColor, QFont, QFontMetrics, QTextCursor, QColor
-from PyQt6.QtWidgets import QPlainTextEdit, QVBoxLayout, QWidget, QCompleter
+from PyQt6.QtCore import Qt, QStringListModel, QRect, Qt, QDir
+from PyQt6.QtGui import QTextCursor, QKeyEvent, QPainter, QColor, QFont, QFontMetrics, QTextCursor, QColor, QFileSystemModel
+from PyQt6.QtWidgets import QPlainTextEdit, QVBoxLayout, QWidget, QCompleter, QDockWidget, QTextEdit, QTreeView
 
 from lines import ShowLines
 
@@ -225,3 +225,129 @@ class MainText(QPlainTextEdit):
             top = bottom
             bottom = top + int(self.blockBoundingRect(block).height())
             block_number += 1
+
+
+
+class DocStringDock(QDockWidget):
+    def __init__(self, parent):
+        super().__init__()
+
+        self.doc_panel = QTextEdit()
+        self.doc_panel.setReadOnly(True)
+        self.doc_panel.setMinimumHeight(120)
+
+        self.setWidget(self.doc_panel)
+
+        # dock = QDockWidget("Docstring", self)
+        # dock.setWidget(self.doc_panel)
+        self.setFeatures(QDockWidget.DockWidgetFeature.DockWidgetMovable)
+        parent.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self)
+        self.setStyleSheet("""
+            QDockWidget {
+                background-color: #1e1e1e;
+                border: 1px solid #3c3c3c;
+                color: #ffffff;
+            }
+
+            QTextEdit {
+                background-color: #252526;
+                color: #d4d4d4;
+                font-family: Consolas, monospace;
+                font-size: 19px;
+                padding: 5px;
+            }
+
+            QScrollBar:vertical {
+                background: #2d2d2d;
+                width: 10px;
+                margin: 0px 0px 0px 0px;
+            }
+
+            QScrollBar::handle:vertical {
+                background: #5a5a5a;
+                min-height: 20px;
+            }
+
+            QScrollBar::add-line:vertical,
+            QScrollBar::sub-line:vertical {
+                height: 0px;
+            }
+        """)
+
+
+# class ShowFiles(QTreeView):
+#     def __init__(self, parent):
+#         super().__init__(parent)
+#         self.dir_model = QFileSystemModel(parent)
+#         self.dir_model.setRootPath(QDir.currentPath())
+#         self.setModel(self.dir_model)
+#         self.setRootIndex(self.dir_model.index(QDir.currentPath()))
+
+#         dock = QDockWidget("Files", parent)
+#         dock.setWidget(self)
+#         dock.setFeatures(QDockWidget.DockWidgetFeature.DockWidgetMovable)
+#         parent.addDockWidget(Qt.DockWidgetArea.TopDockWidgetArea, dock)
+#         dock.setStyleSheet("""
+#             QDockWidget {
+#                 background-color: #1e1e1e;
+#                 border: 1px solid #3c3c3c;
+#                 color: #ffffff;
+#             }
+
+#             QScrollBar:vertical {
+#                 background: #2d2d2d;
+#                 width: 10px;
+#                 margin: 0px 0px 0px 0px;
+#             }
+
+#             QScrollBar::handle:vertical {
+#                 background: #5a5a5a;
+#                 min-height: 20px;
+#             }
+
+#             QScrollBar::add-line:vertical,
+#             QScrollBar::sub-line:vertical {
+#                 height: 0px;
+#             }
+#         """)
+#         layout.addWidget(dock)
+
+
+class ShowFiles(QDockWidget):
+    def __init__(self, parent):
+        super().__init__(parent)
+
+        self.file_viewer = QTreeView()
+
+        self.dir_model = QFileSystemModel(parent)
+        self.dir_model.setRootPath(QDir.currentPath())
+        self.file_viewer.setModel(self.dir_model)
+        self.file_viewer.setRootIndex(self.dir_model.index(QDir.currentPath()))
+
+        
+        self.setWidget(self.file_viewer)
+        self.setFeatures(QDockWidget.DockWidgetFeature.DockWidgetMovable)
+        parent.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self)
+        self.setStyleSheet("""
+            QDockWidget {
+                background-color: #1e1e1e;
+                border: 1px solid #3c3c3c;
+                color: #ffffff;
+            }
+
+            QScrollBar:vertical {
+                background: #2d2d2d;
+                width: 10px;
+                margin: 0px 0px 0px 0px;
+            }
+
+            QScrollBar::handle:vertical {
+                background: #5a5a5a;
+                min-height: 20px;
+            }
+
+            QScrollBar::add-line:vertical,
+            QScrollBar::sub-line:vertical {
+                height: 0px;
+            }
+        """)

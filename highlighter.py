@@ -292,7 +292,6 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
                     pos = text.find(arg_name, args_start)
                     if pos != -1:
                         self.setFormat(pos, len(arg_name), self.arg_def_format)
-                        # used_ranges.add((pos, len(arg_name)))
                         used_ranges.add((match.capturedStart(), match.capturedLength()))
 
 
@@ -308,10 +307,11 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
             pattern = QRegularExpression(fr"\b{call}\b")
             it = pattern.globalMatch(text)
             while it.hasNext():
-                # print(instance)
                 match = it.next()
 
                 used_ranges.add((match.capturedStart(), match.capturedStart() + match.capturedLength()))
+
+
                 if type == 'class':
                     self.setFormat(match.capturedStart(), match.capturedLength(), self.c_instance_foramt)
                 elif type == 'function':

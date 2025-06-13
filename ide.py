@@ -1,11 +1,10 @@
 import sys
-from PyQt6.QtWidgets import QFileDialog, QLabel, QApplication, QMainWindow, QDockWidget, QTextEdit
-from PyQt6.QtGui import QFont, QSurfaceFormat, QAction
-from PyQt6.QtCore import Qt
+from PyQt6.QtWidgets import QTreeView, QFileDialog, QLabel, QApplication, QMainWindow, QDockWidget, QTextEdit
+from PyQt6.QtGui import  QFont, QSurfaceFormat, QAction, QFileSystemModel
+from PyQt6.QtCore import Qt, QDir
 from highlighter import PythonSyntaxHighlighter
 from shortcuts import *
 from show_errors import ShowErrors
-# import os
 
 class IDE(QMainWindow):
     def __init__(self):
@@ -16,11 +15,6 @@ class IDE(QMainWindow):
         self.setGeometry(100, 100, 800, 600)
         self.setCentralWidget(widgets.central_widget)
 
-        self.doc_panel = QTextEdit()
-        self.doc_panel.setReadOnly(True)
-        self.doc_panel.setMinimumHeight(120)
-        # self.doc_panel.setMinimumWidth(900)
-        # self.doc_panel.setFixedWidth(900)
 
         self.setStyleSheet("""
             QMainWindow {
@@ -33,8 +27,9 @@ class IDE(QMainWindow):
 
     """)
 
+        self.doc_string_dock = widgets.DocStringDock(self)
 
-        main_text = widgets.MainText(self.doc_panel)
+        main_text = widgets.MainText(self.doc_string_dock.doc_panel)
 
         main_text.setStyleSheet("""
             QPlainTextEdit {
@@ -91,43 +86,8 @@ class IDE(QMainWindow):
 
         self.show_error.error_label = self.error_label
         widgets.layout.addWidget(self.error_label)
-
-
-        dock = QDockWidget("Docstring", self)
-        dock.setWidget(self.doc_panel)
-        dock.setFeatures(QDockWidget.DockWidgetFeature.DockWidgetMovable)
-        self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, dock)
-        dock.setStyleSheet("""
-            QDockWidget {
-                background-color: #1e1e1e;
-                border: 1px solid #3c3c3c;
-                color: #ffffff;
-            }
-
-            QTextEdit {
-                background-color: #252526;
-                color: #d4d4d4;
-                font-family: Consolas, monospace;
-                font-size: 19px;
-                padding: 5px;
-            }
-
-            QScrollBar:vertical {
-                background: #2d2d2d;
-                width: 10px;
-                margin: 0px 0px 0px 0px;
-            }
-
-            QScrollBar::handle:vertical {
-                background: #5a5a5a;
-                min-height: 20px;
-            }
-
-            QScrollBar::add-line:vertical,
-            QScrollBar::sub-line:vertical {
-                height: 0px;
-            }
-        """)
+        self.show_files = widgets.ShowFiles(self)
+        FileDockShortcut(self, self.show_files)
 
 
 if __name__ == '__main__':
