@@ -1,11 +1,11 @@
 import sys
-from PyQt6.QtWidgets import QLabel, QApplication, QMainWindow, QDockWidget, QTextEdit
-from PyQt6.QtGui import QFont, QSurfaceFormat
+from PyQt6.QtWidgets import QFileDialog, QLabel, QApplication, QMainWindow, QDockWidget, QTextEdit
+from PyQt6.QtGui import QFont, QSurfaceFormat, QAction
 from PyQt6.QtCore import Qt
 from highlighter import PythonSyntaxHighlighter
 from shortcuts import *
 from show_errors import ShowErrors
-
+import os
 
 class IDE(QMainWindow):
     def __init__(self):
@@ -92,6 +92,11 @@ class IDE(QMainWindow):
         self.show_error.error_label = self.error_label
         widgets.layout.addWidget(self.error_label)
 
+        save_file = QAction('Save File', self)
+        save_file.setShortcut("Ctrl+S")
+        save_file.setStatusTip("Save File")
+
+        save_file.triggered.connect(lambda: self.save_file(main_text))
 
 
         dock = QDockWidget("Docstring", self)
@@ -130,6 +135,13 @@ class IDE(QMainWindow):
             }
         """)
 
+
+    def save_file(self, main_text):
+        name = QFileDialog.getSaveFileName(self, 'Save File')
+
+        with open(name, 'w') as f:
+            save_file = f.write(main_text.toPlainText())
+            save_file.close()
 
 if __name__ == '__main__':
     format = QSurfaceFormat()

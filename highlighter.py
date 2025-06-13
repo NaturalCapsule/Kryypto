@@ -194,23 +194,25 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
             self.function_args.clear()
 
 
-    def highlight_class_instance(self, instances: str):
+    def highlight_class_instance(self, instances: dict):
         try:
+            self.c_instances.clear()
             for key, value in instances.items():
+
                 if value == 'class':
-                # self.c_instances = instances.keys()
                     self.c_instances.add(key)
         except Exception:
             self.c_instances.clear()
 
     def highlight_function_calls(self, calls):
         try:
+            self.function_calls.clear()
             for key, value in calls.items():
                 if value == 'function':
-                # self.c_instances = instances.keys()
                     self.function_calls.add(key)
         except Exception:
-            self.c_instances.clear()
+            # self.c_instances.clear()
+            self.function_calls.clear()
 
     def highlightBlock(self, text):
         default_format = QTextCharFormat()
@@ -308,9 +310,10 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
             pattern = QRegularExpression(fr"\b{instance}\b")
             it = pattern.globalMatch(text)
             while it.hasNext():
+                # print(instance)
                 match = it.next()
                 self.setFormat(match.capturedStart(), match.capturedLength(), self.c_instance_foramt)
-                used_ranges.add((match.capturedStart(), match.capturedStart() + length))
+                used_ranges.add((match.capturedStart(), match.capturedStart() + match.capturedLength()))
 
 
         for call in self.function_calls:
@@ -319,4 +322,4 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
             while it.hasNext():
                 match = it.next()
                 self.setFormat(match.capturedStart(), match.capturedLength(), self.function_calls_format)
-                used_ranges.add((match.capturedStart(), match.capturedStart() + length))
+                used_ranges.add((match.capturedStart(), match.capturedStart() + match.capturedLength()))

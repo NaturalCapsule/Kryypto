@@ -28,7 +28,6 @@ def list_classes_functions(code):
                 if isinstance(func, ast.Attribute):
                     func_class_instances[func.attr] = 'function'
 
-        # print(func_class_instances.keys())
 
         return func_class_instances
 
