@@ -275,43 +275,6 @@ class DocStringDock(QDockWidget):
         """)
 
 
-# class ShowFiles(QTreeView):
-#     def __init__(self, parent):
-#         super().__init__(parent)
-#         self.dir_model = QFileSystemModel(parent)
-#         self.dir_model.setRootPath(QDir.currentPath())
-#         self.setModel(self.dir_model)
-#         self.setRootIndex(self.dir_model.index(QDir.currentPath()))
-
-#         dock = QDockWidget("Files", parent)
-#         dock.setWidget(self)
-#         dock.setFeatures(QDockWidget.DockWidgetFeature.DockWidgetMovable)
-#         parent.addDockWidget(Qt.DockWidgetArea.TopDockWidgetArea, dock)
-#         dock.setStyleSheet("""
-#             QDockWidget {
-#                 background-color: #1e1e1e;
-#                 border: 1px solid #3c3c3c;
-#                 color: #ffffff;
-#             }
-
-#             QScrollBar:vertical {
-#                 background: #2d2d2d;
-#                 width: 10px;
-#                 margin: 0px 0px 0px 0px;
-#             }
-
-#             QScrollBar::handle:vertical {
-#                 background: #5a5a5a;
-#                 min-height: 20px;
-#             }
-
-#             QScrollBar::add-line:vertical,
-#             QScrollBar::sub-line:vertical {
-#                 height: 0px;
-#             }
-#         """)
-#         layout.addWidget(dock)
-
 
 class ShowFiles(QDockWidget):
     def __init__(self, parent):
@@ -324,6 +287,55 @@ class ShowFiles(QDockWidget):
         self.file_viewer.setModel(self.dir_model)
         self.file_viewer.setRootIndex(self.dir_model.index(QDir.currentPath()))
 
+        self.file_viewer.setHeaderHidden(True)
+        self.file_viewer.setAnimated(True)
+        self.file_viewer.setColumnHidden(1, True)
+        self.file_viewer.setColumnHidden(2, True)
+        self.file_viewer.setColumnHidden(3, True)
+
+        self.file_viewer.setStyleSheet("""
+
+            QTreeView {
+                background-color: #1e1e1e;
+                border: 1px solid #3c3c3c;
+                color: #ffffff;
+            }
+
+            QScrollBar:vertical {
+                background: #2d2d2d;
+                width: 10px;
+                margin: 0px 0px 0px 0px;
+            }
+
+            QScrollBar::handle:vertical {
+                background: #5a5a5a;
+                min-height: 20px;
+            }
+
+            QScrollBar::add-line:vertical,
+            QScrollBar::sub-line:vertical {
+                height: 0px;
+            }
+
+                                       
+
+            QScrollBar:horizontal {
+                background: #2d2d2d;
+                width: 10px;
+                margin: 0px 0px 0px 0px;
+            }
+
+            QScrollBar::handle:horizontal {
+                background: #5a5a5a;
+                min-height: 20px;
+            }
+
+            QScrollBar::add-line:horizontal,
+            QScrollBar::sub-line:horizontal {
+                height: 0px;
+            }
+
+""")
         
         self.setWidget(self.file_viewer)
         self.setFeatures(QDockWidget.DockWidgetFeature.DockWidgetMovable)
