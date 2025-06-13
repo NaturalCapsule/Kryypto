@@ -178,7 +178,9 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
 
         self.function_args = set()
 
-        self.c_instances = set()
+        # self.c_instances = set()
+        self.c_instances = {}
+
 
         self.function_calls = set()
 
@@ -194,13 +196,9 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
             self.function_args.clear()
 
 
-    def highlight_class_instance(self, instances: dict):
+    def get_calls(self, instances: dict):
         try:
-            self.c_instances.clear()
-            for key, value in instances.items():
-
-                if value == 'class':
-                    self.c_instances.add(key)
+            self.c_instances = instances
         except Exception:
             self.c_instances.clear()
 
@@ -306,20 +304,24 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
                 self.setFormat(match.capturedStart(), match.capturedLength(), self.arg_usage_format)
                 used_ranges.add((match.capturedStart(), match.capturedStart() + match.capturedLength()))
 
-        for instance in self.c_instances:
-            pattern = QRegularExpression(fr"\b{instance}\b")
+        for call, type in self.c_instances.items():
+            pattern = QRegularExpression(fr"\b{call}\b")
             it = pattern.globalMatch(text)
             while it.hasNext():
                 # print(instance)
                 match = it.next()
-                self.setFormat(match.capturedStart(), match.capturedLength(), self.c_instance_foramt)
+
                 used_ranges.add((match.capturedStart(), match.capturedStart() + match.capturedLength()))
+                if type == 'class':
+                    self.setFormat(match.capturedStart(), match.capturedLength(), self.c_instance_foramt)
+                elif type == 'function':
+                    self.setFormat(match.capturedStart(), match.capturedLength(), self.function_calls_format)
 
 
-        for call in self.function_calls:
-            pattern = QRegularExpression(fr"\b{call}\b")
-            it = pattern.globalMatch(text)
-            while it.hasNext():
-                match = it.next()
-                self.setFormat(match.capturedStart(), match.capturedLength(), self.function_calls_format)
-                used_ranges.add((match.capturedStart(), match.capturedStart() + match.capturedLength()))
+        # for call in self.function_calls:
+        #     pattern = QRegularExpression(fr"\b{call}\b")
+        #     it = pattern.globalMatch(text)
+        #     while it.hasNext():
+        #         match = it.next()
+        #         self.setFormat(match.capturedStart(), match.capturedLength(), self.function_calls_format)
+        #         used_ranges.add((match.capturedStart(), match.capturedStart() + match.capturedLength()))

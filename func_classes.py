@@ -1,11 +1,7 @@
 import ast
 
-# get_c_instances = set()
-# get_funcs = set()
 
 func_class_instances = {}
-
-
 
 def list_classes_functions(code):
     try:
@@ -19,7 +15,6 @@ def list_classes_functions(code):
                     if class_name == 'int' or class_name == 'len' or class_name == 'str':
                         continue
                     else:
-                        # func_class_instances.add(class_name)
                         func_class_instances[class_name] = 'class'
 
 
