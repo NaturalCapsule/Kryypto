@@ -448,10 +448,26 @@ class ShowFiles(QDockWidget):
             print("There is no", path)
 
     def create_file(self):
+        model = self.file_viewer.model()
+        index = self.file_viewer.currentIndex()
+        path = model.filePath(index)
+
+        strin_path = str(path)
+
+        new_string_path = strin_path.split('/')
+        if '.' in new_string_path[-1]:
+            path = '/'.join(new_string_path[:-1])
+
         if self.new_file_input.text():
-            with open (f"{QDir.currentPath()}/{self.new_file_input.text()}", 'w') as file:
-                file.write('')
-                file.close()
+            try:
+                with open (f"{path}/{self.new_file_input.text()}", 'w') as file:
+                    file.write('')
+                    file.close()
+            except Exception:
+                with open (f"{QDir.currentPath()}/{self.new_file_input.text()}", 'w') as file:
+                    file.write('')
+                    file.close()
+
 
         self.new_file_input.clearFocus()
         self.new_file_input.setText('')
@@ -459,8 +475,18 @@ class ShowFiles(QDockWidget):
         self.file_viewer.setFocus()
 
     def create_folder(self):
+        model = self.file_viewer.model()
+        index = self.file_viewer.currentIndex()
+        path = model.filePath(index)
+
+        strin_path = str(path)
+
+        new_string_path = strin_path.split('/')
+        if strin_path.endswith('.py'):
+            path = '/'.join(new_string_path[:-1])
+
         if self.new_folder_input.text():
-            os.mkdir(f"{QDir.currentPath()}/{self.new_folder_input.text()}")
+            os.mkdir(f"{path}/{self.new_folder_input.text()}")
         self.new_folder_input.clearFocus()
         self.new_folder_input.setText('')
         self.new_folder_input.hide()
