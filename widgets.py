@@ -277,8 +277,9 @@ class DocStringDock(QDockWidget):
 
 
 class ShowFiles(QDockWidget):
-    def __init__(self, parent):
+    def __init__(self, parent, main_text):
         super().__init__(parent)
+        self.main_text = main_text
 
         self.file_viewer = QTreeView()
 
@@ -292,6 +293,7 @@ class ShowFiles(QDockWidget):
         self.file_viewer.setColumnHidden(1, True)
         self.file_viewer.setColumnHidden(2, True)
         self.file_viewer.setColumnHidden(3, True)
+
 
         self.file_viewer.setStyleSheet("""
 
@@ -317,7 +319,7 @@ class ShowFiles(QDockWidget):
                 height: 0px;
             }
 
-                                       
+   
 
             QScrollBar:horizontal {
                 background: #2d2d2d;
@@ -336,7 +338,7 @@ class ShowFiles(QDockWidget):
             }
 
 """)
-        
+
         self.setWidget(self.file_viewer)
         self.setFeatures(QDockWidget.DockWidgetFeature.DockWidgetMovable)
         parent.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self)
@@ -363,3 +365,26 @@ class ShowFiles(QDockWidget):
                 height: 0px;
             }
         """)
+        self.file_viewer.clicked.connect(self.onClicked)
+
+    def onClicked(self, index):
+        try:
+            path = self.sender().model().filePath(index)
+            with open (path, 'r', encoding = 'utf-8') as file:
+                self.main_text.setPlainText(file.read())
+        except Exception as e:
+            pass
+
+
+    def keyPressEvent(self, event):
+        key = event.key()
+
+        if key == Qt.Key.Key_Enter or key == Qt.Key.Key_Return:
+            # path = self.sender().model().filePath(self.file_viewer.currentIndex())
+            model = self.file_viewer.model()
+            index = self.file_viewer.currentIndex()
+            path = model.filePath(index)
+            with open (path, 'r', encoding = 'utf-8') as file:
+                self.main_text.setPlainText(file.read())
+        
+        super().keyPressEvent(event)
