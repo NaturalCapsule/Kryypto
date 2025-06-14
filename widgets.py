@@ -232,9 +232,12 @@ class DocStringDock(QDockWidget):
     def __init__(self, parent):
         super().__init__()
 
+        self.clearFocus()
+
         self.doc_panel = QTextEdit()
         self.doc_panel.setReadOnly(True)
         self.doc_panel.setMinimumHeight(120)
+        self.doc_panel.clearFocus()
 
         self.setWidget(self.doc_panel)
 
@@ -380,7 +383,6 @@ class ShowFiles(QDockWidget):
         key = event.key()
 
         if key == Qt.Key.Key_Enter or key == Qt.Key.Key_Return:
-            # path = self.sender().model().filePath(self.file_viewer.currentIndex())
             model = self.file_viewer.model()
             index = self.file_viewer.currentIndex()
             path = model.filePath(index)

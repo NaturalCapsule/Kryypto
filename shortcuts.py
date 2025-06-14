@@ -161,12 +161,24 @@ class MainTextShortcuts:
     #         f.close()
 
 class FileDockShortcut:
-    def __init__(self, parent, file_dock):
+    def __init__(self, parent, file_dock, file_view, doc_string, doc_panel, main_text):
+        self.file_view = file_view
+        self.doc_string = doc_string
+        self.doc_panel = doc_panel
+        self.main_text = main_text
+
+
         show_hide_file_dock = QShortcut(QKeySequence('Ctrl+B'), parent)
         show_hide_file_dock.activated.connect(lambda: self.showHideFile(file_dock))
     
     def showHideFile(self, file_dock):
         if file_dock.isVisible():
             file_dock.hide()
+            self.file_view.clearFocus()
+            self.doc_string.clearFocus()
+            self.doc_panel.clearFocus()
+            self.main_text.setFocus()
+
         else:
             file_dock.show()
+            self.file_view.setFocus()
