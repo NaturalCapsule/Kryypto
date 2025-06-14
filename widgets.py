@@ -287,9 +287,13 @@ class ShowFiles(QDockWidget):
         self.hbox = QHBoxLayout()
 
         self.new_file_input = QLineEdit(self)
+        self.new_file_input.setPlaceholderText('Name new file')
+
         self.new_file_input.hide()
 
         self.new_folder_input = QLineEdit(self)
+        self.new_folder_input.setPlaceholderText('Name new folder')
+
         self.new_folder_input.hide()
 
         self.file_viewer = QTreeView(self)
@@ -332,8 +336,6 @@ class ShowFiles(QDockWidget):
             QScrollBar::sub-line:vertical {
                 height: 0px;
             }
-
-   
 
             QScrollBar:horizontal {
                 background: #2d2d2d;
@@ -418,6 +420,10 @@ class ShowFiles(QDockWidget):
 
         if key == Qt.Key.Key_J and event.modifiers() & Qt.KeyboardModifier.ControlModifier:
             self.remove_dir()
+
+        if key == Qt.Key.Key_Escape:
+            self.new_file_input.hide()
+            self.new_folder_input.hide()
 
         super().keyPressEvent(event)
 
