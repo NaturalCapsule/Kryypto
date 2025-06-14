@@ -18,7 +18,7 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
             'and', 'as', 'assert', 'break', 'class', 'continue', 'def',
             'del', 'elif', 'else', 'except', 'exec', 'finally', 'for',
             'from', 'global', 'if', 'import', 'in', 'is', 'lambda',
-            'not', 'or', 'pass', 'print', 'raise', 'return', 'try',
+            'not', 'or', 'pass', 'raise', 'return', 'try',
             'while', 'with', 'yield', 'True', 'False', 'None', 'Execption', "BaseException",
     "Exception",
     "ArithmeticError",
@@ -309,7 +309,7 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
             while it.hasNext():
                 match = it.next()
 
-                used_ranges.add((match.capturedStart(), match.capturedStart() + match.capturedLength()))
+                # used_ranges.add((match.capturedStart(), match.capturedStart() + match.capturedLength()))
 
 
                 if type == 'class':
@@ -317,6 +317,7 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
                 elif type == 'function':
                     self.setFormat(match.capturedStart(), match.capturedLength(), self.function_calls_format)
 
+                used_ranges.add((match.capturedStart(), match.capturedStart() + match.capturedLength()))
 
         # for call in self.function_calls:
         #     pattern = QRegularExpression(fr"\b{call}\b")

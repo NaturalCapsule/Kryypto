@@ -1,10 +1,9 @@
 import sys
-from PyQt6.QtWidgets import QInputDialog , QLabel, QApplication, QMainWindow, QDockWidget, QTextEdit
-from PyQt6.QtGui import  QFont, QSurfaceFormat, QAction, QFileSystemModel
-from PyQt6.QtCore import Qt, QDir
+from PyQt6.QtWidgets import QLabel, QApplication, QMainWindow
+from PyQt6.QtGui import  QFont, QSurfaceFormat
 from highlighter import PythonSyntaxHighlighter
-from shortcuts import *
 from show_errors import ShowErrors
+from shortcuts import *
 
 class IDE(QMainWindow):
     def __init__(self):
@@ -64,9 +63,6 @@ class IDE(QMainWindow):
 
         with open('highlighter.py', 'r', encoding='utf-8') as f:
             main_text.setPlainText(f.read())
-
-
-        # widgets.layout.addWidget(self.input_dialog)
 
         widgets.layout.addWidget(main_text)
 

@@ -1,9 +1,9 @@
 import jedi
 import re
 import os
-from PyQt6.QtCore import Qt, QStringListModel, QRect, Qt, QDir
-from PyQt6.QtGui import QTextCursor, QKeyEvent, QPainter, QColor, QFont, QFontMetrics, QTextCursor, QColor, QFileSystemModel
-from PyQt6.QtWidgets import QHBoxLayout, QLineEdit, QInputDialog, QPlainTextEdit, QVBoxLayout, QWidget, QCompleter, QDockWidget, QTextEdit, QTreeView
+from PyQt6.QtCore import Qt, QStringListModel, QRect, Qt, QDir, QFileInfo
+from PyQt6.QtGui import QTextCursor, QKeyEvent, QPainter, QColor, QFont, QFontMetrics, QTextCursor, QColor, QFileSystemModel, QIcon
+from PyQt6.QtWidgets import QHBoxLayout, QLineEdit, QPlainTextEdit, QVBoxLayout, QWidget, QCompleter, QDockWidget, QTextEdit, QTreeView, QFileIconProvider
 
 from lines import ShowLines
 
@@ -304,6 +304,8 @@ class ShowFiles(QDockWidget):
 
         self.dir_model = QFileSystemModel(parent)
         self.dir_model.setRootPath(QDir.currentPath())
+        self.dir_model.setIconProvider(CustomIcons())
+
         self.file_viewer.setModel(self.dir_model)
         self.file_viewer.setRootIndex(self.dir_model.index(QDir.currentPath()))
 
@@ -382,6 +384,7 @@ class ShowFiles(QDockWidget):
             }
         """)
         self.file_viewer.clicked.connect(self.set_file)
+
 
     def set_file(self, index):
         try:
@@ -497,3 +500,30 @@ class ShowFiles(QDockWidget):
         self.new_folder_input.setText('')
         self.new_folder_input.hide()
         self.file_viewer.setFocus()
+
+class CustomIcons(QFileIconProvider):
+    def icon(self, info: QFileInfo) -> QIcon:
+        image_formats = [
+            "jpg", "jpeg", "png", "gif", "bmp", "tiff", "tif", "webp", "heif", "heic",
+            "eps", "pdf", "ai", "raw", "cr2", "nef", "arw", "orf", "dng",
+            "ico", "psd", "xcf", "dds"
+        ]
+
+        if info.isDir():
+            return QIcon("icons/folder.webp")
+        elif info.suffix() == "py" or info.suffix() == 'pyi':
+            return QIcon("icons/python.svg")
+        elif info.suffix() == 'json':
+            return QIcon("icons/json.svg")
+        elif info.suffix() == 'ini' or info.suffix() == 'cfg' or info.suffix() == 'settings':
+            return QIcon("icons/settings.svg")
+        elif info.suffix().lower() in image_formats:
+            return QIcon("icons/image.svg")
+        elif info.suffix() == 'svg':
+            return QIcon('icons/svg.svg')
+
+        elif info.suffix() == 'pyc':
+            return QIcon('icons/python-misc.svg')
+
+        else:
+            return super().icon(info)
