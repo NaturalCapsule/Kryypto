@@ -1,5 +1,5 @@
 import sys
-from PyQt6.QtWidgets import QTreeView, QFileDialog, QLabel, QApplication, QMainWindow, QDockWidget, QTextEdit
+from PyQt6.QtWidgets import QInputDialog , QLabel, QApplication, QMainWindow, QDockWidget, QTextEdit
 from PyQt6.QtGui import  QFont, QSurfaceFormat, QAction, QFileSystemModel
 from PyQt6.QtCore import Qt, QDir
 from highlighter import PythonSyntaxHighlighter
@@ -66,6 +66,7 @@ class IDE(QMainWindow):
             main_text.setPlainText(f.read())
 
 
+        # widgets.layout.addWidget(self.input_dialog)
 
         widgets.layout.addWidget(main_text)
 

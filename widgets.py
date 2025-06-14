@@ -1,8 +1,9 @@
 import jedi
 import re
+import os
 from PyQt6.QtCore import Qt, QStringListModel, QRect, Qt, QDir
 from PyQt6.QtGui import QTextCursor, QKeyEvent, QPainter, QColor, QFont, QFontMetrics, QTextCursor, QColor, QFileSystemModel
-from PyQt6.QtWidgets import QPlainTextEdit, QVBoxLayout, QWidget, QCompleter, QDockWidget, QTextEdit, QTreeView
+from PyQt6.QtWidgets import QInputDialog, QPlainTextEdit, QVBoxLayout, QWidget, QCompleter, QDockWidget, QTextEdit, QTreeView
 
 from lines import ShowLines
 
@@ -296,7 +297,8 @@ class ShowFiles(QDockWidget):
         self.file_viewer.setColumnHidden(1, True)
         self.file_viewer.setColumnHidden(2, True)
         self.file_viewer.setColumnHidden(3, True)
-
+        # self.file_viewer.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
+        # self.file_viewer.setFocus()
 
         self.file_viewer.setStyleSheet("""
 
@@ -368,9 +370,9 @@ class ShowFiles(QDockWidget):
                 height: 0px;
             }
         """)
-        self.file_viewer.clicked.connect(self.onClicked)
+        self.file_viewer.clicked.connect(self.set_file)
 
-    def onClicked(self, index):
+    def set_file(self, index):
         try:
             path = self.sender().model().filePath(index)
             with open (path, 'r', encoding = 'utf-8') as file:
@@ -386,7 +388,25 @@ class ShowFiles(QDockWidget):
             model = self.file_viewer.model()
             index = self.file_viewer.currentIndex()
             path = model.filePath(index)
-            with open (path, 'r', encoding = 'utf-8') as file:
-                self.main_text.setPlainText(file.read())
-        
+            try:
+                with open (path, 'r', encoding = 'utf-8') as file:
+                    self.main_text.setPlainText(file.read())
+            except Exception as e:
+                pass
+            
+        self.create_file()
+
         super().keyPressEvent(event)
+
+    def create_file(self):
+        QDir.currentPath()
+        
+        get_file_name, ok = QInputDialog.getText(self.file_viewer, 'Make New File', 'Enter File Name')
+
+        if get_file_name and ok:
+            print(get_file_name)
+            with open (f"{QDir.currentPath()}/{get_file_name}", 'w') as file:
+                file.write('')
+                file.close()
+
+        
