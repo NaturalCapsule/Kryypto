@@ -288,7 +288,6 @@ class ShowFiles(QDockWidget):
 
         self.new_file_input = QLineEdit(self)
         self.new_file_input.hide()
-        # self.new_file_input
 
         self.new_folder_input = QLineEdit(self)
         self.new_folder_input.hide()
@@ -385,6 +384,7 @@ class ShowFiles(QDockWidget):
     def set_file(self, index):
         try:
             path = self.sender().model().filePath(index)
+
             with open (path, 'r', encoding = 'utf-8') as file:
                 self.main_text.setPlainText(file.read())
         except Exception as e:
@@ -413,14 +413,48 @@ class ShowFiles(QDockWidget):
             self.new_folder_input.setFocus()
             self.new_folder_input.returnPressed.connect(self.create_folder)      
 
+        if key == Qt.Key.Key_K and event.modifiers() & Qt.KeyboardModifier.ControlModifier:
+            self.remove_file()
+
+        if key == Qt.Key.Key_J and event.modifiers() & Qt.KeyboardModifier.ControlModifier:
+            self.remove_dir()
+
         super().keyPressEvent(event)
+
+    def remove_file(self):
+        model = self.file_viewer.model()
+        index = self.file_viewer.currentIndex()
+        path = model.filePath(index)
+
+        if os.path.exists(path):
+            try:
+                os.remove(path)
+            except Exception:
+                pass
+        else:
+            print("There is no", path)
+
+    def remove_dir(self):
+        model = self.file_viewer.model()
+        index = self.file_viewer.currentIndex()
+        path = model.filePath(index)
+
+        if os.path.exists(path):
+            try:
+                os.rmdir(path)
+            except Exception as e:
+                pass
+        else:
+            print("There is no", path)
 
     def create_file(self):
         if self.new_file_input.text():
             with open (f"{QDir.currentPath()}/{self.new_file_input.text()}", 'w') as file:
                 file.write('')
                 file.close()
+
         self.new_file_input.clearFocus()
+        self.new_file_input.setText('')
         self.new_file_input.hide()
         self.file_viewer.setFocus()
 
@@ -428,5 +462,6 @@ class ShowFiles(QDockWidget):
         if self.new_folder_input.text():
             os.mkdir(f"{QDir.currentPath()}/{self.new_folder_input.text()}")
         self.new_folder_input.clearFocus()
+        self.new_folder_input.setText('')
         self.new_folder_input.hide()
         self.file_viewer.setFocus()
