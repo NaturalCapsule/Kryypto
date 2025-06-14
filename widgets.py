@@ -3,7 +3,7 @@ import re
 import os
 from PyQt6.QtCore import Qt, QStringListModel, QRect, Qt, QDir
 from PyQt6.QtGui import QTextCursor, QKeyEvent, QPainter, QColor, QFont, QFontMetrics, QTextCursor, QColor, QFileSystemModel
-from PyQt6.QtWidgets import QInputDialog, QPlainTextEdit, QVBoxLayout, QWidget, QCompleter, QDockWidget, QTextEdit, QTreeView
+from PyQt6.QtWidgets import QHBoxLayout, QLineEdit, QInputDialog, QPlainTextEdit, QVBoxLayout, QWidget, QCompleter, QDockWidget, QTextEdit, QTreeView
 
 from lines import ShowLines
 
@@ -284,8 +284,20 @@ class ShowFiles(QDockWidget):
     def __init__(self, parent, main_text):
         super().__init__(parent)
         self.main_text = main_text
+        self.hbox = QHBoxLayout()
 
-        self.file_viewer = QTreeView()
+        self.new_file_input = QLineEdit(self)
+        self.new_file_input.hide()
+        # self.new_file_input
+
+        self.new_folder_input = QLineEdit(self)
+        self.new_folder_input.hide()
+
+        self.file_viewer = QTreeView(self)
+
+        self.hbox.addWidget(self.new_file_input)
+        self.hbox.addWidget(self.new_folder_input)
+        self.hbox.addWidget(self.file_viewer)
 
         self.dir_model = QFileSystemModel(parent)
         self.dir_model.setRootPath(QDir.currentPath())
@@ -297,8 +309,6 @@ class ShowFiles(QDockWidget):
         self.file_viewer.setColumnHidden(1, True)
         self.file_viewer.setColumnHidden(2, True)
         self.file_viewer.setColumnHidden(3, True)
-        # self.file_viewer.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
-        # self.file_viewer.setFocus()
 
         self.file_viewer.setStyleSheet("""
 
@@ -383,7 +393,6 @@ class ShowFiles(QDockWidget):
 
     def keyPressEvent(self, event):
         key = event.key()
-        print(key)
         if key == Qt.Key.Key_Return:
             model = self.file_viewer.model()
             index = self.file_viewer.currentIndex()
@@ -395,23 +404,29 @@ class ShowFiles(QDockWidget):
                 pass
         
         if key == Qt.Key.Key_F and event.modifiers() & Qt.KeyboardModifier.ControlModifier:
-            self.create_file()
+            self.new_file_input.show()
+            self.new_file_input.setFocus()
+            self.new_file_input.returnPressed.connect(self.create_file)
 
         if key == Qt.Key.Key_D and event.modifiers() & Qt.KeyboardModifier.ControlModifier:
-            self.create_folder()
+            self.new_folder_input.show()
+            self.new_folder_input.setFocus()
+            self.new_folder_input.returnPressed.connect(self.create_folder)      
 
         super().keyPressEvent(event)
 
     def create_file(self):
-        get_file_name, ok = QInputDialog.getText(self.file_viewer, 'Make New File', 'Enter File Name')
-
-        if get_file_name and ok:
-            with open (f"{QDir.currentPath()}/{get_file_name}", 'w') as file:
+        if self.new_file_input.text():
+            with open (f"{QDir.currentPath()}/{self.new_file_input.text()}", 'w') as file:
                 file.write('')
                 file.close()
+        self.new_file_input.clearFocus()
+        self.new_file_input.hide()
+        self.file_viewer.setFocus()
 
     def create_folder(self):
-        get_folder_name, ok = QInputDialog.getText(self.file_viewer, 'Make New Folder', 'Enter Folder Name')
-
-        if get_folder_name and ok:
-            os.mkdir(f"{QDir.currentPath()}/{get_folder_name}")
+        if self.new_folder_input.text():
+            os.mkdir(f"{QDir.currentPath()}/{self.new_folder_input.text()}")
+        self.new_folder_input.clearFocus()
+        self.new_folder_input.hide()
+        self.file_viewer.setFocus()
