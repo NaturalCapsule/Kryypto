@@ -383,8 +383,8 @@ class ShowFiles(QDockWidget):
 
     def keyPressEvent(self, event):
         key = event.key()
-
-        if key == Qt.Key.Key_Enter or key == Qt.Key.Key_Return:
+        print(key)
+        if key == Qt.Key.Key_Return:
             model = self.file_viewer.model()
             index = self.file_viewer.currentIndex()
             path = model.filePath(index)
@@ -393,20 +393,25 @@ class ShowFiles(QDockWidget):
                     self.main_text.setPlainText(file.read())
             except Exception as e:
                 pass
-            
-        self.create_file()
+        
+        if key == Qt.Key.Key_F and event.modifiers() & Qt.KeyboardModifier.ControlModifier:
+            self.create_file()
+
+        if key == Qt.Key.Key_D and event.modifiers() & Qt.KeyboardModifier.ControlModifier:
+            self.create_folder()
 
         super().keyPressEvent(event)
 
     def create_file(self):
-        QDir.currentPath()
-        
         get_file_name, ok = QInputDialog.getText(self.file_viewer, 'Make New File', 'Enter File Name')
 
         if get_file_name and ok:
-            print(get_file_name)
             with open (f"{QDir.currentPath()}/{get_file_name}", 'w') as file:
                 file.write('')
                 file.close()
 
-        
+    def create_folder(self):
+        get_folder_name, ok = QInputDialog.getText(self.file_viewer, 'Make New Folder', 'Enter Folder Name')
+
+        if get_folder_name and ok:
+            os.mkdir(f"{QDir.currentPath()}/{get_folder_name}")
