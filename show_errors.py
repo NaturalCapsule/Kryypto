@@ -33,7 +33,7 @@ class ShowErrors:
 
         except (SyntaxError, NameError) as e:
             if self.error_label:
-                self.error_label.setText(f"❌ Line {e.lineno}: {e.msg} : {e.text}")
+                self.error_label.setText(f"❌ Line {e.lineno}: {e.msg}")
 
             self.underline_error(e.lineno, e.offset)
 

@@ -1,5 +1,5 @@
 import sys
-from PyQt6.QtWidgets import QLabel, QApplication, QMainWindow
+from PyQt6.QtWidgets import QLabel, QApplication, QMainWindow, QTabBar
 from PyQt6.QtGui import  QFont, QSurfaceFormat
 from highlighter import PythonSyntaxHighlighter
 from show_errors import ShowErrors
@@ -9,6 +9,13 @@ class IDE(QMainWindow):
     def __init__(self):
         super().__init__()
         import widgets
+        self.tab_bar = widgets.ShowOpenedFile()
+        # self.tab_bar = QTabBar()
+        # self.tab_bar.addTab("tab 1")
+        # self.tab_bar.addTab("tab 2")
+        # self.tab_bar.addTab("tab 3")
+
+        # widgets.layout.addWidget(self.tab_bar)
 
         self.setWindowTitle("IDE")
         self.setGeometry(100, 100, 800, 600)
@@ -92,7 +99,7 @@ if __name__ == '__main__':
     format.setProfile(QSurfaceFormat.OpenGLContextProfile.CoreProfile)
     format.setVersion(3, 3)
     format.setSwapBehavior(QSurfaceFormat.SwapBehavior.DoubleBuffer)
-    format.setDepthBufferSize(24)
+    format.setDepthBufferSize(60)
     QSurfaceFormat.setDefaultFormat(format)
     app = QApplication(sys.argv)
     window = IDE()

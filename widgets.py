@@ -3,7 +3,7 @@ import re
 import os
 from PyQt6.QtCore import Qt, QStringListModel, QRect, Qt, QDir, QFileInfo
 from PyQt6.QtGui import QTextCursor, QKeyEvent, QPainter, QColor, QFont, QFontMetrics, QTextCursor, QColor, QFileSystemModel, QIcon
-from PyQt6.QtWidgets import QHBoxLayout, QLineEdit, QPlainTextEdit, QVBoxLayout, QWidget, QCompleter, QDockWidget, QTextEdit, QTreeView, QFileIconProvider
+from PyQt6.QtWidgets import QPushButton, QHBoxLayout, QLineEdit, QPlainTextEdit, QVBoxLayout, QWidget, QCompleter, QDockWidget, QTextEdit, QTreeView, QFileIconProvider, QTabBar
 
 from lines import ShowLines
 
@@ -294,6 +294,25 @@ class ShowFiles(QDockWidget):
         self.new_folder_input = QLineEdit(self)
         self.new_folder_input.setPlaceholderText('Name new folder')
 
+        self.new_file_input.setStyleSheet("""
+            QLineEdit {
+                background-color: #1e1e1e;
+                border: 1px solid #3c3c3c;
+                color: #ffffff;                             
+            }
+
+""")
+
+        self.new_folder_input.setStyleSheet("""
+            QLineEdit {
+                background-color: #1e1e1e;
+                border: 1px solid #3c3c3c;
+                color: #ffffff;                             
+            }
+
+""")
+
+
         self.new_folder_input.hide()
 
         self.file_viewer = QTreeView(self)
@@ -511,19 +530,75 @@ class CustomIcons(QFileIconProvider):
 
         if info.isDir():
             return QIcon("icons/folder.webp")
-        elif info.suffix() == "py" or info.suffix() == 'pyi':
+        elif info.suffix().lower() == "py" or info.suffix().lower() == 'pyi':
             return QIcon("icons/python.svg")
-        elif info.suffix() == 'json':
+        elif info.suffix().lower() == 'json':
             return QIcon("icons/json.svg")
-        elif info.suffix() == 'ini' or info.suffix() == 'cfg' or info.suffix() == 'settings':
+        elif info.suffix().lower() == 'ini' or info.suffix() == 'cfg' or info.suffix() == 'settings' or info.suffix() == 'conf' or info.suffix() == 'config':
             return QIcon("icons/settings.svg")
         elif info.suffix().lower() in image_formats:
             return QIcon("icons/image.svg")
-        elif info.suffix() == 'svg':
+        elif info.suffix().lower() == 'svg':
             return QIcon('icons/svg.svg')
-
-        elif info.suffix() == 'pyc':
+        elif info.suffix().lower() == 'pyc':
             return QIcon('icons/python-misc.svg')
+        elif info.suffix().lower() == 'css':
+            return QIcon('icons/css.png')
+        elif info.suffix().lower() == 'html':
+                return QIcon('icons/html.svg')
+        elif info.suffix().lower() == 'txt':
+            return QIcon('icons/txt.png')
 
         else:
             return super().icon(info)
+
+
+class ShowOpenedFile(QTabBar):
+    def __init__(self):
+        super().__init__()
+
+        self.addTab('Tab 1')
+        self.addTab('main.py')
+        self.addTab('Tab 3')
+        # print(self.tabText(1))
+        # self.removeTab(0)
+        # print(self.count() - 1)
+        # self.setFixedSize(200, 50)
+#         self.setStyleSheet("""
+#             QTabBar {
+#                 padding: 0px;
+#                 margin: 0px;
+#                 font-size: 19px;
+#                 border: none;
+#                 }
+
+# """)
+        for index in range(self.count()):
+            close_button = QPushButton('X')
+            close_button.setFixedSize(16, 16)  # Make the button itself smaller
+
+            close_button.setStyleSheet("""
+                QPushButton {
+                    padding: 0px;
+                    margin: 0px;
+                    font-size: 10px;
+                    border: none;
+                }
+            """)
+
+
+            close_button.clicked.connect(lambda index_: self.remove_tab(index_))
+
+            self.resize(20, 20)
+            self.sizeHint()
+            self.get_tab_icons(index)
+            self.setTabButton(index, self.ButtonPosition.RightSide, close_button)
+
+        layout.addWidget(self)
+
+    def get_tab_icons(self, index):
+        if self.tabText(index).endswith('py'):
+            self.setTabIcon(index, QIcon('icons/python.svg'))
+    
+    def remove_tab(self, index):
+        self.removeTab(index)
