@@ -9,6 +9,8 @@ from lines import ShowLines
 
 central_widget = QWidget()
 
+file_description = {}
+
 layout = QVBoxLayout(central_widget)
 
 class MainText(QPlainTextEdit):
@@ -281,10 +283,15 @@ class DocStringDock(QDockWidget):
 
 
 class ShowFiles(QDockWidget):
-    def __init__(self, parent, main_text):
+    def __init__(self, parent, main_text, opened_tabs):
         super().__init__(parent)
         self.main_text = main_text
+
+        self.opened_tabs = opened_tabs
+
+        global file_description
         self.hbox = QHBoxLayout()
+
 
         self.new_file_input = QLineEdit(self)
         self.new_file_input.setPlaceholderText('Name new file')
@@ -408,6 +415,13 @@ class ShowFiles(QDockWidget):
     def set_file(self, index):
         try:
             path = self.sender().model().filePath(index)
+            str_path = str(path)
+            file_name = str_path.split('/')[-1]
+            if '.' in file_name:
+                if path not in file_description.keys() and file_name not in file_description.values():
+
+                    file_description[path] = file_name
+                    self.opened_tabs.add_file(path, file_name)
 
             with open (path, 'r', encoding = 'utf-8') as file:
                 self.main_text.setPlainText(file.read())
@@ -421,12 +435,20 @@ class ShowFiles(QDockWidget):
             model = self.file_viewer.model()
             index = self.file_viewer.currentIndex()
             path = model.filePath(index)
+            str_path = str(path)
+            file_name = str_path.split('/')[-1]
+            if '.' in file_name:
+                if path not in file_description.keys() and file_name not in file_description.values():
+                    file_description[path] = file_name
+                    self.opened_tabs.add_file(path, file_name)
+                    print(path, file_name)
+
             try:
                 with open (path, 'r', encoding = 'utf-8') as file:
                     self.main_text.setPlainText(file.read())
             except Exception as e:
                 pass
-        
+
         if key == Qt.Key.Key_F and event.modifiers() & Qt.KeyboardModifier.ControlModifier:
             self.new_file_input.show()
             self.new_file_input.setFocus()
@@ -556,10 +578,7 @@ class CustomIcons(QFileIconProvider):
 class ShowOpenedFile(QTabBar):
     def __init__(self):
         super().__init__()
-
-        self.addTab('Tab 1')
-        self.addTab('main.py')
-        self.addTab('Tab 3')
+        global file_description
         # print(self.tabText(1))
         # self.removeTab(0)
         # print(self.count() - 1)
@@ -573,32 +592,64 @@ class ShowOpenedFile(QTabBar):
 #                 }
 
 # """)
-        for index in range(self.count()):
-            close_button = QPushButton('X')
-            close_button.setFixedSize(16, 16)  # Make the button itself smaller
 
-            close_button.setStyleSheet("""
-                QPushButton {
-                    padding: 0px;
-                    margin: 0px;
-                    font-size: 10px;
-                    border: none;
-                }
-            """)
-
-
-            close_button.clicked.connect(lambda index_: self.remove_tab(index_))
-
-            self.resize(20, 20)
-            self.sizeHint()
-            self.get_tab_icons(index)
-            self.setTabButton(index, self.ButtonPosition.RightSide, close_button)
 
         layout.addWidget(self)
 
     def get_tab_icons(self, index):
-        if self.tabText(index).endswith('py'):
+        image_formats = (
+            "jpg", "jpeg", "png", "gif", "bmp", "tiff", "tif", "webp", "heif", "heic",
+            "eps", "pdf", "ai", "raw", "cr2", "nef", "arw", "orf", "dng",
+            "ico", "psd", "xcf", "dds"
+        )
+
+        if self.tabText(index).endswith('py') or self.tabText(index).endswith('pyi'):
             self.setTabIcon(index, QIcon('icons/python.svg'))
-    
+
+        elif self.tabText(index).endswith('txt'):
+            self.setTabIcon(index, QIcon('icons/txt.png'))
+
+        elif self.tabText(index).endswith('json'):
+            self.setTabIcon(index, QIcon('icons/json.svg'))
+
+        elif self.tabText(index).endswith('svg'):
+            self.setTabIcon(index, QIcon('icons/svg.svg'))
+
+        elif self.tabText(index).endswith('html'):
+            self.setTabIcon(index, QIcon('icons/html.svg'))
+
+
+        elif self.tabText(index).endswith('css'):
+            self.setTabIcon(index, QIcon('icons/css.png'))
+
+
+        elif self.tabText(index).endswith('pyc'):
+            self.setTabIcon(index, QIcon('icons/python-misc.svg'))
+
+        elif self.tabText(index).endswith(image_formats):
+            self.setTabIcon(index, QIcon('icons/image.svg'))
+
     def remove_tab(self, index):
         self.removeTab(index)
+
+    def add_file(self, path, file_name):
+        # for path, file_name in file_description.items():
+        file_index = self.addTab(str(file_name))
+
+        close_button = QPushButton('X')
+        close_button.setFixedSize(16, 16)
+
+        close_button.setStyleSheet("""
+            QPushButton {
+                padding: 0px;
+                margin: 0px;
+                font-size: 10px;
+                border: none;
+            }
+        """)
+
+
+        close_button.clicked.connect(lambda _, index_=file_index: self.remove_tab(index_))
+
+        self.get_tab_icons(file_index)
+        self.setTabButton(file_index, self.ButtonPosition.RightSide, close_button)
