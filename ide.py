@@ -68,7 +68,7 @@ class IDE(QMainWindow):
 
 
 
-        with open('highlighter.py', 'r', encoding='utf-8') as f:
+        with open('lines.py', 'r', encoding='utf-8') as f:
             main_text.setPlainText(f.read())
 
         widgets.layout.addWidget(main_text)

@@ -19,7 +19,7 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
             'del', 'elif', 'else', 'except', 'exec', 'finally', 'for',
             'from', 'global', 'if', 'import', 'in', 'is', 'lambda',
             'not', 'or', 'pass', 'raise', 'return', 'try',
-            'while', 'with', 'yield', 'True', 'False', 'None', 'Execption', "BaseException",
+            'while', 'with', 'yield', 'super', 'True', 'False', 'None', 'Execption', "BaseException",
     "Exception",
     "ArithmeticError",
     "FloatingPointError",
@@ -104,14 +104,14 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
             pattern = QRegularExpression(f'\\b{builtin}\\b')
             self.highlighting_rules.append((pattern, builtin_format, 'builtins'))
 
-        string_format = QTextCharFormat()
-        string_format.setForeground(QColor(0, 128, 0))  # Green
+        # string_format = QTextCharFormat()
+        # string_format.setForeground(QColor(0, 128, 0))  # Green
         
-        self.highlighting_rules.append((QRegularExpression('"[^"\\\\]*(\\\\.[^"\\\\]*)*"'), string_format, None))
-        self.highlighting_rules.append((QRegularExpression("'[^'\\\\]*(\\\\.[^'\\\\]*)*'"), string_format, None))
+        # self.highlighting_rules.append((QRegularExpression('"[^"\\\\]*(\\\\.[^"\\\\]*)*"'), string_format, None))
+        # self.highlighting_rules.append((QRegularExpression("'[^'\\\\]*(\\\\.[^'\\\\]*)*'"), string_format, None))
         
-        self.highlighting_rules.append((QRegularExpression('""".*"""'), string_format, 'string'))
-        self.highlighting_rules.append((QRegularExpression("'''.*'''"), string_format, 'string'))
+        # self.highlighting_rules.append((QRegularExpression('""".*"""'), string_format, 'string'))
+        # self.highlighting_rules.append((QRegularExpression("'''.*'''"), string_format, 'string'))
 
         comment_format = QTextCharFormat()
         comment_format.setForeground(QColor(128, 128, 128))  # Gray
@@ -125,12 +125,19 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
         function_format = QTextCharFormat()
         function_format.setForeground(QColor(0, 255, 255))  # Blue
         function_format.setFontWeight(QFont.Weight.Bold)
+        # self.arg_def_format.setFontWeight(QFont.Weight.Bold)
+        function_format.setFontItalic(True)
+
         self.highlighting_rules.append((QRegularExpression('\\bdef\\s+(\\w+)'), function_format, 'function'))
 
         class_format = QTextCharFormat()
         class_format.setForeground(QColor(128, 0, 128))  # Purple
         class_format.setFontWeight(QFont.Weight.Bold)
+                # self.arg_def_format.setFontWeight(QFont.Weight.Bold)
+        class_format.setFontItalic(True)
+
         self.highlighting_rules.append((QRegularExpression('\\bclass\\s+(\\w+)'), class_format, 'class'))
+        
 
         for punctuation in ['!', '@', '$', '%', '^', '&', '*', '-', '=', '+']:
             punction_format = QTextCharFormat()
@@ -148,16 +155,24 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
 
         self.arg_def_format = QTextCharFormat()
         self.arg_def_format.setForeground(QColor("purple"))
+        self.arg_def_format.setFontWeight(QFont.Weight.Bold)
+        self.arg_def_format.setFontItalic(True)
 
         self.arg_usage_format = QTextCharFormat()
         self.arg_usage_format.setForeground(QColor("darkMagenta"))
+        self.arg_usage_format.setFontWeight(QFont.Weight.Bold)
+        self.arg_usage_format.setFontItalic(True)
 
         self.c_instance_foramt = QTextCharFormat()
         self.c_instance_foramt.setForeground(QColor('cyan'))
+        self.c_instance_foramt.setFontWeight(QFont.Weight.Bold)  # Make class names bold
+        self.c_instance_foramt.setFontItalic(True)  
+
 
         self.function_calls_format = QTextCharFormat()
         self.function_calls_format.setForeground(QColor(0, 255, 255))
-
+        self.function_calls_format.setFontWeight(QFont.Weight.Bold)
+        self.function_calls_format.setFontItalic(True)
         # variable_formar = QTextCharFormat()
         # variable_formar.setForeground(QColor(0, 128, 0))  # Dark green
         # assignment_format.setFontWeight(QFont.Weight.Bold)
@@ -213,12 +228,50 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
             self.function_calls.clear()
 
     def highlightBlock(self, text):
+        def is_overlapping(start, length, used_ranges):
+            end = start + length
+            for begin, finish in used_ranges:
+                if start < finish and end > begin:
+                    return True
+            return False
+
+
         default_format = QTextCharFormat()
         default_format.setForeground(QColor("white"))
         default_format.setFontWeight(QFont.Weight.Bold)
         self.setFormat(0, len(text), default_format)
 
         used_ranges = set()
+
+        triple_string_formats = [
+            ('"""', QRegularExpression('"""')),
+            ("'''", QRegularExpression("'''"))
+        ]
+
+        for quote, start_expression in triple_string_formats:
+            if self.previousBlockState() != 1:
+                start_match = start_expression.match(text)
+                start_index = start_match.capturedStart() if start_match.hasMatch() else -1
+            else:
+                start_index = 0
+
+            while start_index >= 0:
+                end_match = start_expression.match(text, start_index + 3)
+
+                if end_match.hasMatch():
+                    length = end_match.capturedStart() - start_index + 3
+                    self.setCurrentBlockState(0)
+                else:
+                    self.setCurrentBlockState(1)
+                    length = len(text) - start_index
+
+                string_format = QTextCharFormat()
+                string_format.setForeground(QColor(0, 128, 0))  # Green
+                self.setFormat(start_index, length, string_format)
+                used_ranges.add((start_index, start_index + length))
+
+                next_match = start_expression.match(text, start_index + length)
+                start_index = next_match.capturedStart() if next_match.hasMatch() else -1
 
         comment_format = QTextCharFormat()
         comment_format.setForeground(QColor(128, 128, 128))  # Gray
@@ -247,8 +300,9 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
                     start = match.capturedStart()
                     length = match.capturedLength()
 
-                if any(start < end and (start + length) > begin for (begin, end) in used_ranges):
+                if is_overlapping(start, length, used_ranges):
                     continue
+
 
                 self.setFormat(start, length, fmt)
                 used_ranges.add((start, start + length))
@@ -292,7 +346,8 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
                     pos = text.find(arg_name, args_start)
                     if pos != -1:
                         self.setFormat(pos, len(arg_name), self.arg_def_format)
-                        used_ranges.add((match.capturedStart(), match.capturedLength()))
+                        used_ranges.add((pos, pos + len(arg_name)))
+
 
 
         for arg in self.function_args:
@@ -300,6 +355,10 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
             it = pattern.globalMatch(text)
             while it.hasNext():
                 match = it.next()
+
+                if is_overlapping(match.capturedStart(), match.capturedLength(), used_ranges):
+                    continue
+
                 self.setFormat(match.capturedStart(), match.capturedLength(), self.arg_usage_format)
                 used_ranges.add((match.capturedStart(), match.capturedStart() + match.capturedLength()))
 
@@ -309,7 +368,8 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
             while it.hasNext():
                 match = it.next()
 
-                # used_ranges.add((match.capturedStart(), match.capturedStart() + match.capturedLength()))
+                if is_overlapping(match.capturedStart(), match.capturedLength(), used_ranges):
+                    continue
 
 
                 if type == 'class':
@@ -318,11 +378,3 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
                     self.setFormat(match.capturedStart(), match.capturedLength(), self.function_calls_format)
 
                 used_ranges.add((match.capturedStart(), match.capturedStart() + match.capturedLength()))
-
-        # for call in self.function_calls:
-        #     pattern = QRegularExpression(fr"\b{call}\b")
-        #     it = pattern.globalMatch(text)
-        #     while it.hasNext():
-        #         match = it.next()
-        #         self.setFormat(match.capturedStart(), match.capturedLength(), self.function_calls_format)
-        #         used_ranges.add((match.capturedStart(), match.capturedStart() + match.capturedLength()))

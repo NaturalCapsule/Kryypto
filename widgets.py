@@ -417,11 +417,16 @@ class ShowFiles(QDockWidget):
             path = self.sender().model().filePath(index)
             str_path = str(path)
             file_name = str_path.split('/')[-1]
+            print(file_name, path)
             if '.' in file_name:
+                # for file_path, file_name_ in file_description.items():
+                    # if file_path != path and file_name_ != file_name:
                 if path not in file_description.keys() and file_name not in file_description.values():
 
                     file_description[path] = file_name
                     self.opened_tabs.add_file(path, file_name)
+                        # break
+
 
             with open (path, 'r', encoding = 'utf-8') as file:
                 self.main_text.setPlainText(file.read())
@@ -438,10 +443,22 @@ class ShowFiles(QDockWidget):
             str_path = str(path)
             file_name = str_path.split('/')[-1]
             if '.' in file_name:
+                # print(file_name, path)
+                # print(file_description)
+                # file_description[path] = file_name
+                # for file_path, file_name_ in file_description.items():
+                    # if file_path != path and file_name_ != file_name or path != path and file_name != file_name_:
+                        # print("True")
+
                 if path not in file_description.keys() and file_name not in file_description.values():
-                    file_description[path] = file_name
-                    self.opened_tabs.add_file(path, file_name)
-                    print(path, file_name)
+                        file_description[path] = file_name
+                        self.opened_tabs.add_file(path, file_name)
+                # self.opened_tabs.add_file(path, file_name)
+
+                        # file_description[path] = file_name
+                        # self.opened_tabs.add_file(path, file_name)
+                        # break
+                        # print(path, file_name)
 
             try:
                 with open (path, 'r', encoding = 'utf-8') as file:
@@ -633,7 +650,6 @@ class ShowOpenedFile(QTabBar):
         self.removeTab(index)
 
     def add_file(self, path, file_name):
-        # for path, file_name in file_description.items():
         file_index = self.addTab(str(file_name))
 
         close_button = QPushButton('X')
@@ -648,8 +664,8 @@ class ShowOpenedFile(QTabBar):
             }
         """)
 
-
         close_button.clicked.connect(lambda _, index_=file_index: self.remove_tab(index_))
 
         self.get_tab_icons(file_index)
+        self.setCurrentIndex(file_index)
         self.setTabButton(file_index, self.ButtonPosition.RightSide, close_button)
