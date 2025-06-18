@@ -15,6 +15,14 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
         keyword_format.setFontWeight(QFont.Weight.Bold)
 
 
+        string_format = QTextCharFormat()
+        # string_format.setForeground(QColor(0, 128, 0))  # Green
+        string_format.setForeground(QColor(166, 227, 161))  # Green
+
+        self.highlighting_rules.append((QRegularExpression('"[^"\\\\]*(\\\\.[^"\\\\]*)*"'), string_format, 'string'))
+        self.highlighting_rules.append((QRegularExpression("'[^'\\\\]*(\\\\.[^'\\\\]*)*'"), string_format, 'string'))
+        
+
         keywords = [
             'and', 'as', 'assert', 'break', 'class', 'continue', 'def',
             'del', 'elif', 'else', 'except', 'exec', 'finally', 'for',
@@ -110,15 +118,9 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
             pattern = QRegularExpression(f'\\b{builtin}\\b')
             self.highlighting_rules.append((pattern, builtin_format, 'builtins'))
 
-        string_format = QTextCharFormat()
-        # string_format.setForeground(QColor(0, 128, 0))  # Green
-        string_format.setForeground(QColor(166, 227, 161))  # Green
 
 
 
-        self.highlighting_rules.append((QRegularExpression('"[^"\\\\]*(\\\\.[^"\\\\]*)*"'), string_format, None))
-        self.highlighting_rules.append((QRegularExpression("'[^'\\\\]*(\\\\.[^'\\\\]*)*'"), string_format, None))
-        
         # self.highlighting_rules.append((QRegularExpression('""".*"""'), string_format, 'string'))
         # self.highlighting_rules.append((QRegularExpression("'''.*'''"), string_format, 'string'))
 
@@ -184,8 +186,13 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
         self.arg_usage_format.setFontWeight(QFont.Weight.Bold)
         self.arg_usage_format.setFontItalic(True)
 
+
+
+        ########################## 
         self.c_instance_foramt = QTextCharFormat()
-        self.c_instance_foramt.setForeground(QColor('cyan'))
+        # self.c_instance_foramt.setForeground(QColor('cyan'))
+        self.c_instance_foramt.setForeground(QColor(249, 226, 175))  # Purple
+
         self.c_instance_foramt.setFontWeight(QFont.Weight.Bold)  # Make class names bold
         self.c_instance_foramt.setFontItalic(True)  
 

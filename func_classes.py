@@ -12,7 +12,8 @@ def list_classes_functions(code):
         for name in names:
             if name.type == 'class':
                 func_class_instances[name.name] = 'class'
-
+            elif name.type == 'function':
+                func_class_instances[name.name] = 'function'
 
         for node in ast.walk(tree):
             if isinstance(node, ast.Assign):
