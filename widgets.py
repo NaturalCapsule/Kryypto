@@ -573,6 +573,9 @@ class CustomIcons(QFileIconProvider):
         elif info.suffix().lower() == 'txt':
             return QIcon('icons/txt.png')
 
+        elif info.suffix().lower() == 'md' or info.suffix().lower() == 'markdown':
+            return QIcon('icons/markdown.svg')
+
         else:
             return super().icon(info)
 
@@ -658,6 +661,9 @@ class ShowOpenedFile(QTabBar):
 
         elif self.tabText(index).endswith(image_formats):
             self.setTabIcon(index, QIcon('icons/image.svg'))
+
+        elif self.tabText(index).endswith('md') or self.tabText(index).endswith('markdown'):
+            self.setTabIcon(index, QIcon('icons/markdown.svg'))
 
     def remove_tab(self, index):
         self.removeTab(index)
