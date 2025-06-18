@@ -4,7 +4,6 @@ from PyQt6.QtCore import QTimer
 
 from func_classes import list_classes_functions
 
-
 class ShowErrors:
     def __init__(self, parent, highlighter):
         parent.textChanged.connect(self.schedule_check)

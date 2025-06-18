@@ -1,7 +1,7 @@
 import jedi
 import re
 import os
-from PyQt6.QtCore import Qt, QStringListModel, QRect, Qt, QDir, QFileInfo
+from PyQt6.QtCore import QSize, Qt, QStringListModel, QRect, Qt, QDir, QFileInfo
 from PyQt6.QtGui import QTextCursor, QKeyEvent, QPainter, QColor, QFont, QFontMetrics, QTextCursor, QColor, QFileSystemModel, QIcon
 from PyQt6.QtWidgets import QPushButton, QHBoxLayout, QLineEdit, QPlainTextEdit, QVBoxLayout, QWidget, QCompleter, QDockWidget, QTextEdit, QTreeView, QFileIconProvider, QTabBar
 
@@ -16,6 +16,7 @@ layout = QVBoxLayout(central_widget)
 class MainText(QPlainTextEdit):
     def __init__(self, doc_panel):
         super().__init__()
+        self.setCursorWidth(3)
         self.completer = QCompleter()
         self.doc_panel = doc_panel
         self.class_or_function = {}
@@ -32,7 +33,7 @@ class MainText(QPlainTextEdit):
         popup = self.completer.popup()
         popup.setStyleSheet("""
             QListView {
-                background-color: #1e1e1e;
+                background-color: #1e1e2e;
                 color: #ffffff;
                 font-size: 14px;
                 selection-background-color: #007acc;
@@ -105,7 +106,8 @@ class MainText(QPlainTextEdit):
 
         if key == Qt.Key.Key_Tab:
             cursor = self.textCursor()
-            cursor.insertText(" " * 3)
+            cursor.insertText(" " * 4)
+            return
 
         if key in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
             cursor = self.textCursor()
@@ -205,7 +207,7 @@ class MainText(QPlainTextEdit):
 
     def line_number_area_paint_event(self, event):
         painter = QPainter(self.line_number_area)
-        painter.fillRect(event.rect(), QColor(30, 30, 30))
+        painter.fillRect(event.rect(), QColor(30, 30, 46))
 
         num_lines_font = QFont("Maple Mono", 19)
         painter.setFont(num_lines_font)
@@ -250,13 +252,13 @@ class DocStringDock(QDockWidget):
         parent.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self)
         self.setStyleSheet("""
             QDockWidget {
-                background-color: #1e1e1e;
+                background-color: #1e1e2e;
                 border: 1px solid #3c3c3c;
                 color: #ffffff;
             }
 
             QTextEdit {
-                background-color: #252526;
+                background-color: #1e1e2e;
                 color: #d4d4d4;
                 font-family: Consolas, monospace;
                 font-size: 19px;
@@ -264,13 +266,13 @@ class DocStringDock(QDockWidget):
             }
 
             QScrollBar:vertical {
-                background: #2d2d2d;
+                background: #1e1e2e;
                 width: 10px;
                 margin: 0px 0px 0px 0px;
             }
 
             QScrollBar::handle:vertical {
-                background: #5a5a5a;
+                background: #1e1e2e;
                 min-height: 20px;
             }
 
@@ -303,7 +305,7 @@ class ShowFiles(QDockWidget):
 
         self.new_file_input.setStyleSheet("""
             QLineEdit {
-                background-color: #1e1e1e;
+                background-color: #1e1e2e;
                 border: 1px solid #3c3c3c;
                 color: #ffffff;                             
             }
@@ -312,7 +314,7 @@ class ShowFiles(QDockWidget):
 
         self.new_folder_input.setStyleSheet("""
             QLineEdit {
-                background-color: #1e1e1e;
+                background-color: #1e1e2e;
                 border: 1px solid #3c3c3c;
                 color: #ffffff;                             
             }
@@ -344,19 +346,19 @@ class ShowFiles(QDockWidget):
         self.file_viewer.setStyleSheet("""
 
             QTreeView {
-                background-color: #1e1e1e;
+                background-color: #1e1e2e;
                 border: 1px solid #3c3c3c;
                 color: #ffffff;
             }
 
             QScrollBar:vertical {
-                background: #2d2d2d;
+                background: #1e1e2e;
                 width: 10px;
                 margin: 0px 0px 0px 0px;
             }
 
             QScrollBar::handle:vertical {
-                background: #5a5a5a;
+                background: #1e1e2e;
                 min-height: 20px;
             }
 
@@ -366,13 +368,13 @@ class ShowFiles(QDockWidget):
             }
 
             QScrollBar:horizontal {
-                background: #2d2d2d;
+                background: #1e1e2e;
                 width: 10px;
                 margin: 0px 0px 0px 0px;
             }
 
             QScrollBar::handle:horizontal {
-                background: #5a5a5a;
+                background: #1e1e2e;
                 min-height: 20px;
             }
 
@@ -388,19 +390,19 @@ class ShowFiles(QDockWidget):
         parent.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self)
         self.setStyleSheet("""
             QDockWidget {
-                background-color: #1e1e1e;
-                border: 1px solid #3c3c3c;
+                background-color: #1e1e2e;
+                border: 1px solid #1e1e2e;
                 color: #ffffff;
             }
 
             QScrollBar:vertical {
-                background: #2d2d2d;
+                background: #1e1e2e;
                 width: 10px;
                 margin: 0px 0px 0px 0px;
             }
 
             QScrollBar::handle:vertical {
-                background: #5a5a5a;
+                background: #1e1e2e;
                 min-height: 20px;
             }
 
@@ -596,10 +598,38 @@ class ShowOpenedFile(QTabBar):
     def __init__(self):
         super().__init__()
         global file_description
+
+        self.setStyleSheet("""
+            QTabBar {
+                background-color: #1e1e2e;
+            }
+
+            QTabBar::tab {
+                background: #313244;
+                color: white;
+                padding: 6px 12px;
+                border: 1px solid #45475a;
+                border-bottom: none;
+                margin-right: 2px;
+                border-top-left-radius: 4px;
+                border-top-right-radius: 4px;
+            }
+
+            QTabBar::tab:selected {
+                background: #585b70;
+                color: #f5f5f5;
+            }
+
+            QTabBar::tab:hover {
+                background: #6c7086;
+            }
+""")
+
+
         # print(self.tabText(1))
         # self.removeTab(0)
         # print(self.count() - 1)
-        # self.setFixedSize(200, 50)
+        self.setFixedSize(200, 50)
 #         self.setStyleSheet("""
 #             QTabBar {
 #                 padding: 0px;
@@ -651,17 +681,30 @@ class ShowOpenedFile(QTabBar):
 
     def add_file(self, path, file_name):
         file_index = self.addTab(str(file_name))
-
+        self.tabSizeHint(file_index)
         close_button = QPushButton('X')
         close_button.setFixedSize(16, 16)
 
         close_button.setStyleSheet("""
-            QPushButton {
-                padding: 0px;
-                margin: 0px;
-                font-size: 10px;
-                border: none;
-            }
+    QPushButton {
+        background-color: transparent;
+        color: #cdd6f4;
+        font-size: 10px;
+        padding: 0px;
+        margin: 2px;
+        border: none;
+    }
+
+    QPushButton:hover {
+        background-color: #f38ba8;
+        color: black;
+        border-radius: 2px;
+    }
+
+    QPushButton:pressed {
+        background-color: #cba6f7;
+        color: black;
+    }
         """)
 
         close_button.clicked.connect(lambda _, index_=file_index: self.remove_tab(index_))
@@ -669,3 +712,8 @@ class ShowOpenedFile(QTabBar):
         self.get_tab_icons(file_index)
         self.setCurrentIndex(file_index)
         self.setTabButton(file_index, self.ButtonPosition.RightSide, close_button)
+
+
+    # def tabSizeHint(self, index):
+    #     # Return a fixed size for all tabs, e.g. width=150, height=30
+    #     return QSize(150, 30)

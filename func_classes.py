@@ -1,6 +1,5 @@
 import ast
 
-
 func_class_instances = {}
 
 def list_classes_functions(code):

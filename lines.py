@@ -8,7 +8,8 @@ class ShowLines(QWidget):
 
         self.setStyleSheet("""
             QWidget {
-                font-family: "Maple-Mono"
+                font-family: "Maple-Mono";
+                background-color: #1e1e2e;
             }
 
 """)

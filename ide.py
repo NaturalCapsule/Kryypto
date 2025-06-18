@@ -10,12 +10,6 @@ class IDE(QMainWindow):
         super().__init__()
         import widgets
         self.tab_bar = widgets.ShowOpenedFile()
-        # self.tab_bar = QTabBar()
-        # self.tab_bar.addTab("tab 1")
-        # self.tab_bar.addTab("tab 2")
-        # self.tab_bar.addTab("tab 3")
-
-        # widgets.layout.addWidget(self.tab_bar)
 
         self.setWindowTitle("IDE")
         self.setGeometry(100, 100, 800, 600)
@@ -24,7 +18,7 @@ class IDE(QMainWindow):
 
         self.setStyleSheet("""
             QMainWindow {
-                background-color: #1e1e1e;
+                background-color: #1e1e2e;
                 color: #ffffff;
                 selection-background-color: #007acc;
                 padding: 2px;
@@ -39,23 +33,23 @@ class IDE(QMainWindow):
 
         main_text.setStyleSheet("""
             QPlainTextEdit {
-                background-color: #1e1e1e;
-                color: #ffffff;
+                background-color: #1e1e2e;
+                color: #f5e0dc;
                 selection-background-color: #007acc;
                 padding: 2px;
                 margin: 2px;
+                border: none
             }
-                                
 
-                                
+
             QScrollBar:vertical {
-                background: #2d2d2d;
+                background: #1e1e2e;
                 width: 10px;
                 margin: 0px 0px 0px 0px;
             }
 
             QScrollBar::handle:vertical {
-                background: #5a5a5a;
+                background: #1e1e2e;
                 min-height: 20px;
             }
 
