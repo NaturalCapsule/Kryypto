@@ -1,4 +1,4 @@
-import ast
+import ast, jedi
 
 func_class_instances = {}
 
@@ -6,6 +6,13 @@ def list_classes_functions(code):
     try:
         func_class_instances.clear()
         tree = ast.parse(code)
+        script = jedi.Script(code)
+        names = script.get_names(all_scopes=True, definitions=True)
+
+        for name in names:
+            if name.type == 'class':
+                func_class_instances[name.name] = 'class'
+
 
         for node in ast.walk(tree):
             if isinstance(node, ast.Assign):
@@ -15,7 +22,6 @@ def list_classes_functions(code):
                         continue
                     else:
                         func_class_instances[class_name] = 'class'
-
 
             elif isinstance(node, ast.Call):
                 func = node.func

@@ -19,23 +19,22 @@ class MainText(QPlainTextEdit):
         self.setCursorWidth(3)
         self.completer = QCompleter()
         self.doc_panel = doc_panel
-        self.class_or_function = {}
         self.cursorPositionChanged.connect(self.update_docstring)
 
 
-        # self.show_erros = ShowErrors(self)
         self.line_number_area = ShowLines(self)
         self.blockCountChanged.connect(self.update_line_number_area_width)
         self.updateRequest.connect(self.update_line_number_area)
 
         self.update_line_number_area_width(0)
 
+
         popup = self.completer.popup()
         popup.setStyleSheet("""
             QListView {
                 background-color: #1e1e2e;
                 color: #ffffff;
-                font-size: 14px;
+                font-size: 19px;
                 selection-background-color: #007acc;
                 selection-color: white;
                 border: 1px solid #444;
@@ -73,7 +72,6 @@ class MainText(QPlainTextEdit):
         try:
             script = jedi.Script(code=code, path="example.py")
             definitions = script.help(line, column)
-            self.cursorPositionChanged.connect(lambda: self.class_or_func(script, line, column))
 
             if definitions:
                 return definitions[0].docstring()
@@ -158,22 +156,7 @@ class MainText(QPlainTextEdit):
             print("Autocomplete error:", e)
             self.completer.popup().hide()
 
-    def class_or_func(self, script, line, column):
-        try:
-            # inferred = script.infer(line, column)
-            pass
 
-            # if inferred:
-                # print("--------------------------------")
-                # print(inferred[0].name)
-                # print(inferred[0].type)
-                # print("--------------------------------")
-                # if inferred[0].type == 'class' or inferred[0].type == 'function':
-                #     self.class_or_function[inferred[0].name] = inferred[0].type
-                #     print(self.class_or_function)
-                
-        except ValueError:
-            pass
     
     def cursor_to_line_column(self, pos):
         text = self.toPlainText()
