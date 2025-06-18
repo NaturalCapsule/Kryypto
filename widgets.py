@@ -572,7 +572,6 @@ class CustomIcons(QFileIconProvider):
                 return QIcon('icons/html.svg')
         elif info.suffix().lower() == 'txt':
             return QIcon('icons/txt.png')
-
         elif info.suffix().lower() == 'md' or info.suffix().lower() == 'markdown':
             return QIcon('icons/markdown.svg')
 

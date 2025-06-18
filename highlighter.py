@@ -361,7 +361,7 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
                 length = len(text) - start_index
 
             string_format = QTextCharFormat()
-            string_format.setForeground(QColor(0, 128, 0))  # Green
+            string_format.setForeground(QColor(166, 227, 161))  # Green
             self.setFormat(start_index, length, string_format)
 
             start_match = start_expression.match(text, start_index + length)
@@ -372,9 +372,16 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
         if arg_match.hasMatch():
             args_str = arg_match.captured(1)
             args_start = arg_match.capturedStart(1)
+
+
+
             for arg in args_str.split(','):
                 arg_name = arg.strip().split('=')[0].strip()
                 if arg_name:
+
+                    if is_overlapping(args_start, arg_match.capturedLength(1), used_ranges):
+                        continue
+
                     pos = text.find(arg_name, args_start)
                     if pos != -1:
                         self.setFormat(pos, len(arg_name), self.arg_def_format)
