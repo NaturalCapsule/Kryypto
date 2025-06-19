@@ -1,11 +1,13 @@
 import jedi
 import re
 import os
-from PyQt6.QtCore import QSize, Qt, QStringListModel, QRect, Qt, QDir, QFileInfo
-from PyQt6.QtGui import QTextCursor, QKeyEvent, QPainter, QColor, QFont, QFontMetrics, QTextCursor, QColor, QFileSystemModel, QIcon
+from PyQt6.QtCore import QTimer, QSize, Qt, QStringListModel, QRect, Qt, QDir, QFileInfo
+from PyQt6.QtGui import QPalette, QTextCursor, QKeyEvent, QPainter, QColor, QFont, QFontMetrics, QTextCursor, QColor, QFileSystemModel, QIcon
 from PyQt6.QtWidgets import QPushButton, QHBoxLayout, QLineEdit, QPlainTextEdit, QVBoxLayout, QWidget, QCompleter, QDockWidget, QTextEdit, QTreeView, QFileIconProvider, QTabBar
 
 from lines import ShowLines
+
+from get_style import get_css_style
 
 central_widget = QWidget()
 
@@ -16,36 +18,53 @@ layout = QVBoxLayout(central_widget)
 class MainText(QPlainTextEdit):
     def __init__(self, doc_panel):
         super().__init__()
-        self.setCursorWidth(3)
+        self.setCursorWidth(0)
         self.completer = QCompleter()
         self.doc_panel = doc_panel
         self.cursorPositionChanged.connect(self.update_docstring)
 
+        self.cursor_visible = True
+        self.cursor_color = QColor("#f38ba8")  # Custom cursor color
+
+        self.blink_timer = QTimer(self)
+        self.blink_timer.timeout.connect(self.toggle_cursor)
+        self.blink_timer.start(10)  # Blink rate (ms)
 
         self.line_number_area = ShowLines(self)
         self.blockCountChanged.connect(self.update_line_number_area_width)
         self.updateRequest.connect(self.update_line_number_area)
 
         self.update_line_number_area_width(0)
+        self.setObjectName('Editor')
 
+        self.setStyleSheet(get_css_style())
 
         popup = self.completer.popup()
-        popup.setStyleSheet("""
-            QListView {
-                background-color: #1e1e2e;
-                color: #ffffff;
-                font-size: 19px;
-                selection-background-color: #007acc;
-                selection-color: white;
-                border: 1px solid #444;
-                padding: 2px;
-            }
-        """)
+        popup.setObjectName('AutoCompleter')
+        popup.setStyleSheet(get_css_style())
 
         self.completer.setWidget(self)
         self.completer.setCompletionMode(QCompleter.CompletionMode.PopupCompletion)
         self.completer.setCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
         self.completer.activated.connect(self.insert_completion)
+
+    def toggle_cursor(self):
+        self.cursor_visible = not self.cursor_visible
+        self.viewport().update()
+
+    def paintEvent(self, event):
+        super().paintEvent(event)
+
+
+
+        if self.cursor_visible and self.hasFocus():
+            painter = QPainter(self.viewport())
+            painter.setPen(self.cursor_color)
+            rect = self.cursorRect()
+            ## 3 means the width of the cursor!
+            painter.fillRect(rect.left(), rect.top(), 3, rect.height(), QColor("#f38ba8"))
+
+
 
     def insert_completion(self, completion):
         cursor = self.textCursor()
@@ -227,45 +246,18 @@ class DocStringDock(QDockWidget):
         self.doc_panel.setMinimumHeight(120)
         self.doc_panel.clearFocus()
 
+        self.doc_panel.setObjectName("DocStrings")
+        self.doc_panel.setStyleSheet(get_css_style())
+
         self.setWidget(self.doc_panel)
 
         # dock = QDockWidget("Docstring", self)
         # dock.setWidget(self.doc_panel)
         self.setFeatures(QDockWidget.DockWidgetFeature.DockWidgetMovable)
         parent.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self)
-        self.setStyleSheet("""
-            QDockWidget {
-                background-color: #1e1e2e;
-                border: 1px solid #3c3c3c;
-                color: #ffffff;
-            }
+        self.setObjectName("Docks")
 
-            QTextEdit {
-                background-color: #1e1e2e;
-                color: #d4d4d4;
-                font-family: Consolas, monospace;
-                font-size: 19px;
-                padding: 5px;
-            }
-
-            QScrollBar:vertical {
-                background: #1e1e2e;
-                width: 10px;
-                margin: 0px 0px 0px 0px;
-            }
-
-            QScrollBar::handle:vertical {
-                background: #1e1e2e;
-                min-height: 20px;
-            }
-
-            QScrollBar::add-line:vertical,
-            QScrollBar::sub-line:vertical {
-                height: 0px;
-            }
-        """)
-
-
+        self.setStyleSheet(get_css_style())
 
 class ShowFiles(QDockWidget):
     def __init__(self, parent, main_text, opened_tabs):
@@ -285,29 +277,21 @@ class ShowFiles(QDockWidget):
 
         self.new_folder_input = QLineEdit(self)
         self.new_folder_input.setPlaceholderText('Name new folder')
+        self.new_folder_input.setObjectName('FolderMaker')
 
-        self.new_file_input.setStyleSheet("""
-            QLineEdit {
-                background-color: #1e1e2e;
-                border: 1px solid #3c3c3c;
-                color: #ffffff;                             
-            }
+        self.new_file_input.setObjectName('FileMaker')
 
-""")
+        self.new_file_input.setStyleSheet(get_css_style())
 
-        self.new_folder_input.setStyleSheet("""
-            QLineEdit {
-                background-color: #1e1e2e;
-                border: 1px solid #3c3c3c;
-                color: #ffffff;                             
-            }
 
-""")
+        self.new_folder_input.setStyleSheet(get_css_style())
 
 
         self.new_folder_input.hide()
 
         self.file_viewer = QTreeView(self)
+
+        self.file_viewer.setObjectName("DirectoryViewer")
 
         self.hbox.addWidget(self.new_file_input)
         self.hbox.addWidget(self.new_folder_input)
@@ -326,74 +310,14 @@ class ShowFiles(QDockWidget):
         self.file_viewer.setColumnHidden(2, True)
         self.file_viewer.setColumnHidden(3, True)
 
-        self.file_viewer.setStyleSheet("""
+        self.file_viewer.setStyleSheet(get_css_style())
 
-            QTreeView {
-                background-color: #1e1e2e;
-                border: 1px solid #3c3c3c;
-                color: #ffffff;
-            }
-
-            QScrollBar:vertical {
-                background: #1e1e2e;
-                width: 10px;
-                margin: 0px 0px 0px 0px;
-            }
-
-            QScrollBar::handle:vertical {
-                background: #1e1e2e;
-                min-height: 20px;
-            }
-
-            QScrollBar::add-line:vertical,
-            QScrollBar::sub-line:vertical {
-                height: 0px;
-            }
-
-            QScrollBar:horizontal {
-                background: #1e1e2e;
-                width: 10px;
-                margin: 0px 0px 0px 0px;
-            }
-
-            QScrollBar::handle:horizontal {
-                background: #1e1e2e;
-                min-height: 20px;
-            }
-
-            QScrollBar::add-line:horizontal,
-            QScrollBar::sub-line:horizontal {
-                height: 0px;
-            }
-
-""")
+        self.setObjectName('Docks')
 
         self.setWidget(self.file_viewer)
         self.setFeatures(QDockWidget.DockWidgetFeature.DockWidgetMovable)
         parent.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self)
-        self.setStyleSheet("""
-            QDockWidget {
-                background-color: #1e1e2e;
-                border: 1px solid #1e1e2e;
-                color: #ffffff;
-            }
-
-            QScrollBar:vertical {
-                background: #1e1e2e;
-                width: 10px;
-                margin: 0px 0px 0px 0px;
-            }
-
-            QScrollBar::handle:vertical {
-                background: #1e1e2e;
-                min-height: 20px;
-            }
-
-            QScrollBar::add-line:vertical,
-            QScrollBar::sub-line:vertical {
-                height: 0px;
-            }
-        """)
+        self.setStyleSheet(get_css_style())
         self.file_viewer.clicked.connect(self.set_file)
 
 
@@ -584,31 +508,9 @@ class ShowOpenedFile(QTabBar):
         super().__init__()
         global file_description
 
-        self.setStyleSheet("""
-            QTabBar {
-                background-color: #1e1e2e;
-            }
+        self.setObjectName('OpenedFiles')
 
-            QTabBar::tab {
-                background: #313244;
-                color: white;
-                padding: 6px 12px;
-                border: 1px solid #45475a;
-                border-bottom: none;
-                margin-right: 2px;
-                border-top-left-radius: 4px;
-                border-top-right-radius: 4px;
-            }
-
-            QTabBar::tab:selected {
-                background: #585b70;
-                color: #f5f5f5;
-            }
-
-            QTabBar::tab:hover {
-                background: #6c7086;
-            }
-""")
+        self.setStyleSheet(get_css_style())
 
 
         # print(self.tabText(1))
@@ -672,28 +574,8 @@ class ShowOpenedFile(QTabBar):
         self.tabSizeHint(file_index)
         close_button = QPushButton('X')
         close_button.setFixedSize(16, 16)
-
-        close_button.setStyleSheet("""
-    QPushButton {
-        background-color: transparent;
-        color: #cdd6f4;
-        font-size: 10px;
-        padding: 0px;
-        margin: 2px;
-        border: none;
-    }
-
-    QPushButton:hover {
-        background-color: #f38ba8;
-        color: black;
-        border-radius: 2px;
-    }
-
-    QPushButton:pressed {
-        background-color: #cba6f7;
-        color: black;
-    }
-        """)
+        close_button.setObjectName("CloseTabButton")
+        close_button.setStyleSheet(get_css_style())
 
         close_button.clicked.connect(lambda _, index_=file_index: self.remove_tab(index_))
 

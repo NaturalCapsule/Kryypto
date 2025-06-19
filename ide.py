@@ -4,6 +4,7 @@ from PyQt6.QtGui import  QFont, QSurfaceFormat
 from highlighter import PythonSyntaxHighlighter
 from show_errors import ShowErrors
 from shortcuts import *
+from get_style import get_css_style
 
 class IDE(QMainWindow):
     def __init__(self):
@@ -15,52 +16,12 @@ class IDE(QMainWindow):
         self.setGeometry(100, 100, 800, 600)
         self.setCentralWidget(widgets.central_widget)
 
-
-        self.setStyleSheet("""
-            QMainWindow {
-                background-color: #1e1e2e;
-                color: #ffffff;
-                selection-background-color: #007acc;
-                padding: 2px;
-                margin: 2px;
-            }
-
-    """)
+        self.setObjectName("MainWindow")
+        self.setStyleSheet(get_css_style())
 
         self.doc_string_dock = widgets.DocStringDock(self)
 
         main_text = widgets.MainText(self.doc_string_dock.doc_panel)
-
-        main_text.setStyleSheet("""
-            QPlainTextEdit {
-                background-color: #1e1e2e;
-                color: #f5e0dc;
-                selection-background-color: #007acc;
-                padding: 2px;
-                margin: 2px;
-                border: none
-            }
-
-
-            QScrollBar:vertical {
-                background: #1e1e2e;
-                width: 10px;
-                margin: 0px 0px 0px 0px;
-            }
-
-            QScrollBar::handle:vertical {
-                background: #1e1e2e;
-                min-height: 20px;
-            }
-
-            QScrollBar::add-line:vertical,
-            QScrollBar::sub-line:vertical {
-                height: 0px;
-            }
-
-        """)
-
-
 
         with open('lines.py', 'r', encoding='utf-8') as f:
             main_text.setPlainText(f.read())
@@ -75,17 +36,13 @@ class IDE(QMainWindow):
 
         self.error_label = QLabel("Ready")
 
-        self.error_label.setStyleSheet("""
-                QLabel {
-                    color: white;
-                }
-""")
+        self.error_label.setObjectName("SyntaxChecker")
+        self.error_label.setStyleSheet(get_css_style())
 
         self.show_error.error_label = self.error_label
         widgets.layout.addWidget(self.error_label)
         self.show_files = widgets.ShowFiles(self, main_text, self.tab_bar)
         FileDockShortcut(self, self.show_files, self.show_files.file_viewer, self.doc_string_dock, self.doc_string_dock.doc_panel, main_text)
-
 
 if __name__ == '__main__':
     format = QSurfaceFormat()
@@ -93,9 +50,10 @@ if __name__ == '__main__':
     format.setProfile(QSurfaceFormat.OpenGLContextProfile.CoreProfile)
     format.setVersion(3, 3)
     format.setSwapBehavior(QSurfaceFormat.SwapBehavior.DoubleBuffer)
-    format.setDepthBufferSize(60)
+    format.setDepthBufferSize(144)
     QSurfaceFormat.setDefaultFormat(format)
     app = QApplication(sys.argv)
+    # app.setCursorFlashTime(1500)
     window = IDE()
     window.show()
     sys.exit(app.exec())

@@ -1,6 +1,6 @@
+import ast
 from PyQt6.QtGui import QSyntaxHighlighter, QTextCharFormat, QColor, QFont
 from PyQt6.QtCore import QRegularExpression
-import ast
 
 class PythonSyntaxHighlighter(QSyntaxHighlighter):
     def __init__(self, parent=None):
@@ -108,11 +108,18 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
         builtin_format.setFontWeight(QFont.Weight.Bold)
         
         builtins = [
-            'abs', 'all', 'any', 'bin', 'bool', 'chr', 'dict', 'dir',
-            'enumerate', 'filter', 'float', 'int', 'len', 'list', 'map',
-            'max', 'min', 'open', 'print', 'range', 'str', 'sum', 'tuple',
-            'type', 'zip'
+            "abs", "aiter", "all", "any", "anext", "ascii", "bin", "bool", "breakpoint",
+            "bytearray", "bytes", "callable", "chr", "classmethod", "compile", "complex",
+            "delattr", "dict", "dir", "divmod", "enumerate", "eval", "exec", "filter",
+            "float", "format", "frozenset", "getattr", "globals", "hasattr", "hash", "help",
+            "hex", "id", "input", "int", "isinstance", "issubclass", "iter", "len", "list",
+            "locals", "map", "max", "memoryview", "min", "next", "object", "oct", "open",
+            "ord", "pow", "print", "property", "range", "repr", "reversed", "round", "set",
+            "setattr", "slice", "sorted", "staticmethod", "str", "sum", "super", "tuple",
+            "type", "vars", "zip"
         ]
+
+
         
         for builtin in builtins:
             pattern = QRegularExpression(f'\\b{builtin}\\b')

@@ -1,3 +1,4 @@
+import re
 from PyQt6.QtGui import QShortcut, QKeySequence, QTextCursor
 from PyQt6.QtGui import QFont
 
@@ -65,8 +66,16 @@ class MainTextShortcuts:
         cursor.beginEditBlock()
         
         cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock)
-        cursor.insertBlock()
         text_edit.setTextCursor(cursor)
+
+        block_text = cursor.block().text()
+        indent_match = re.match(r'^(\s*)', block_text)
+        current_indent = indent_match.group(1) if indent_match else ""
+        if block_text.strip().endswith(":"):
+            new_indent = current_indent + " " * 4
+        else:
+            new_indent = current_indent
+        cursor.insertText("\n" + new_indent)
 
         cursor.endEditBlock()
         text_edit.setUpdatesEnabled(True)
