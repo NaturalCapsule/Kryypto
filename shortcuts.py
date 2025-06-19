@@ -4,7 +4,7 @@ from PyQt6.QtGui import QFont
 
 
 class MainTextShortcuts:
-    def __init__(self, parent, completer):
+    def __init__(self, parent, completer, tab):
         self.font_size = 19
         # self.num_lines = num_lines
 
@@ -32,6 +32,9 @@ class MainTextShortcuts:
 
         comment = QShortcut(QKeySequence("Ctrl+/"), parent)
         comment.activated.connect(lambda: self.comment(parent))
+
+        remove_current_tab = QShortcut(QKeySequence("Ctrl+Shift+R"), parent)
+        remove_current_tab.activated.connect(lambda: self.remove_tab_(tab))
 
         # save_file = QShortcut(QKeySequence("Ctrl+S"), parent)
         # save_file.activated.connect(lambda: self.save_file(parent))
@@ -169,6 +172,11 @@ class MainTextShortcuts:
     #         f.write(code)
     #         f.close()
 
+    def remove_tab_(self, tab):
+        current_index = tab.currentIndex()
+        tab.removeTab(current_index)
+
+
 class FileDockShortcut:
     def __init__(self, parent, file_dock, file_view, doc_string, doc_panel, main_text):
         self.file_view = file_view
@@ -191,3 +199,4 @@ class FileDockShortcut:
         else:
             file_dock.show()
             self.file_view.setFocus()
+

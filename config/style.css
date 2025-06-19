@@ -14,7 +14,9 @@
     padding: 2px;
     margin: 2px;
     border-radius: 10px;
-    border: 2px solid #F38BA8
+    border: 2px solid #F38BA8;
+    /* background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                                stop:0 red, stop:1 blue); */
 }
 
 
@@ -26,6 +28,8 @@
     selection-color: white;
     border: 1px solid #444;
     padding: 2px;
+    border-radius: 10px;
+    border: 2px solid #F38BA8
 }
 
 #Docks {
@@ -61,10 +65,12 @@
 #DirectoryViewer {
     background-color: #1e1e2e;
     border: 2px solid #89b4fa;
+    selection-background-color: purple;
+    selection-color: purple;
     border-radius: 10px;
     color: #ffffff;
+    font-size: 18px;
 }
-
 
 #OpenedFiles {
     background-color: #1e1e2e;
@@ -121,16 +127,20 @@
 
 QScrollBar:vertical {
     background: #1e1e2e;
+    color: white;
+
     width: 10px;
     margin: 0px 0px 0px 0px;
 }
 
 QScrollBar::handle:vertical {
     background: #1e1e2e;
+    color: white;
     min-height: 20px;
 }
 
 QScrollBar::add-line:vertical,
 QScrollBar::sub-line:vertical {
     height: 0px;
+    color: white;
 }

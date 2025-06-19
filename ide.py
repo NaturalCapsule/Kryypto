@@ -10,7 +10,12 @@ class IDE(QMainWindow):
     def __init__(self):
         super().__init__()
         import widgets
-        self.tab_bar = widgets.ShowOpenedFile()
+
+        self.doc_string_dock = widgets.DocStringDock(self)
+
+        main_text = widgets.MainText(self.doc_string_dock.doc_panel)
+
+        self.tab_bar = widgets.ShowOpenedFile(main_text)
 
         self.setWindowTitle("IDE")
         self.setGeometry(100, 100, 800, 600)
@@ -19,9 +24,7 @@ class IDE(QMainWindow):
         self.setObjectName("MainWindow")
         self.setStyleSheet(get_css_style())
 
-        self.doc_string_dock = widgets.DocStringDock(self)
 
-        main_text = widgets.MainText(self.doc_string_dock.doc_panel)
 
         with open('lines.py', 'r', encoding='utf-8') as f:
             main_text.setPlainText(f.read())
@@ -29,7 +32,7 @@ class IDE(QMainWindow):
         widgets.layout.addWidget(main_text)
 
         self.highlighter = PythonSyntaxHighlighter(main_text.document())
-        self.remove_line = MainTextShortcuts(main_text, main_text.completer)
+        self.remove_line = MainTextShortcuts(main_text, main_text.completer, self.tab_bar)
         self.show_error = ShowErrors(main_text, self.highlighter)
         main_text.setFont(QFont("Maple Mono", self.remove_line.font_size))
 

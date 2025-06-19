@@ -326,7 +326,7 @@ class ShowFiles(QDockWidget):
             path = self.sender().model().filePath(index)
             str_path = str(path)
             file_name = str_path.split('/')[-1]
-            print(file_name, path)
+            # print(file_name, path)
             if '.' in file_name:
                 # for file_path, file_name_ in file_description.items():
                     # if file_path != path and file_name_ != file_name:
@@ -504,11 +504,13 @@ class CustomIcons(QFileIconProvider):
 
 
 class ShowOpenedFile(QTabBar):
-    def __init__(self):
+    def __init__(self, editor):
         super().__init__()
         global file_description
+        self.editor = editor
 
         self.setObjectName('OpenedFiles')
+        self.currentChanged.connect(self.track_tabs)
 
         self.setStyleSheet(get_css_style())
 
@@ -516,7 +518,7 @@ class ShowOpenedFile(QTabBar):
         # print(self.tabText(1))
         # self.removeTab(0)
         # print(self.count() - 1)
-        self.setFixedSize(200, 50)
+        # self.setFixedSize(200, 50)
 #         self.setStyleSheet("""
 #             QTabBar {
 #                 padding: 0px;
@@ -530,7 +532,7 @@ class ShowOpenedFile(QTabBar):
 
         layout.addWidget(self)
 
-    def get_tab_icons(self, index):
+    def put_tab_icons(self, index):
         image_formats = (
             "jpg", "jpeg", "png", "gif", "bmp", "tiff", "tif", "webp", "heif", "heic",
             "eps", "pdf", "ai", "raw", "cr2", "nef", "arw", "orf", "dng",
@@ -578,12 +580,13 @@ class ShowOpenedFile(QTabBar):
         close_button.setStyleSheet(get_css_style())
 
         close_button.clicked.connect(lambda _, index_=file_index: self.remove_tab(index_))
-
-        self.get_tab_icons(file_index)
+        self.put_tab_icons(file_index)
         self.setCurrentIndex(file_index)
         self.setTabButton(file_index, self.ButtonPosition.RightSide, close_button)
-
-
-    # def tabSizeHint(self, index):
-    #     # Return a fixed size for all tabs, e.g. width=150, height=30
-    #     return QSize(150, 30)
+    
+    def track_tabs(self):
+        print(self.currentIndex())
+        if self.currentIndex() == -1:
+            # pass
+            self.editor.setPlainText("")
+            file_description.clear()
