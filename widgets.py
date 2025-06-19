@@ -2,7 +2,7 @@ import jedi
 import re
 import os
 from PyQt6.QtCore import QTimer, QSize, Qt, QStringListModel, QRect, Qt, QDir, QFileInfo
-from PyQt6.QtGui import QPalette, QTextCursor, QKeyEvent, QPainter, QColor, QFont, QFontMetrics, QTextCursor, QColor, QFileSystemModel, QIcon
+from PyQt6.QtGui import QPalette, QTextCursor, QKeyEvent, QPainter, QColor, QFont, QFontMetrics, QTextCursor, QColor, QFileSystemModel, QIcon, QStandardItemModel, QStandardItem
 from PyQt6.QtWidgets import QPushButton, QHBoxLayout, QLineEdit, QPlainTextEdit, QVBoxLayout, QWidget, QCompleter, QDockWidget, QTextEdit, QTreeView, QFileIconProvider, QTabBar
 
 from lines import ShowLines
@@ -54,9 +54,6 @@ class MainText(QPlainTextEdit):
 
     def paintEvent(self, event):
         super().paintEvent(event)
-
-
-
         if self.cursor_visible and self.hasFocus():
             painter = QPainter(self.viewport())
             painter.setPen(self.cursor_color)
@@ -157,12 +154,28 @@ class MainText(QPlainTextEdit):
             line, column = self.cursor_to_line_column(pos)
             script = jedi.Script(code=code, path="example.py")
             completions = script.complete(line, column)
-            words = [c.name for c in completions][:30]
+
+            words = []
+            for c in completions[:30]:
+                words.append(c.name)
+                item = QStandardItem()
+                item.setText(c.name)
+                if c.type == 'statement':
+                    item.setIcon(QIcon('icons/autocompleterIcons/variable.svg'))
+                elif c.type == 'class':
+                    item.setIcon(QIcon('icons/autocompleterIcons/class.svg'))
+                elif c.type == 'function':
+                    item.setIcon(QIcon('icons/autocompleterIcons/function.svg'))
+                elif c.type == 'keyword':
+                    item.setIcon(QIcon('icons/autocompleterIcons/keyword.svg'))
+
 
             if words:
                 cursor.select(cursor.SelectionType.WordUnderCursor)
                 prefix = cursor.selectedText()
-                model = QStringListModel(words)
+                model = QStandardItemModel()
+                model.appendRow(item)
+
                 self.completer.setModel(model)
                 self.completer.setCompletionPrefix(prefix)
                 cr = self.cursorRect()
@@ -477,27 +490,27 @@ class CustomIcons(QFileIconProvider):
         ]
 
         if info.isDir():
-            return QIcon("icons/folder.webp")
+            return QIcon("icons/fileIcons/folder.webp")
         elif info.suffix().lower() == "py" or info.suffix().lower() == 'pyi':
-            return QIcon("icons/python.svg")
+            return QIcon("icons/fileIcons/python.svg")
         elif info.suffix().lower() == 'json':
-            return QIcon("icons/json.svg")
+            return QIcon("icons/fileIcons/json.svg")
         elif info.suffix().lower() == 'ini' or info.suffix() == 'cfg' or info.suffix() == 'settings' or info.suffix() == 'conf' or info.suffix() == 'config':
-            return QIcon("icons/settings.svg")
+            return QIcon("icons/fileIcons/settings.svg")
         elif info.suffix().lower() in image_formats:
-            return QIcon("icons/image.svg")
+            return QIcon("icons/fileIcons/image.svg")
         elif info.suffix().lower() == 'svg':
-            return QIcon('icons/svg.svg')
+            return QIcon('icons/fileIcons/svg.svg')
         elif info.suffix().lower() == 'pyc':
-            return QIcon('icons/python-misc.svg')
+            return QIcon('icons/fileIcons/python-misc.svg')
         elif info.suffix().lower() == 'css':
-            return QIcon('icons/css.png')
+            return QIcon('icons/fileIcons/css.png')
         elif info.suffix().lower() == 'html':
-                return QIcon('icons/html.svg')
+                return QIcon('icons/fileIcons/html.svg')
         elif info.suffix().lower() == 'txt':
-            return QIcon('icons/txt.png')
+            return QIcon('icons/fileIcons/txt.png')
         elif info.suffix().lower() == 'md' or info.suffix().lower() == 'markdown':
-            return QIcon('icons/markdown.svg')
+            return QIcon('icons/fileIcons/markdown.svg')
 
         else:
             return super().icon(info)
@@ -540,33 +553,33 @@ class ShowOpenedFile(QTabBar):
         )
 
         if self.tabText(index).endswith('py') or self.tabText(index).endswith('pyi'):
-            self.setTabIcon(index, QIcon('icons/python.svg'))
+            self.setTabIcon(index, QIcon('icons/fileIcons/python.svg'))
 
         elif self.tabText(index).endswith('txt'):
-            self.setTabIcon(index, QIcon('icons/txt.png'))
+            self.setTabIcon(index, QIcon('icons/fileIcons/txt.png'))
 
         elif self.tabText(index).endswith('json'):
-            self.setTabIcon(index, QIcon('icons/json.svg'))
+            self.setTabIcon(index, QIcon('icons/fileIcons/json.svg'))
 
         elif self.tabText(index).endswith('svg'):
-            self.setTabIcon(index, QIcon('icons/svg.svg'))
+            self.setTabIcon(index, QIcon('icons/fileIcons/svg.svg'))
 
         elif self.tabText(index).endswith('html'):
-            self.setTabIcon(index, QIcon('icons/html.svg'))
+            self.setTabIcon(index, QIcon('icons/fileIcons/html.svg'))
 
 
         elif self.tabText(index).endswith('css'):
-            self.setTabIcon(index, QIcon('icons/css.png'))
+            self.setTabIcon(index, QIcon('icons/fileIcons/css.png'))
 
 
         elif self.tabText(index).endswith('pyc'):
-            self.setTabIcon(index, QIcon('icons/python-misc.svg'))
+            self.setTabIcon(index, QIcon('icons/fileIcons/python-misc.svg'))
 
         elif self.tabText(index).endswith(image_formats):
-            self.setTabIcon(index, QIcon('icons/image.svg'))
+            self.setTabIcon(index, QIcon('icons/fileIcons/image.svg'))
 
         elif self.tabText(index).endswith('md') or self.tabText(index).endswith('markdown'):
-            self.setTabIcon(index, QIcon('icons/markdown.svg'))
+            self.setTabIcon(index, QIcon('icons/fileIcons/markdown.svg'))
 
     def remove_tab(self, index):
         self.removeTab(index)
