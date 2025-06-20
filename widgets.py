@@ -154,6 +154,9 @@ class MainText(QPlainTextEdit):
             line, column = self.cursor_to_line_column(pos)
             script = jedi.Script(code=code, path="example.py")
             completions = script.complete(line, column)
+            
+            
+            model = QStandardItemModel()
 
             words = []
             for c in completions[:30]:
@@ -162,20 +165,18 @@ class MainText(QPlainTextEdit):
                 item.setText(c.name)
                 if c.type == 'statement':
                     item.setIcon(QIcon('icons/autocompleterIcons/variable.svg'))
-                elif c.type == 'class':
+                elif c.type == 'class' or c.type == 'module':
                     item.setIcon(QIcon('icons/autocompleterIcons/class.svg'))
                 elif c.type == 'function':
                     item.setIcon(QIcon('icons/autocompleterIcons/function.svg'))
                 elif c.type == 'keyword':
                     item.setIcon(QIcon('icons/autocompleterIcons/keyword.svg'))
 
+                model.appendRow(item)
 
             if words:
                 cursor.select(cursor.SelectionType.WordUnderCursor)
                 prefix = cursor.selectedText()
-                model = QStandardItemModel()
-                model.appendRow(item)
-
                 self.completer.setModel(model)
                 self.completer.setCompletionPrefix(prefix)
                 cr = self.cursorRect()
@@ -264,8 +265,6 @@ class DocStringDock(QDockWidget):
 
         self.setWidget(self.doc_panel)
 
-        # dock = QDockWidget("Docstring", self)
-        # dock.setWidget(self.doc_panel)
         self.setFeatures(QDockWidget.DockWidgetFeature.DockWidgetMovable)
         parent.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self)
         self.setObjectName("Docks")
@@ -339,16 +338,11 @@ class ShowFiles(QDockWidget):
             path = self.sender().model().filePath(index)
             str_path = str(path)
             file_name = str_path.split('/')[-1]
-            # print(file_name, path)
             if '.' in file_name:
-                # for file_path, file_name_ in file_description.items():
-                    # if file_path != path and file_name_ != file_name:
                 if path not in file_description.keys() and file_name not in file_description.values():
 
                     file_description[path] = file_name
                     self.opened_tabs.add_file(path, file_name)
-                        # break
-
 
             with open (path, 'r', encoding = 'utf-8') as file:
                 self.main_text.setPlainText(file.read())
@@ -365,22 +359,10 @@ class ShowFiles(QDockWidget):
             str_path = str(path)
             file_name = str_path.split('/')[-1]
             if '.' in file_name:
-                # print(file_name, path)
-                # print(file_description)
-                # file_description[path] = file_name
-                # for file_path, file_name_ in file_description.items():
-                    # if file_path != path and file_name_ != file_name or path != path and file_name != file_name_:
-                        # print("True")
 
                 if path not in file_description.keys() and file_name not in file_description.values():
                         file_description[path] = file_name
                         self.opened_tabs.add_file(path, file_name)
-                # self.opened_tabs.add_file(path, file_name)
-
-                        # file_description[path] = file_name
-                        # self.opened_tabs.add_file(path, file_name)
-                        # break
-                        # print(path, file_name)
 
             try:
                 with open (path, 'r', encoding = 'utf-8') as file:

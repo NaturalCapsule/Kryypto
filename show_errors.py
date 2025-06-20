@@ -3,6 +3,7 @@ from PyQt6.QtGui import QTextCursor, QColor, QTextCharFormat, QTextCursor, QColo
 from PyQt6.QtCore import QTimer
 
 from func_classes import list_classes_functions
+from threading import Thread
 
 class ShowErrors:
     def __init__(self, parent, highlighter):
@@ -27,7 +28,8 @@ class ShowErrors:
             if self.error_label:
                 self.error_label.setText("✅ No syntax errors")
 
-            self.analyze_code(self.parent)
+            # self.analyze_code(self.parent)
+            Thread(target = lambda: self.analyze_code(self.parent), daemon = False).start()
 
 
         except (SyntaxError, NameError) as e:

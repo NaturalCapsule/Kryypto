@@ -408,19 +408,24 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
                 self.setFormat(match.capturedStart(), match.capturedLength(), self.arg_usage_format)
                 used_ranges.add((match.capturedStart(), match.capturedStart() + match.capturedLength()))
 
-        for call, type in self.c_instances.items():
-            pattern = QRegularExpression(fr"\b{call}\b")
-            it = pattern.globalMatch(text)
-            while it.hasNext():
-                match = it.next()
+        try:
+            for call, type in self.c_instances.items():
+                pattern = QRegularExpression(fr"\b{call}\b")
+                it = pattern.globalMatch(text)
+                while it.hasNext():
+                    match = it.next()
 
-                if is_overlapping(match.capturedStart(), match.capturedLength(), used_ranges):
-                    continue
+                    if is_overlapping(match.capturedStart(), match.capturedLength(), used_ranges):
+                        continue
 
 
-                if type == 'class':
-                    self.setFormat(match.capturedStart(), match.capturedLength(), self.c_instance_foramt)
-                elif type == 'function':
-                    self.setFormat(match.capturedStart(), match.capturedLength(), self.function_calls_format)
+                    if type == 'class':
+                        self.setFormat(match.capturedStart(), match.capturedLength(), self.c_instance_foramt)
+                    elif type == 'function':
+                        self.setFormat(match.capturedStart(), match.capturedLength(), self.function_calls_format)
 
-                used_ranges.add((match.capturedStart(), match.capturedStart() + match.capturedLength()))
+                    used_ranges.add((match.capturedStart(), match.capturedStart() + match.capturedLength()))
+
+        except RuntimeError:
+            pass
+            # self.c_instances.clear()

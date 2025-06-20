@@ -10,7 +10,7 @@ def list_classes_functions(code):
         names = script.get_names(all_scopes=True, definitions=True)
 
         for name in names:
-            if name.type == 'class':
+            if name.type == 'class' or name.type == 'module':
                 func_class_instances[name.name] = 'class'
             elif name.type == 'function':
                 func_class_instances[name.name] = 'function'
