@@ -10,7 +10,7 @@
 #Editor {
     background-color: #1e1e2e;
     color: #f5e0dc;
-    selection-background-color: #007acc;
+    selection-background-color: rgba(255, 255, 255, 0.5);
     padding: 2px;
     margin: 2px;
     border-radius: 10px;
@@ -20,17 +20,62 @@
 }
 
 
-#AutoCompleter {
+/* #AutoCompleter {
     background-color: #1e1e2e;
     color: #ffffff;
-    font-size: 19px;
-    selection-background-color: #007acc;
+    font-size: 23px;
+    selection-background-color: rgba(255, 255, 255, 0.5);
     selection-color: white;
     border: 1px solid #444;
     padding: 2px;
     border-radius: 10px;
     border: 2px solid #F38BA8
 }
+
+
+#AutoCompleter::item:hover {
+    outline: none;
+    border: none;
+
+    border-radius: 10px;
+    background-color: #3a3a3a;
+}
+
+#AutoCompleter::item:selected {
+    outline: none;
+    border-radius: 10px;
+    background-color: #5a5a5a;
+    color: white;
+} */
+
+
+#AutoCompleter {
+    background-color: #1e1e2e;
+    color: #ffffff;
+    font-size: 19px;
+    selection-background-color: rgba(255, 255, 255, 0.5);
+    selection-color: white;
+    border: 2px solid #F38BA8;
+    border-radius: 10px;
+    outline: none;
+}
+
+#AutoCompleter::item {
+    border: none;
+    outline: none;
+    padding: 6px;
+}
+
+#AutoCompleter::item:hover,
+#AutoCompleter::item:selected {
+    background-color: #5a5a5a;
+    border-radius: 15px;
+    color: white;
+    border: none;
+    outline: none;
+}
+
+
 
 #Docks {
     background-color: #1e1e2e;
@@ -62,7 +107,7 @@
     color: #ffffff;                             
 }
 
-#DirectoryViewer {
+/* #DirectoryViewer {
     background-color: #1e1e2e;
     border: 2px solid #89b4fa;
     selection-background-color: purple;
@@ -70,6 +115,24 @@
     border-radius: 10px;
     color: #ffffff;
     font-size: 18px;
+} */
+
+
+#DirectoryViewer {
+    background-color: #1e1e2e;
+    border: 2px solid #89b4fa;
+    border-radius: 10px;
+    color: #ffffff;
+    font-size: 18px;
+}
+
+#DirectoryViewer::item:hover {
+    background-color: #3a3a3a;
+}
+
+#DirectoryViewer::item:selected {
+    background-color: #5a5a5a;
+    color: white;
 }
 
 #OpenedFiles {

@@ -26,7 +26,6 @@ class MainTextShortcuts:
         indent_line = QShortcut(QKeySequence("Ctrl+]"), parent)
         indent_line.activated.connect(lambda: self.add_indentation(parent))
 
-
         remove_indent = QShortcut(QKeySequence("Ctrl+["), parent)
         remove_indent.activated.connect(lambda: self.remove_indentation(parent))
 
@@ -35,6 +34,12 @@ class MainTextShortcuts:
 
         remove_current_tab = QShortcut(QKeySequence("Ctrl+Shift+R"), parent)
         remove_current_tab.activated.connect(lambda: self.remove_tab_(tab))
+
+        move_tab_right = QShortcut(QKeySequence("Ctrl+Shift+T"), parent)
+        move_tab_right.activated.connect(lambda: self.move_tab_right(tab))
+
+        move_tab_left = QShortcut(QKeySequence("Ctrl+Shift+E"), parent)
+        move_tab_left.activated.connect(lambda: self.move_tab_left(tab))
 
         # save_file = QShortcut(QKeySequence("Ctrl+S"), parent)
         # save_file.activated.connect(lambda: self.save_file(parent))
@@ -176,6 +181,16 @@ class MainTextShortcuts:
         current_index = tab.currentIndex()
         tab.removeTab(current_index)
 
+    def move_tab_right(self, tab):
+        current_index = tab.currentIndex() + 1
+        tab.setCurrentIndex(current_index)
+
+    def move_tab_left(self, tab):
+        if tab.currentIndex() <= 0:
+            tab.setCurrentIndex(0)
+        else:
+            current_index = tab.currentIndex() - 1
+            tab.setCurrentIndex(current_index)
 
 class FileDockShortcut:
     def __init__(self, parent, file_dock, file_view, doc_string, doc_panel, main_text):

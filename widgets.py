@@ -1,7 +1,7 @@
 import jedi
 import re
 import os
-from PyQt6.QtCore import QTimer, QSize, Qt, QStringListModel, QRect, Qt, QDir, QFileInfo
+from PyQt6.QtCore import QProcess, QTimer, QSize, Qt, QStringListModel, QRect, Qt, QDir, QFileInfo
 from PyQt6.QtGui import QPalette, QTextCursor, QKeyEvent, QPainter, QColor, QFont, QFontMetrics, QTextCursor, QColor, QFileSystemModel, QIcon, QStandardItemModel, QStandardItem
 from PyQt6.QtWidgets import QPushButton, QHBoxLayout, QLineEdit, QPlainTextEdit, QVBoxLayout, QWidget, QCompleter, QDockWidget, QTextEdit, QTreeView, QFileIconProvider, QTabBar
 
@@ -509,6 +509,7 @@ class ShowOpenedFile(QTabBar):
 
         self.setStyleSheet(get_css_style())
 
+        self.currentChanged.connect(self.test)
 
         # print(self.tabText(1))
         # self.removeTab(0)
@@ -526,6 +527,10 @@ class ShowOpenedFile(QTabBar):
 
 
         layout.addWidget(self)
+
+
+    def test(self):
+        print('changed')
 
     def put_tab_icons(self, index):
         image_formats = (
@@ -578,10 +583,34 @@ class ShowOpenedFile(QTabBar):
         self.put_tab_icons(file_index)
         self.setCurrentIndex(file_index)
         self.setTabButton(file_index, self.ButtonPosition.RightSide, close_button)
-    
+
     def track_tabs(self):
         print(self.currentIndex())
         if self.currentIndex() == -1:
             # pass
             self.editor.setPlainText("")
             file_description.clear()
+
+# class Terminal(QDockWidget):
+#     def __init__(self, parent):
+#         super().__init__()
+#         self.setFeatures(QDockWidget.DockWidgetFeature.DockWidgetMovable)
+#         parent.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, self)
+
+#         self.terminal_editor = QPlainTextEdit(self)
+#         self.setWidget(self.terminal_editor)
+
+#         self.process = QProcess(self.terminal_editor)
+#         self.process.start('powershell')
+#         self.process.readyReadStandardOutput.connect(self.handle_stdout_output)
+        # process.kill()
+
+    # def handle_stdout_output(self):
+        # Read all available data from standard output
+        # output_bytes = self.process.readAllStandardOutput().data()
+        # # Decode the bytes to a string (e.g., using UTF-8)
+        # output_string = output_bytes.decode('utf-8')
+        # # Process the output_string (e.g., print it, display in a widget)
+        # print("Standard Output:", output_string)
+        # output = self.process.readAllStandardOutput().data().decode('utf-')
+        # self.terminal_editor.appendPlainText(output)
