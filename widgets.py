@@ -322,9 +322,11 @@ class ShowFiles(QDockWidget):
         self.file_viewer.setColumnHidden(2, True)
         self.file_viewer.setColumnHidden(3, True)
 
+        
+        self.setObjectName('Docks')
         self.file_viewer.setStyleSheet(get_css_style())
 
-        self.setObjectName('Docks')
+        # self.opened_tabs.currentChanged.connect(self.set_text)
 
         self.setWidget(self.file_viewer)
         self.setFeatures(QDockWidget.DockWidgetFeature.DockWidgetMovable)
@@ -332,6 +334,26 @@ class ShowFiles(QDockWidget):
         self.setStyleSheet(get_css_style())
         self.file_viewer.clicked.connect(self.set_file)
 
+    # def set_text(self, index):
+        # if self.opened_tabs.currentIndex() == -1:
+        #     self.main_text.setPlainText("")
+        #     file_description.clear()
+
+        # # model = self.file_viewer.model()
+        # # index = self.file_viewer.currentIndex()
+        # # path = model.filePath(index)
+        # # str_path = str(path)
+        # # file_name = str_path.split('/')[-1]
+
+        # current_index = self.opened_tabs.currentIndex()
+
+        # tab_text = self.opened_tabs.tabText(current_index)
+
+        # for path, file_name_ in file_description.items():
+        #     if file_name_ == tab_text:
+        #         # print(path, file_name)
+        #         with open(path, 'r', encoding = 'utf-8') as file:
+        #             self.main_text.setPlainText(file.read())
 
     def set_file(self, index):
         try:
@@ -509,8 +531,6 @@ class ShowOpenedFile(QTabBar):
 
         self.setStyleSheet(get_css_style())
 
-        self.currentChanged.connect(self.test)
-
         # print(self.tabText(1))
         # self.removeTab(0)
         # print(self.count() - 1)
@@ -554,10 +574,8 @@ class ShowOpenedFile(QTabBar):
         elif self.tabText(index).endswith('html'):
             self.setTabIcon(index, QIcon('icons/fileIcons/html.svg'))
 
-
         elif self.tabText(index).endswith('css'):
             self.setTabIcon(index, QIcon('icons/fileIcons/css.png'))
-
 
         elif self.tabText(index).endswith('pyc'):
             self.setTabIcon(index, QIcon('icons/fileIcons/python-misc.svg'))
@@ -583,13 +601,37 @@ class ShowOpenedFile(QTabBar):
         self.put_tab_icons(file_index)
         self.setCurrentIndex(file_index)
         self.setTabButton(file_index, self.ButtonPosition.RightSide, close_button)
+        # self.ta()
+
+        # self.currentChanged.connect(self.test)
+
 
     def track_tabs(self):
-        print(self.currentIndex())
+        # print(self.currentIndex())
         if self.currentIndex() == -1:
             # pass
             self.editor.setPlainText("")
             file_description.clear()
+
+        # if self.opened_tabs.currentIndex() == -1:
+        #     self.main_text.setPlainText("")
+        #     file_description.clear()
+
+        # model = self.file_viewer.model()
+        # index = self.file_viewer.currentIndex()
+        # path = model.filePath(index)
+        # str_path = str(path)
+        # file_name = str_path.split('/')[-1]
+
+        current_index = self.currentIndex()
+
+        tab_text = self.tabText(current_index)
+
+        for path, file_name in file_description.items():
+            if file_name == tab_text:
+                # print(path, file_name)
+                with open(path, 'r', encoding = 'utf-8') as file:
+                    self.editor.setPlainText(file.read())
 
 # class Terminal(QDockWidget):
 #     def __init__(self, parent):
