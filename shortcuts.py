@@ -193,16 +193,20 @@ class MainTextShortcuts:
             tab.setCurrentIndex(current_index)
 
 class FileDockShortcut:
-    def __init__(self, parent, file_dock, file_view, doc_string, doc_panel, main_text):
+    def __init__(self, parent, file_dock, file_view, doc_string, doc_panel, main_text, file_description, opened_tabs):
         self.file_view = file_view
         self.doc_string = doc_string
         self.doc_panel = doc_panel
         self.main_text = main_text
-
+        self.file_description = file_description
+        self.opened_tabs = opened_tabs
 
         show_hide_file_dock = QShortcut(QKeySequence('Ctrl+B'), parent)
         show_hide_file_dock.activated.connect(lambda: self.showHideFile(file_dock))
     
+        save_file = QShortcut(QKeySequence('Ctrl+S'), parent)
+        save_file.activated.connect(self.save_file)
+
     def showHideFile(self, file_dock):
         if file_dock.isVisible():
             file_dock.hide()
@@ -215,3 +219,13 @@ class FileDockShortcut:
             file_dock.show()
             self.file_view.setFocus()
 
+
+    def save_file(self):
+        opened_tab = self.opened_tabs.currentIndex()
+        for path, file_name in self.file_description.items():
+            opened_tab = self.opened_tabs.currentIndex()
+            current_tab_name = self.opened_tabs.tabText(opened_tab)
+
+            if file_name == current_tab_name:
+                with open(path, 'w', encoding = 'utf-8') as file:
+                    file.write(self.main_text.toPlainText())

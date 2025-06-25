@@ -72,7 +72,7 @@ class IDE(QMainWindow):
         widgets.layout.addWidget(widgets.error_label)
         self.show_files = widgets.ShowFiles(self, main_text, self.tab_bar)
         # self.terminal = widgets.Terminal(self)
-        FileDockShortcut(self, self.show_files, self.show_files.file_viewer, self.doc_string_dock, self.doc_string_dock.doc_panel, main_text)
+        FileDockShortcut(self, self.show_files, self.show_files.file_viewer, self.doc_string_dock, self.doc_string_dock.doc_panel, main_text, widgets.file_description, self.tab_bar)
 
 
 if __name__ == '__main__':
