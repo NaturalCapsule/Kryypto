@@ -3,13 +3,18 @@ import re
 import os
 from PyQt6.QtCore import QProcess, QTimer, QSize, Qt, QStringListModel, QRect, Qt, QDir, QFileInfo
 from PyQt6.QtGui import QPalette, QTextCursor, QKeyEvent, QPainter, QColor, QFont, QFontMetrics, QTextCursor, QColor, QFileSystemModel, QIcon, QStandardItemModel, QStandardItem
-from PyQt6.QtWidgets import QPushButton, QHBoxLayout, QLineEdit, QPlainTextEdit, QVBoxLayout, QWidget, QCompleter, QDockWidget, QTextEdit, QTreeView, QFileIconProvider, QTabBar
+from PyQt6.QtWidgets import QLabel, QPushButton, QHBoxLayout, QLineEdit, QPlainTextEdit, QVBoxLayout, QWidget, QCompleter, QDockWidget, QTextEdit, QTreeView, QFileIconProvider, QTabBar
 
 from lines import ShowLines
 
 from get_style import get_css_style
 
 central_widget = QWidget()
+
+error_label = QLabel("Ready")
+error_label.setObjectName("SyntaxChecker")
+error_label.setStyleSheet(get_css_style())
+
 
 file_description = {}
 
@@ -367,18 +372,12 @@ class ShowFiles(QDockWidget):
                     self.opened_tabs.add_file(path, file_name)
 
                 else:
-                    # pass
-                    # current_index = self.opened_tabs.currentIndex()
-                    # get_tab_text = self.opened_tabs.tabText(current_index)
-                    # print(get_tab_text)
-                    # if 
                     all_tabs = self.opened_tabs.count()
                     for tab in range(all_tabs):
                         if self.opened_tabs.tabText(tab) == file_name:
                             print(file_name)
-                            # print(self.opened_tabs.tabText(tab))
                             self.opened_tabs.setCurrentIndex(tab)
-                            # break
+                            break
 
             with open (path, 'r', encoding = 'utf-8') as file:
                 self.main_text.setPlainText(file.read())
@@ -399,6 +398,13 @@ class ShowFiles(QDockWidget):
                 if path not in file_description.keys() and file_name not in file_description.values():
                         file_description[path] = file_name
                         self.opened_tabs.add_file(path, file_name)
+
+                else:
+                    all_tabs = self.opened_tabs.count()
+                    for tab in range(all_tabs):
+                        if self.opened_tabs.tabText(tab) == file_name:
+                            self.opened_tabs.setCurrentIndex(tab)
+                            break
 
             try:
                 with open (path, 'r', encoding = 'utf-8') as file:
@@ -507,6 +513,7 @@ class CustomIcons(QFileIconProvider):
             "ico", "psd", "xcf", "dds"
         ]
 
+        # if info.isDir() and info.suffix().lower() == 'test':
         if info.isDir():
             return QIcon("icons/fileIcons/folder.webp")
         elif info.suffix().lower() == "py" or info.suffix().lower() == 'pyi':
@@ -544,20 +551,6 @@ class ShowOpenedFile(QTabBar):
         self.currentChanged.connect(self.track_tabs)
 
         self.setStyleSheet(get_css_style())
-
-        # print(self.tabText(1))
-        # self.removeTab(0)
-        # print(self.count() - 1)
-        # self.setFixedSize(200, 50)
-#         self.setStyleSheet("""
-#             QTabBar {
-#                 padding: 0px;
-#                 margin: 0px;
-#                 font-size: 19px;
-#                 border: none;
-#                 }
-
-# """)
 
 
         layout.addWidget(self)
@@ -615,35 +608,18 @@ class ShowOpenedFile(QTabBar):
         self.put_tab_icons(file_index)
         self.setCurrentIndex(file_index)
         self.setTabButton(file_index, self.ButtonPosition.RightSide, close_button)
-        # self.ta()
-
-        # self.currentChanged.connect(self.test)
 
 
     def track_tabs(self):
-        # print(self.currentIndex())
         if self.currentIndex() == -1:
-            # pass
             self.editor.setPlainText("")
             file_description.clear()
 
-        # if self.opened_tabs.currentIndex() == -1:
-        #     self.main_text.setPlainText("")
-        #     file_description.clear()
-
-        # model = self.file_viewer.model()
-        # index = self.file_viewer.currentIndex()
-        # path = model.filePath(index)
-        # str_path = str(path)
-        # file_name = str_path.split('/')[-1]
-
         current_index = self.currentIndex()
-        print(current_index)
         tab_text = self.tabText(current_index)
 
         for path, file_name in file_description.items():
             if file_name == tab_text:
-                # print(path, file_name)
                 with open(path, 'r', encoding = 'utf-8') as file:
                     self.editor.setPlainText(file.read())
 
@@ -668,5 +644,5 @@ class ShowOpenedFile(QTabBar):
         # output_string = output_bytes.decode('utf-8')
         # # Process the output_string (e.g., print it, display in a widget)
         # print("Standard Output:", output_string)
-        # output = self.process.readAllStandardOutput().data().decode('utf-')
+        # output = self.process.readAllStandardOutput().data().decode('utf-8')
         # self.terminal_editor.appendPlainText(output)
