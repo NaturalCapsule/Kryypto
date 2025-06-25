@@ -366,6 +366,20 @@ class ShowFiles(QDockWidget):
                     file_description[path] = file_name
                     self.opened_tabs.add_file(path, file_name)
 
+                else:
+                    # pass
+                    # current_index = self.opened_tabs.currentIndex()
+                    # get_tab_text = self.opened_tabs.tabText(current_index)
+                    # print(get_tab_text)
+                    # if 
+                    all_tabs = self.opened_tabs.count()
+                    for tab in range(all_tabs):
+                        if self.opened_tabs.tabText(tab) == file_name:
+                            print(file_name)
+                            # print(self.opened_tabs.tabText(tab))
+                            self.opened_tabs.setCurrentIndex(tab)
+                            # break
+
             with open (path, 'r', encoding = 'utf-8') as file:
                 self.main_text.setPlainText(file.read())
         except Exception as e:
@@ -624,7 +638,7 @@ class ShowOpenedFile(QTabBar):
         # file_name = str_path.split('/')[-1]
 
         current_index = self.currentIndex()
-
+        print(current_index)
         tab_text = self.tabText(current_index)
 
         for path, file_name in file_description.items():
