@@ -1,10 +1,11 @@
 import re
-from PyQt6.QtGui import QShortcut, QKeySequence, QTextCursor
-from PyQt6.QtGui import QFont
-
+from PyQt6.QtGui import QFont, QShortcut, QKeySequence, QTextCursor
+from PyQt6.QtWidgets import QLineEdit
+from PyQt6.QtCore import Qt
+from get_style import get_css_style
 
 class MainTextShortcuts:
-    def __init__(self, parent, completer, tab):
+    def __init__(self, parent, completer, tab, bawky_parent):
         self.font_size = 19
         # self.num_lines = num_lines
 
@@ -41,9 +42,53 @@ class MainTextShortcuts:
         move_tab_left = QShortcut(QKeySequence("Ctrl+Shift+E"), parent)
         move_tab_left.activated.connect(lambda: self.move_tab_left(tab))
 
-        # save_file = QShortcut(QKeySequence("Ctrl+S"), parent)
-        # save_file.activated.connect(lambda: self.save_file(parent))
+        # find_text = QShortcut(QKeySequence('Ctrl+F'), parent)
+        # find_text.activated.connect(lambda: findingText(bawky_parent, parent))
 
+    # class findingText(QLineEdit):
+    #     def __init__(self, bawky_parent, main_text):
+    #         super().__init__()
+    #         self = QLineEdit()
+    #         self.setObjectName('Finder')
+    #         self.setStyleSheet(get_css_style())
+    #         bawky_parent.addWidget(self)
+    #         self.setFocus()
+    #         self.setPlaceholderText("Search...")
+    #         self.textChanged.connect(lambda: self.changed(self, main_text))
+    #         self.returnPressed.connect(lambda: self.find_next(self, main_text))
+
+
+    # # def find_text(self, bawky_parent, main_text):
+    #     # find_text = QLineEdit()
+    #     # find_text.setObjectName('Finder')
+    #     # find_text.setStyleSheet(get_css_style())
+    #     # bawky_parent.addWidget(find_text)
+    #     # find_text.setFocus()
+    #     # find_text.setPlaceholderText("Search...")
+    #     # find_text.textChanged.connect(lambda: self.changed(find_text, main_text))
+    #     # find_text.returnPressed.connect(lambda: self.find_next(find_text, main_text))
+
+
+    #     # def find_next(self, find_text, main_text):
+    #     #     if not main_text.find(find_text.text()):
+    #     #         main_text.moveCursor(QTextCursor.MoveOperation.Start)
+    #     #         main_text.find(find_text.text())
+
+
+    #     # def changed(self, find_text, main_text):
+    #     #     main_text.moveCursor(QTextCursor.MoveOperation.Start)
+    #     #     main_text.find(find_text.text())
+
+
+    #     def find_next(self, main_text):
+    #         if not main_text.find(self.text()):
+    #             main_text.moveCursor(QTextCursor.MoveOperation.Start)
+    #             main_text.find(self.text())
+
+
+    #     def changed(self, main_text):
+    #         main_text.moveCursor(QTextCursor.MoveOperation.Start)
+    #         main_text.find(self.text())
 
 
     def remove_current_line(self, text_edit):
@@ -171,11 +216,6 @@ class MainTextShortcuts:
         text_edit.setUpdatesEnabled(True)
         text_edit.blockSignals(False)
 
-    # def save_file(self, text_edit):
-    #     code = text_edit.toPlainText()
-    #     with open ('test.txt', 'w') as f:
-    #         f.write(code)
-    #         f.close()
 
     def remove_tab_(self, tab):
         current_index = tab.currentIndex()
@@ -229,3 +269,65 @@ class FileDockShortcut:
             if file_name == current_tab_name:
                 with open(path, 'w', encoding = 'utf-8') as file:
                     file.write(self.main_text.toPlainText())
+
+
+
+# class findingText(QLineEdit):
+#     def __init__(self, bawky_parent, main_text):
+#         super().__init__()
+#         self.main_text = main_text
+#         # self = QLineEdit()
+#         self.setObjectName('Finder')
+
+#         self.setStyleSheet(get_css_style())
+#         bawky_parent.addWidget(self)
+#         self.setFocus()
+#         self.setPlaceholderText("Search...")
+#         self.textChanged.connect(lambda: self.changed(main_text))
+#         self.returnPressed.connect(lambda: self.find_next(main_text))
+
+
+
+#     def keyPressEvent(self, event):
+#         key = event.key()
+
+
+#         if key == Qt.Key.Key_Escape:
+#             self.destroy()
+#             self.hide()
+#             self.main_text.setFocus()
+#             # return
+
+#         super().keyPressEvent(event)
+
+# def find_text(self, bawky_parent, main_text):
+    # find_text = QLineEdit()
+    # find_text.setObjectName('Finder')
+    # find_text.setStyleSheet(get_css_style())
+    # bawky_parent.addWidget(find_text)
+    # find_text.setFocus()
+    # find_text.setPlaceholderText("Search...")
+    # find_text.textChanged.connect(lambda: self.changed(find_text, main_text))
+    # find_text.returnPressed.connect(lambda: self.find_next(find_text, main_text))
+
+
+    # def find_next(self, find_text, main_text):
+    #     if not main_text.find(find_text.text()):
+    #         main_text.moveCursor(QTextCursor.MoveOperation.Start)
+    #         main_text.find(find_text.text())
+
+
+    # def changed(self, find_text, main_text):
+    #     main_text.moveCursor(QTextCursor.MoveOperation.Start)
+    #     main_text.find(find_text.text())
+
+
+    def find_next(self, main_text):
+        if not main_text.find(self.text()):
+            main_text.moveCursor(QTextCursor.MoveOperation.Start)
+            main_text.find(self.text())
+
+
+    def changed(self, main_text):
+        main_text.moveCursor(QTextCursor.MoveOperation.Start)
+        main_text.find(self.text())

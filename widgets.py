@@ -21,12 +21,14 @@ file_description = {}
 layout = QVBoxLayout(central_widget)
 
 class MainText(QPlainTextEdit):
-    def __init__(self, doc_panel):
+    def __init__(self, doc_panel, parent):
         super().__init__()
         self.setCursorWidth(0)
         self.completer = QCompleter()
         self.doc_panel = doc_panel
         self.cursorPositionChanged.connect(self.update_docstring)
+
+        self.finder = findingText(parent, self)
 
         self.cursor_visible = True
         self.cursor_color = QColor("#f38ba8")  # Custom cursor color
@@ -126,6 +128,16 @@ class MainText(QPlainTextEdit):
         if key == Qt.Key.Key_Tab:
             cursor = self.textCursor()
             cursor.insertText(" " * 4)
+            return
+
+
+        if key == Qt.Key.Key_F and event.modifiers() & Qt.KeyboardModifier.ControlModifier:
+            if self.finder.isVisible():
+                self.finder.hide()
+                self.setFocus()
+            else:
+                self.finder.show()
+                self.finder.setFocus()
             return
 
         if key in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
@@ -646,3 +658,35 @@ class ShowOpenedFile(QTabBar):
         # print("Standard Output:", output_string)
         # output = self.process.readAllStandardOutput().data().decode('utf-8')
         # self.terminal_editor.appendPlainText(output)
+
+
+class findingText(QLineEdit):
+    def __init__(self, bawky_parent, main_text):
+        super().__init__()
+        self.main_text = main_text
+        self.setObjectName('Finder')
+        self.hide()
+        self.setStyleSheet(get_css_style())
+        bawky_parent.addWidget(self)
+        self.setPlaceholderText("Search...")
+        self.textChanged.connect(lambda: self.changed(main_text))
+        self.returnPressed.connect(lambda: self.find_next(main_text))
+
+
+
+    def keyPressEvent(self, event):
+        key = event.key()
+        if key == Qt.Key.Key_Escape:
+            self.hide()
+            self.main_text.setFocus()
+        super().keyPressEvent(event)
+
+    def find_next(self, main_text):
+        if not main_text.find(self.text()):
+            main_text.moveCursor(QTextCursor.MoveOperation.Start)
+            main_text.find(self.text())
+
+
+    def changed(self, main_text):
+        main_text.moveCursor(QTextCursor.MoveOperation.Start)
+        main_text.find(self.text())

@@ -48,6 +48,13 @@
     color: white;
 } */
 
+#Finder {
+    background-color: #1e1e2e;
+    /* border: 1px solid #3c3c3c; */
+    border: 2px solid #F38BA8;
+
+    color: #ffffff;
+}
 
 #AutoCompleter {
     background-color: #1e1e2e;
