@@ -1,6 +1,7 @@
 import jedi
 import re
 import os
+import pyperclip
 from PyQt6.QtCore import QProcess, QTimer, QSize, Qt, QStringListModel, QRect, Qt, QDir, QFileInfo
 from PyQt6.QtGui import QPalette, QTextCursor, QKeyEvent, QPainter, QColor, QFont, QFontMetrics, QTextCursor, QColor, QFileSystemModel, QIcon, QStandardItemModel, QStandardItem
 from PyQt6.QtWidgets import QLabel, QPushButton, QHBoxLayout, QLineEdit, QPlainTextEdit, QVBoxLayout, QWidget, QCompleter, QDockWidget, QTextEdit, QTreeView, QFileIconProvider, QTabBar
@@ -24,6 +25,10 @@ class MainText(QPlainTextEdit):
     def __init__(self, doc_panel, parent):
         super().__init__()
         self.setCursorWidth(0)
+        self.selected_line = None
+        self.selected_text = None
+        
+
         self.completer = QCompleter()
         self.doc_panel = doc_panel
         self.cursorPositionChanged.connect(self.update_docstring)
@@ -130,6 +135,76 @@ class MainText(QPlainTextEdit):
             cursor.insertText(" " * 4)
             return
 
+
+
+        if key == Qt.Key.Key_C and event.modifiers() & Qt.KeyboardModifier.ControlModifier:
+            ### issue, fix
+
+            cursor = self.textCursor()
+
+            # print(QTextCursor.selectedText(cursor))
+            if cursor.selectedText() == '':
+                # print("testing")
+
+                self.setUpdatesEnabled(False)
+                self.blockSignals(True)
+                cursor.beginEditBlock()
+
+            # print(QTextCursor.(cursor))
+                cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock)
+                cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock, QTextCursor.MoveMode.KeepAnchor)
+                text = cursor.selectedText()
+                # self.selected_text = text
+                self.selected_line = text
+
+                # print(self.selected_text)
+                cursor.endEditBlock()
+                self.setUpdatesEnabled(True)
+                self.blockSignals(False)
+                pyperclip.copy(self.selected_line)
+                self.selected_text = None
+
+
+
+            else:
+                self.selected_text = cursor.selectedText()
+                self.selected_line = None
+                pyperclip.copy(self.selected_text)
+            return
+
+        if key == Qt.Key.Key_V and event.modifiers() & Qt.KeyboardModifier.ControlModifier:
+            if self.selected_text is not None:
+                cursor = self.textCursor()
+                self.setUpdatesEnabled(False)
+                self.blockSignals(True)
+                cursor.beginEditBlock()
+
+                # cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock)
+                self.setTextCursor(cursor)
+
+                cursor.insertText(self.selected_text)
+                print(self.selected_text)
+                cursor.endEditBlock()
+                self.setUpdatesEnabled(True)
+                self.blockSignals(False)
+                self.selected_line = None
+
+            if self.selected_line is not None:
+                cursor = self.textCursor()
+                self.setUpdatesEnabled(False)
+                self.blockSignals(True)
+                cursor.beginEditBlock()
+
+                cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock)
+                self.setTextCursor(cursor)
+
+                cursor.insertText("\n" + self.selected_line)
+                print(self.selected_line)
+                cursor.endEditBlock()
+                self.setUpdatesEnabled(True)
+                self.blockSignals(False)
+                self.selected_text = None
+            return
 
         if key == Qt.Key.Key_F and event.modifiers() & Qt.KeyboardModifier.ControlModifier:
             if self.finder.isVisible():
