@@ -135,11 +135,48 @@
 
 #DirectoryViewer::item:hover {
     background-color: #3a3a3a;
+    background-color: #5a5a5a;
+    color: white;
+
+    border-radius: 15px;
+    border: none;
+    outline: none;
+
 }
 
 #DirectoryViewer::item:selected {
     background-color: #5a5a5a;
     color: white;
+    border: none;
+    outline: none;
+    border: 2px solid #89b4fa;
+    border-radius: 15px;
+}
+
+#DirectoryViewer {
+    background-color: #1e1e2e;
+    color: #ffffff;
+    font-size: 19px;
+    selection-background-color: rgba(255, 255, 255, 0.5);
+    selection-color: white;
+    border: 2px solid #F38BA8;
+    border-radius: 10px;
+    outline: none;
+}
+
+#AutoComDirectoryViewerpleter::item {
+    border: none;
+    outline: none;
+    padding: 6px;
+}
+
+#DirectoryViewer::item:hover,
+#DirectoryViewer::item:selected {
+    background-color: #5a5a5a;
+    border-radius: 15px;
+    color: white;
+    /* border: none;
+    outline: none; */
 }
 
 #OpenedFiles {

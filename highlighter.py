@@ -3,10 +3,17 @@ from PyQt6.QtGui import QSyntaxHighlighter, QTextCharFormat, QColor, QFont
 from PyQt6.QtCore import QRegularExpression
 
 class PythonSyntaxHighlighter(QSyntaxHighlighter):
-    def __init__(self, parent=None):
+    def __init__(self,use_highlighter ,parent=None):
         super().__init__(parent)
-        self.highlighting_rules = []
-        self.setup_highlighting_rules()
+
+        self.useit = use_highlighter
+
+        if self.useit:
+            self.highlighting_rules = []
+            self.setup_highlighting_rules()
+
+        else:
+            pass
 
     def setup_highlighting_rules(self):
         keyword_format = QTextCharFormat()
@@ -273,30 +280,97 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
             return False
 
 
-        default_format = QTextCharFormat()
-        default_format.setForeground(QColor("white"))
-        default_format.setFontWeight(QFont.Weight.Bold)
-        self.setFormat(0, len(text), default_format)
+        if self.useit:
 
-        used_ranges = set()
+            default_format = QTextCharFormat()
+            default_format.setForeground(QColor("white"))
+            default_format.setFontWeight(QFont.Weight.Bold)
+            self.setFormat(0, len(text), default_format)
 
-        triple_string_formats = [
-            ('"""', QRegularExpression('"""')),
-            ("'''", QRegularExpression("'''"))
-        ]
+            used_ranges = set()
 
-        for quote, start_expression in triple_string_formats:
+            triple_string_formats = [
+                ('"""', QRegularExpression('"""')),
+                ("'''", QRegularExpression("'''"))
+            ]
+
+            for quote, start_expression in triple_string_formats:
+                if self.previousBlockState() != 1:
+                    start_match = start_expression.match(text)
+                    start_index = start_match.capturedStart() if start_match.hasMatch() else -1
+                else:
+                    start_index = 0
+
+                while start_index >= 0:
+                    end_match = start_expression.match(text, start_index + 3)
+
+                    if end_match.hasMatch():
+                        length = end_match.capturedStart() - start_index + 3
+                        self.setCurrentBlockState(0)
+                    else:
+                        self.setCurrentBlockState(1)
+                        length = len(text) - start_index
+
+                    string_format = QTextCharFormat()
+                    string_format.setForeground(QColor(166, 227, 161))  # Green
+                    # string_format.setForeground(QColor(0, 128, 0))  # Green
+                    self.setFormat(start_index, length, string_format)
+                    used_ranges.add((start_index, start_index + length))
+
+                    next_match = start_expression.match(text, start_index + length)
+                    start_index = next_match.capturedStart() if next_match.hasMatch() else -1
+
+            comment_format = QTextCharFormat()
+            comment_format.setForeground(QColor(108, 112, 134))  # Gray
+            # comment_format.setForeground(QColor(128, 128, 128))  # Gray
+            comment_format.setFontItalic(True)
+
+            comment_regex = QRegularExpression(r'#[^\n]*')
+            comment_matcher = comment_regex.globalMatch(text)
+            while comment_matcher.hasNext():
+                match = comment_matcher.next()
+                start = match.capturedStart()
+                length = match.capturedLength()
+                self.setFormat(start, length, comment_format)
+                used_ranges.add((start, start + length))
+
+            for pattern, fmt, name in self.highlighting_rules:
+                if name == 'comment':
+                    continue
+
+                matches = pattern.globalMatch(text)
+                while matches.hasNext():
+                    match = matches.next()
+                    if name == 'class' or name == 'function':
+                        start = match.capturedStart(1)
+                        length = match.capturedLength(1)
+                    else:
+                        start = match.capturedStart()
+                        length = match.capturedLength()
+
+                    if is_overlapping(start, length, used_ranges):
+                        continue
+
+
+                    self.setFormat(start, length, fmt)
+                    used_ranges.add((start, start + length))
+
+            self.setCurrentBlockState(0)
+
+            start_expression = QRegularExpression('"""')
+            start_match = start_expression.match(text)
+
             if self.previousBlockState() != 1:
-                start_match = start_expression.match(text)
                 start_index = start_match.capturedStart() if start_match.hasMatch() else -1
             else:
                 start_index = 0
 
             while start_index >= 0:
-                end_match = start_expression.match(text, start_index + 3)
+                end_expression = QRegularExpression('"""')
+                end_match = end_expression.match(text, start_index + 3)
 
                 if end_match.hasMatch():
-                    length = end_match.capturedStart() - start_index + 3
+                    length = end_match.capturedStart() - start_index + end_match.capturedLength()
                     self.setCurrentBlockState(0)
                 else:
                     self.setCurrentBlockState(1)
@@ -304,113 +378,35 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
 
                 string_format = QTextCharFormat()
                 string_format.setForeground(QColor(166, 227, 161))  # Green
-                # string_format.setForeground(QColor(0, 128, 0))  # Green
                 self.setFormat(start_index, length, string_format)
-                used_ranges.add((start_index, start_index + length))
 
-                next_match = start_expression.match(text, start_index + length)
-                start_index = next_match.capturedStart() if next_match.hasMatch() else -1
-
-        comment_format = QTextCharFormat()
-        comment_format.setForeground(QColor(108, 112, 134))  # Gray
-        # comment_format.setForeground(QColor(128, 128, 128))  # Gray
-        comment_format.setFontItalic(True)
-
-        comment_regex = QRegularExpression(r'#[^\n]*')
-        comment_matcher = comment_regex.globalMatch(text)
-        while comment_matcher.hasNext():
-            match = comment_matcher.next()
-            start = match.capturedStart()
-            length = match.capturedLength()
-            self.setFormat(start, length, comment_format)
-            used_ranges.add((start, start + length))
-
-        for pattern, fmt, name in self.highlighting_rules:
-            if name == 'comment':
-                continue
-
-            matches = pattern.globalMatch(text)
-            while matches.hasNext():
-                match = matches.next()
-                if name == 'class' or name == 'function':
-                    start = match.capturedStart(1)
-                    length = match.capturedLength(1)
-                else:
-                    start = match.capturedStart()
-                    length = match.capturedLength()
-
-                if is_overlapping(start, length, used_ranges):
-                    continue
+                start_match = start_expression.match(text, start_index + length)
+                start_index = start_match.capturedStart() if start_match.hasMatch() else -1
 
 
-                self.setFormat(start, length, fmt)
-                used_ranges.add((start, start + length))
-
-        self.setCurrentBlockState(0)
-
-        start_expression = QRegularExpression('"""')
-        start_match = start_expression.match(text)
-
-        if self.previousBlockState() != 1:
-            start_index = start_match.capturedStart() if start_match.hasMatch() else -1
-        else:
-            start_index = 0
-
-        while start_index >= 0:
-            end_expression = QRegularExpression('"""')
-            end_match = end_expression.match(text, start_index + 3)
-
-            if end_match.hasMatch():
-                length = end_match.capturedStart() - start_index + end_match.capturedLength()
-                self.setCurrentBlockState(0)
-            else:
-                self.setCurrentBlockState(1)
-                length = len(text) - start_index
-
-            string_format = QTextCharFormat()
-            string_format.setForeground(QColor(166, 227, 161))  # Green
-            self.setFormat(start_index, length, string_format)
-
-            start_match = start_expression.match(text, start_index + length)
-            start_index = start_match.capturedStart() if start_match.hasMatch() else -1
-
-
-        arg_match = QRegularExpression(r"\bdef\s+\w+\s*\(([^)]*)\)").match(text)
-        if arg_match.hasMatch():
-            args_str = arg_match.captured(1)
-            args_start = arg_match.capturedStart(1)
+            arg_match = QRegularExpression(r"\bdef\s+\w+\s*\(([^)]*)\)").match(text)
+            if arg_match.hasMatch():
+                args_str = arg_match.captured(1)
+                args_start = arg_match.capturedStart(1)
 
 
 
-            for arg in args_str.split(','):
-                arg_name = arg.strip().split('=')[0].strip()
-                if arg_name:
+                for arg in args_str.split(','):
+                    arg_name = arg.strip().split('=')[0].strip()
+                    if arg_name:
 
-                    if is_overlapping(args_start, arg_match.capturedLength(1), used_ranges):
-                        continue
+                        if is_overlapping(args_start, arg_match.capturedLength(1), used_ranges):
+                            continue
 
-                    pos = text.find(arg_name, args_start)
-                    if pos != -1:
-                        self.setFormat(pos, len(arg_name), self.arg_def_format)
-                        used_ranges.add((pos, pos + len(arg_name)))
+                        pos = text.find(arg_name, args_start)
+                        if pos != -1:
+                            self.setFormat(pos, len(arg_name), self.arg_def_format)
+                            used_ranges.add((pos, pos + len(arg_name)))
 
 
 
-        for arg in self.function_args:
-            pattern = QRegularExpression(fr"\b{arg}\b")
-            it = pattern.globalMatch(text)
-            while it.hasNext():
-                match = it.next()
-
-                if is_overlapping(match.capturedStart(), match.capturedLength(), used_ranges):
-                    continue
-
-                self.setFormat(match.capturedStart(), match.capturedLength(), self.arg_usage_format)
-                used_ranges.add((match.capturedStart(), match.capturedStart() + match.capturedLength()))
-
-        try:
-            for call, type in self.c_instances.items():
-                pattern = QRegularExpression(fr"\b{call}\b")
+            for arg in self.function_args:
+                pattern = QRegularExpression(fr"\b{arg}\b")
                 it = pattern.globalMatch(text)
                 while it.hasNext():
                     match = it.next()
@@ -418,14 +414,27 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
                     if is_overlapping(match.capturedStart(), match.capturedLength(), used_ranges):
                         continue
 
-
-                    if type == 'class':
-                        self.setFormat(match.capturedStart(), match.capturedLength(), self.c_instance_foramt)
-                    elif type == 'function':
-                        self.setFormat(match.capturedStart(), match.capturedLength(), self.function_calls_format)
-
+                    self.setFormat(match.capturedStart(), match.capturedLength(), self.arg_usage_format)
                     used_ranges.add((match.capturedStart(), match.capturedStart() + match.capturedLength()))
 
-        except RuntimeError:
-            pass
-            # self.c_instances.clear()
+            try:
+                for call, type in self.c_instances.items():
+                    pattern = QRegularExpression(fr"\b{call}\b")
+                    it = pattern.globalMatch(text)
+                    while it.hasNext():
+                        match = it.next()
+
+                        if is_overlapping(match.capturedStart(), match.capturedLength(), used_ranges):
+                            continue
+
+
+                        if type == 'class':
+                            self.setFormat(match.capturedStart(), match.capturedLength(), self.c_instance_foramt)
+                        elif type == 'function':
+                            self.setFormat(match.capturedStart(), match.capturedLength(), self.function_calls_format)
+
+                        used_ranges.add((match.capturedStart(), match.capturedStart() + match.capturedLength()))
+
+            except RuntimeError:
+                pass
+                # self.c_instances.clear()

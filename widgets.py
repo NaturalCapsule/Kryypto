@@ -1,14 +1,18 @@
+## TO-DO: make the auto completer work only for .py files.
+
 import jedi
 import re
 import os
-import pyperclip
-from PyQt6.QtCore import QProcess, QTimer, QSize, Qt, QStringListModel, QRect, Qt, QDir, QFileInfo
-from PyQt6.QtGui import QPalette, QTextCursor, QKeyEvent, QPainter, QColor, QFont, QFontMetrics, QTextCursor, QColor, QFileSystemModel, QIcon, QStandardItemModel, QStandardItem
+from PyQt6.QtCore import QTimer, Qt, QRect, Qt, QDir, QFileInfo
+from PyQt6.QtGui import QTextCursor, QKeyEvent, QPainter, QColor, QFont, QFontMetrics, QTextCursor, QColor, QFileSystemModel, QIcon, QStandardItemModel, QStandardItem
 from PyQt6.QtWidgets import QLabel, QPushButton, QHBoxLayout, QLineEdit, QPlainTextEdit, QVBoxLayout, QWidget, QCompleter, QDockWidget, QTextEdit, QTreeView, QFileIconProvider, QTabBar
 
 from lines import ShowLines
 
 from get_style import get_css_style
+
+from highlighter import PythonSyntaxHighlighter
+from show_errors import ShowErrors
 
 central_widget = QWidget()
 
@@ -22,14 +26,15 @@ file_description = {}
 layout = QVBoxLayout(central_widget)
 
 class MainText(QPlainTextEdit):
-    def __init__(self, doc_panel, parent):
+    def __init__(self, doc_panel, parent, window):
+    # def __init__(self, parent):
+        self.clipboard = window
+
         super().__init__()
         self.setCursorWidth(0)
         self.selected_line = None
         self.selected_text = None
-        
 
-        self.completer = QCompleter()
         self.doc_panel = doc_panel
         self.cursorPositionChanged.connect(self.update_docstring)
 
@@ -51,9 +56,11 @@ class MainText(QPlainTextEdit):
 
         self.setStyleSheet(get_css_style())
 
+        self.completer = QCompleter()
         popup = self.completer.popup()
         popup.setObjectName('AutoCompleter')
         popup.setStyleSheet(get_css_style())
+        # popup.destroy()
 
         self.completer.setWidget(self)
         self.completer.setCompletionMode(QCompleter.CompletionMode.PopupCompletion)
@@ -70,7 +77,6 @@ class MainText(QPlainTextEdit):
             painter = QPainter(self.viewport())
             painter.setPen(self.cursor_color)
             rect = self.cursorRect()
-            ## 3 means the width of the cursor!
             painter.fillRect(rect.left(), rect.top(), 3, rect.height(), QColor("#f38ba8"))
 
 
@@ -90,11 +96,13 @@ class MainText(QPlainTextEdit):
 
         doc = self.get_definition_docstring(code, line, column)
         doc = doc or ""
-        if doc == "":
-            self.doc_panel.hide()
-        else:
-            self.doc_panel.setPlainText(doc or "")
-            self.doc_panel.show()
+        if self.doc_panel:
+            if doc == "":
+
+                self.doc_panel.hide()
+            else:
+                self.doc_panel.setPlainText(doc or "")
+                self.doc_panel.show()
 
     def get_definition_docstring(self, code, line, column):
         try:
@@ -138,38 +146,32 @@ class MainText(QPlainTextEdit):
 
 
         if key == Qt.Key.Key_C and event.modifiers() & Qt.KeyboardModifier.ControlModifier:
-            ### issue, fix
-
             cursor = self.textCursor()
 
-            # print(QTextCursor.selectedText(cursor))
             if cursor.selectedText() == '':
-                # print("testing")
-
                 self.setUpdatesEnabled(False)
                 self.blockSignals(True)
                 cursor.beginEditBlock()
 
-            # print(QTextCursor.(cursor))
                 cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock)
                 cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock, QTextCursor.MoveMode.KeepAnchor)
                 text = cursor.selectedText()
-                # self.selected_text = text
                 self.selected_line = text
 
-                # print(self.selected_text)
                 cursor.endEditBlock()
                 self.setUpdatesEnabled(True)
                 self.blockSignals(False)
-                pyperclip.copy(self.selected_line)
+                # pyperclip.copy(self.selected_line)
+                self.clipboard.setText(self.selected_line)
+
                 self.selected_text = None
-
-
 
             else:
                 self.selected_text = cursor.selectedText()
                 self.selected_line = None
-                pyperclip.copy(self.selected_text)
+                # pyperclip.copy(self.selected_text)
+                self.clipboard.setText(self.selected_text)
+
             return
 
         if key == Qt.Key.Key_V and event.modifiers() & Qt.KeyboardModifier.ControlModifier:
@@ -183,7 +185,6 @@ class MainText(QPlainTextEdit):
                 self.setTextCursor(cursor)
 
                 cursor.insertText(self.selected_text)
-                print(self.selected_text)
                 cursor.endEditBlock()
                 self.setUpdatesEnabled(True)
                 self.blockSignals(False)
@@ -462,7 +463,6 @@ class ShowFiles(QDockWidget):
                     all_tabs = self.opened_tabs.count()
                     for tab in range(all_tabs):
                         if self.opened_tabs.tabText(tab) == file_name:
-                            print(file_name)
                             self.opened_tabs.setCurrentIndex(tab)
                             break
 
@@ -629,11 +629,13 @@ class CustomIcons(QFileIconProvider):
 
 
 class ShowOpenedFile(QTabBar):
-    def __init__(self, editor):
+    def __init__(self, editor, layout, error_label, parent):
         super().__init__()
         global file_description
         self.editor = editor
-
+        self.layout_ = layout
+        self.error_label = error_label
+        self.parent_ = parent
         self.setObjectName('OpenedFiles')
         self.currentChanged.connect(self.track_tabs)
 
@@ -698,6 +700,7 @@ class ShowOpenedFile(QTabBar):
 
 
     def track_tabs(self):
+
         if self.currentIndex() == -1:
             self.editor.setPlainText("")
             file_description.clear()
@@ -707,6 +710,27 @@ class ShowOpenedFile(QTabBar):
 
         for path, file_name in file_description.items():
             if file_name == tab_text:
+                if file_name.endswith('.py') or file_name.endswith('.pyi'):
+                    self.highlighter = PythonSyntaxHighlighter(use_highlighter = True, parent=self.editor.document())
+                    self.show_error = ShowErrors(self.editor, self.highlighter)
+                    self.show_error.error_label = self.error_label
+                    self.layout_.addWidget(self.error_label)
+                    self.error_label.show()
+                    # self.doc_panelstring = DocStringDock(self.parent_)
+                    # self.editor.doc_panel = self.doc_panelstring.doc_panel
+
+
+                else:
+                    if self.error_label:
+                        self.error_label.hide()
+                    # self.editor.autocompleter(False)
+                    # if self.editor.doc_panel:
+                        # self.editor.doc_panel.hide()
+                    self.editor.doc_panel = None
+
+
+                    self.highlighter = PythonSyntaxHighlighter(False, self.editor.document())
+
                 with open(path, 'r', encoding = 'utf-8') as file:
                     self.editor.setPlainText(file.read())
 

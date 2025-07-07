@@ -1,5 +1,7 @@
+## TO-DO: make the auto completer work only for .py files.
+
 import sys
-from PyQt6.QtWidgets import QLabel, QApplication, QMainWindow, QTabBar
+from PyQt6.QtWidgets import QApplication, QMainWindow
 from PyQt6.QtGui import  QFont, QSurfaceFormat
 from highlighter import PythonSyntaxHighlighter
 from show_errors import ShowErrors
@@ -7,37 +9,11 @@ from shortcuts import *
 from get_style import get_css_style
 
 class IDE(QMainWindow):
-    def __init__(self):
+    def __init__(self, clipboard):
         super().__init__()
-        import widgets
-
+        self.clipboard = clipboard
         self.setupUI()
         self.setupWidgets()
-        # self.doc_string_dock = widgets.DocStringDock(self)
-
-        # main_text = widgets.MainText(self.doc_string_dock.doc_panel)
-
-        # self.tab_bar = widgets.ShowOpenedFile(main_text)
-
-
-
-
-        # with open('lines.py', 'r', encoding='utf-8') as f:
-        #     main_text.setPlainText(f.read())
-
-        # widgets.layout.addWidget(main_text)
-
-        # self.highlighter = PythonSyntaxHighlighter(main_text.document())
-        # self.remove_line = MainTextShortcuts(main_text, main_text.completer, self.tab_bar)
-        # self.show_error = ShowErrors(main_text, self.highlighter)
-        # main_text.setFont(QFont("Maple Mono", self.remove_line.font_size))
-
-        # self.show_error.error_label = widgets.error_label
-        # widgets.layout.addWidget(widgets.error_label)
-        # self.show_files = widgets.ShowFiles(self, main_text, self.tab_bar)
-        # # self.terminal = widgets.Terminal(self)
-        # FileDockShortcut(self, self.show_files, self.show_files.file_viewer, self.doc_string_dock, self.doc_string_dock.doc_panel, main_text)
-
     def setupUI(self):
         import widgets
         self.setWindowTitle("IDE")
@@ -51,31 +27,28 @@ class IDE(QMainWindow):
         import widgets
         self.doc_string_dock = widgets.DocStringDock(self)
 
-        main_text = widgets.MainText(self.doc_string_dock.doc_panel, widgets.layout)
-        # main_text.Widget
+        main_text = widgets.MainText(self.doc_string_dock.doc_panel, widgets.layout, self.clipboard)
+        # main_text = widgets.MainText(widgets.layout)
 
+        # main_text.doc_panel = self.doc_string_dock.doc_panel
 
-        self.tab_bar = widgets.ShowOpenedFile(main_text)
-
-
-
-        # main_text.find()
-        with open('lines.py', 'r', encoding='utf-8') as f:
-            main_text.setPlainText(f.read())
-
+        self.tab_bar = widgets.ShowOpenedFile(main_text, widgets.layout, widgets.error_label, self)
         widgets.layout.addWidget(main_text)
+        # main_text.find()
+        # with open('lines.py', 'r', encoding='utf-8') as f:
+        #     main_text.setPlainText(f.read())
 
-        self.highlighter = PythonSyntaxHighlighter(main_text.document())
+        # self.highlighter = PythonSyntaxHighlighter(main_text.document())
         self.remove_line = MainTextShortcuts(main_text, main_text.completer, self.tab_bar, widgets.layout)
-        self.show_error = ShowErrors(main_text, self.highlighter)
+        # self.show_error = ShowErrors(main_text, self.highlighter)
         main_text.setFont(QFont("Maple Mono", self.remove_line.font_size))
 
-        self.show_error.error_label = widgets.error_label
-        widgets.layout.addWidget(widgets.error_label)
+        # self.show_error.error_label = widgets.error_label
+        # widgets.layout.addWidget(widgets.error_label)
         self.show_files = widgets.ShowFiles(self, main_text, self.tab_bar)
         # self.terminal = widgets.Terminal(self)
         FileDockShortcut(self, self.show_files, self.show_files.file_viewer, self.doc_string_dock, self.doc_string_dock.doc_panel, main_text, widgets.file_description, self.tab_bar)
-        # widgets.findingText(widgets.layout, main_text)
+
 
 
 if __name__ == '__main__':
@@ -88,6 +61,6 @@ if __name__ == '__main__':
     QSurfaceFormat.setDefaultFormat(format)
     app = QApplication(sys.argv)
     # app.setCursorFlashTime(1500)
-    window = IDE()
+    window = IDE(app.clipboard())
     window.show()
     sys.exit(app.exec())
