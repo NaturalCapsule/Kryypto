@@ -233,10 +233,10 @@ class MainTextShortcuts:
             tab.setCurrentIndex(current_index)
 
 class FileDockShortcut:
-    def __init__(self, parent, file_dock, file_view, doc_string, doc_panel, main_text, file_description, opened_tabs):
+    def __init__(self, parent, file_dock, file_view, main_text, file_description, opened_tabs):
+    # def __init__(self, parent, file_dock, file_view, doc_string, doc_panel, main_text, file_description, opened_tabs):
+
         self.file_view = file_view
-        self.doc_string = doc_string
-        self.doc_panel = doc_panel
         self.main_text = main_text
         self.file_description = file_description
         self.opened_tabs = opened_tabs
@@ -250,9 +250,9 @@ class FileDockShortcut:
     def showHideFile(self, file_dock):
         if file_dock.isVisible():
             file_dock.hide()
-            self.file_view.clearFocus()
-            self.doc_string.clearFocus()
-            self.doc_panel.clearFocus()
+            # self.file_view.clearFocus()
+            # self.doc_string.clearFocus()
+            # self.doc_panel.clearFocus()
             self.main_text.setFocus()
 
         else:

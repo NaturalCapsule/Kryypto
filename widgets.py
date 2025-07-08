@@ -26,16 +26,16 @@ file_description = {}
 layout = QVBoxLayout(central_widget)
 
 class MainText(QPlainTextEdit):
-    def __init__(self, doc_panel, parent, window):
+    def __init__(self, parent, window):
     # def __init__(self, parent):
-        self.clipboard = window
-
         super().__init__()
+        self.clipboard = window
         self.setCursorWidth(0)
         self.selected_line = None
         self.selected_text = None
 
-        self.doc_panel = doc_panel
+        # self.doc_panel = doc_panel
+        self.doc_panel = None
         self.cursorPositionChanged.connect(self.update_docstring)
 
         self.finder = findingText(parent, self)
@@ -60,7 +60,7 @@ class MainText(QPlainTextEdit):
         popup = self.completer.popup()
         popup.setObjectName('AutoCompleter')
         popup.setStyleSheet(get_css_style())
-        # popup.destroy()
+
 
         self.completer.setWidget(self)
         self.completer.setCompletionMode(QCompleter.CompletionMode.PopupCompletion)
@@ -113,6 +113,7 @@ class MainText(QPlainTextEdit):
                 return definitions[0].docstring()
         except Exception as e:
             return f"Error: {e}"
+        
         return ""
 
     def keyPressEvent(self, event: QKeyEvent):
@@ -343,26 +344,28 @@ class MainText(QPlainTextEdit):
 
 
 class DocStringDock(QDockWidget):
-    def __init__(self, parent):
+    def __init__(self, parent, use):
         super().__init__()
 
-        self.clearFocus()
+        if use:
 
-        self.doc_panel = QTextEdit()
-        self.doc_panel.setReadOnly(True)
-        self.doc_panel.setMinimumHeight(120)
-        self.doc_panel.clearFocus()
+            self.clearFocus()
 
-        self.doc_panel.setObjectName("DocStrings")
-        self.doc_panel.setStyleSheet(get_css_style())
+            self.doc_panel = QTextEdit()
+            self.doc_panel.setReadOnly(True)
+            self.doc_panel.setMinimumHeight(120)
+            self.doc_panel.clearFocus()
 
-        self.setWidget(self.doc_panel)
+            self.doc_panel.setObjectName("DocStrings")
+            self.doc_panel.setStyleSheet(get_css_style())
 
-        self.setFeatures(QDockWidget.DockWidgetFeature.DockWidgetMovable)
-        parent.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self)
-        self.setObjectName("Docks")
+            self.setWidget(self.doc_panel)
 
-        self.setStyleSheet(get_css_style())
+            self.setFeatures(QDockWidget.DockWidgetFeature.DockWidgetMovable)
+            parent.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self)
+            self.setObjectName("Docks")
+
+            self.setStyleSheet(get_css_style())
 
 class ShowFiles(QDockWidget):
     def __init__(self, parent, main_text, opened_tabs):
@@ -639,14 +642,15 @@ class ShowOpenedFile(QTabBar):
         self.setObjectName('OpenedFiles')
         self.currentChanged.connect(self.track_tabs)
 
+        # self.doc_panelstring = DocStringDock(self.parent_, True)
+        # self.editor.doc_panel = self.doc_panelstring.doc_panel
+
+
         self.setStyleSheet(get_css_style())
 
 
         layout.addWidget(self)
 
-
-    def test(self):
-        print('changed')
 
     def put_tab_icons(self, index):
         image_formats = (
@@ -700,7 +704,6 @@ class ShowOpenedFile(QTabBar):
 
 
     def track_tabs(self):
-
         if self.currentIndex() == -1:
             self.editor.setPlainText("")
             file_description.clear()
@@ -716,18 +719,18 @@ class ShowOpenedFile(QTabBar):
                     self.show_error.error_label = self.error_label
                     self.layout_.addWidget(self.error_label)
                     self.error_label.show()
-                    # self.doc_panelstring = DocStringDock(self.parent_)
-                    # self.editor.doc_panel = self.doc_panelstring.doc_panel
-
+                    self.doc_panelstring = DocStringDock(self.parent_, True)
+                    self.editor.doc_panel = self.doc_panelstring.doc_panel
+                    # self.editor.completer.setWidget(self.editor)
 
                 else:
                     if self.error_label:
                         self.error_label.hide()
-                    # self.editor.autocompleter(False)
-                    # if self.editor.doc_panel:
-                        # self.editor.doc_panel.hide()
+                    self.doc_panelstring = DocStringDock(self.parent_, False)
+                    self.parent_.removeDockWidget(self.doc_panelstring)
+                    self.doc_panelstring = None
                     self.editor.doc_panel = None
-
+                    # self.editor.completer.setWidget(None)
 
                     self.highlighter = PythonSyntaxHighlighter(False, self.editor.document())
 
@@ -767,7 +770,7 @@ class findingText(QLineEdit):
         self.hide()
         self.setStyleSheet(get_css_style())
         bawky_parent.addWidget(self)
-        self.setPlaceholderText("Search...")
+        self.setPlaceholderText("Find...🔎")
         self.textChanged.connect(lambda: self.changed(main_text))
         self.returnPressed.connect(lambda: self.find_next(main_text))
 
