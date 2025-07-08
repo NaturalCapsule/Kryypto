@@ -34,6 +34,7 @@ class IDE(QMainWindow):
         # main_text.doc_panel = self.doc_string_dock.doc_panel
 
         self.tab_bar = widgets.ShowOpenedFile(main_text, widgets.layout, widgets.error_label, self)
+        # self.tab_bar.commenting
         # self.removeDockWidget()
         widgets.layout.addWidget(main_text)
         # widgets.layout.removeWidget()
@@ -42,9 +43,9 @@ class IDE(QMainWindow):
         #     main_text.setPlainText(f.read())
 
         # self.highlighter = PythonSyntaxHighlighter(main_text.document())
-        self.remove_line = MainTextShortcuts(main_text, main_text.completer, self.tab_bar, widgets.layout)
+        self.editor_shortcuts = MainTextShortcuts(main_text, main_text.completer, self.tab_bar, widgets.layout)
         # self.show_error = ShowErrors(main_text, self.highlighter)
-        main_text.setFont(QFont("Maple Mono", self.remove_line.font_size))
+        main_text.setFont(QFont("Maple Mono", self.editor_shortcuts.font_size))
 
         # self.show_error.error_label = widgets.error_label
         # widgets.layout.addWidget(widgets.error_label)

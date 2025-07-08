@@ -30,8 +30,8 @@ class MainTextShortcuts:
         remove_indent = QShortcut(QKeySequence("Ctrl+["), parent)
         remove_indent.activated.connect(lambda: self.remove_indentation(parent))
 
-        comment = QShortcut(QKeySequence("Ctrl+/"), parent)
-        comment.activated.connect(lambda: self.comment(parent))
+        # comment = QShortcut(QKeySequence("Ctrl+/"), parent)
+        # comment.activated.connect(lambda: self.comment(parent))
 
         remove_current_tab = QShortcut(QKeySequence("Ctrl+Shift+R"), parent)
         remove_current_tab.activated.connect(lambda: self.remove_tab_(tab))
@@ -196,6 +196,7 @@ class MainTextShortcuts:
         text_edit.blockSignals(True)
         cursor.beginEditBlock()
 
+
         cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock)
         cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock, QTextCursor.MoveMode.KeepAnchor)
 
@@ -205,10 +206,10 @@ class MainTextShortcuts:
         indent = line_text[:leading_spaces]
         content = line_text[leading_spaces:]
 
-        if content.startswith("#"):
+        if content.startswith(self.commenting):
             new_line = indent + content[1:].lstrip()
         else:
-            new_line = indent + "# " + content
+            new_line = indent + f"{self.commenting} " + content
 
         cursor.insertText(new_line)
 

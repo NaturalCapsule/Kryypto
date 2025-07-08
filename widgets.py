@@ -11,7 +11,7 @@ from lines import ShowLines
 
 from get_style import get_css_style
 
-from highlighter import PythonSyntaxHighlighter
+from highlighter import PythonSyntaxHighlighter, ConfigSyntaxHighlighter
 from show_errors import ShowErrors
 
 central_widget = QWidget()
@@ -20,8 +20,9 @@ error_label = QLabel("Ready")
 error_label.setObjectName("SyntaxChecker")
 error_label.setStyleSheet(get_css_style())
 
-
 file_description = {}
+
+commenting = ''
 
 layout = QVBoxLayout(central_widget)
 
@@ -29,6 +30,7 @@ class MainText(QPlainTextEdit):
     def __init__(self, parent, window):
     # def __init__(self, parent):
         super().__init__()
+        global commenting
         self.clipboard = window
         self.setCursorWidth(0)
         self.selected_line = None
@@ -55,6 +57,8 @@ class MainText(QPlainTextEdit):
         self.setObjectName('Editor')
 
         self.setStyleSheet(get_css_style())
+
+        self.show_completer = False
 
         self.completer = QCompleter()
         popup = self.completer.popup()
@@ -145,6 +149,36 @@ class MainText(QPlainTextEdit):
             return
 
 
+        if key == Qt.Key.Key_Slash and event.modifiers() & Qt.KeyboardModifier.ControlModifier:
+            
+            cursor = self.textCursor()
+            self.setUpdatesEnabled(False)
+            self.blockSignals(True)
+            cursor.beginEditBlock()
+
+
+            cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock)
+            cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock, QTextCursor.MoveMode.KeepAnchor)
+
+            line_text = cursor.selectedText()
+
+            leading_spaces = len(line_text) - len(line_text.lstrip())
+            indent = line_text[:leading_spaces]
+            content = line_text[leading_spaces:]
+
+            if content.startswith(commenting):
+                new_line = indent + content[1:].lstrip()
+            else:
+                new_line = indent + f"{commenting} " + content
+
+            cursor.insertText(new_line)
+
+            cursor.endEditBlock()
+            self.setUpdatesEnabled(True)
+            self.blockSignals(False)
+            
+            
+            return
 
         if key == Qt.Key.Key_C and event.modifiers() & Qt.KeyboardModifier.ControlModifier:
             cursor = self.textCursor()
@@ -245,39 +279,40 @@ class MainText(QPlainTextEdit):
         pos = cursor.position()
 
         try:
-            line, column = self.cursor_to_line_column(pos)
-            script = jedi.Script(code=code, path="example.py")
-            completions = script.complete(line, column)
-            
-            
-            model = QStandardItemModel()
+            if self.show_completer:
+                line, column = self.cursor_to_line_column(pos)
+                script = jedi.Script(code=code, path="example.py")
+                completions = script.complete(line, column)
+                
+                
+                model = QStandardItemModel()
 
-            words = []
-            for c in completions[:30]:
-                words.append(c.name)
-                item = QStandardItem()
-                item.setText(c.name)
-                if c.type == 'statement':
-                    item.setIcon(QIcon('icons/autocompleterIcons/variable.svg'))
-                elif c.type == 'class' or c.type == 'module':
-                    item.setIcon(QIcon('icons/autocompleterIcons/class.svg'))
-                elif c.type == 'function':
-                    item.setIcon(QIcon('icons/autocompleterIcons/function.svg'))
-                elif c.type == 'keyword':
-                    item.setIcon(QIcon('icons/autocompleterIcons/keyword.svg'))
+                words = []
+                for c in completions[:30]:
+                    words.append(c.name)
+                    item = QStandardItem()
+                    item.setText(c.name)
+                    if c.type == 'statement':
+                        item.setIcon(QIcon('icons/autocompleterIcons/variable.svg'))
+                    elif c.type == 'class' or c.type == 'module':
+                        item.setIcon(QIcon('icons/autocompleterIcons/class.svg'))
+                    elif c.type == 'function':
+                        item.setIcon(QIcon('icons/autocompleterIcons/function.svg'))
+                    elif c.type == 'keyword':
+                        item.setIcon(QIcon('icons/autocompleterIcons/keyword.svg'))
 
-                model.appendRow(item)
+                    model.appendRow(item)
 
-            if words:
-                cursor.select(cursor.SelectionType.WordUnderCursor)
-                prefix = cursor.selectedText()
-                self.completer.setModel(model)
-                self.completer.setCompletionPrefix(prefix)
-                cr = self.cursorRect()
-                cr.setWidth(self.completer.popup().sizeHintForColumn(0) + 10)
-                self.completer.complete(cr)
-            else:
-                self.completer.popup().hide()
+                if words:
+                    cursor.select(cursor.SelectionType.WordUnderCursor)
+                    prefix = cursor.selectedText()
+                    self.completer.setModel(model)
+                    self.completer.setCompletionPrefix(prefix)
+                    cr = self.cursorRect()
+                    cr.setWidth(self.completer.popup().sizeHintForColumn(0) + 10)
+                    self.completer.complete(cr)
+                else:
+                    self.completer.popup().hide()
 
         except Exception as e:
             print("Autocomplete error:", e)
@@ -596,7 +631,7 @@ class ShowFiles(QDockWidget):
         self.file_viewer.setFocus()
 
 class CustomIcons(QFileIconProvider):
-    def icon(self, info: QFileInfo) -> QIcon:
+    def icon(self, info: QFileInfo):
         image_formats = [
             "jpg", "jpeg", "png", "gif", "bmp", "tiff", "tif", "webp", "heif", "heic",
             "eps", "pdf", "ai", "raw", "cr2", "nef", "arw", "orf", "dng",
@@ -635,6 +670,9 @@ class ShowOpenedFile(QTabBar):
     def __init__(self, editor, layout, error_label, parent):
         super().__init__()
         global file_description
+        global commenting
+        self.is_panel = True
+
         self.editor = editor
         self.layout_ = layout
         self.error_label = error_label
@@ -642,12 +680,10 @@ class ShowOpenedFile(QTabBar):
         self.setObjectName('OpenedFiles')
         self.currentChanged.connect(self.track_tabs)
 
-        # self.doc_panelstring = DocStringDock(self.parent_, True)
-        # self.editor.doc_panel = self.doc_panelstring.doc_panel
-
-
         self.setStyleSheet(get_css_style())
 
+        self.doc_panelstring = DocStringDock(self.parent_, False)
+        # self.editor.doc_panel = self.doc_panelstring.doc_panel
 
         layout.addWidget(self)
 
@@ -686,6 +722,9 @@ class ShowOpenedFile(QTabBar):
         elif self.tabText(index).endswith('md') or self.tabText(index).endswith('markdown'):
             self.setTabIcon(index, QIcon('icons/fileIcons/markdown.svg'))
 
+        elif self.tabText(index).lower().endswith('ini') or self.tabText(index).lower().endswith('settings') or self.tabText(index).lower().endswith('conf') or self.tabText(index).lower().endswith('config') or self.tabText(index).lower().endswith('cfg'):
+            self.setTabIcon(index, QIcon('icons/fileIcons/settings.svg'))
+
     def remove_tab(self, index):
         self.removeTab(index)
 
@@ -714,25 +753,71 @@ class ShowOpenedFile(QTabBar):
         for path, file_name in file_description.items():
             if file_name == tab_text:
                 if file_name.endswith('.py') or file_name.endswith('.pyi'):
+                    # self.is_panel = True
+
                     self.highlighter = PythonSyntaxHighlighter(use_highlighter = True, parent=self.editor.document())
                     self.show_error = ShowErrors(self.editor, self.highlighter)
+                    self.editor.show_completer = True
                     self.show_error.error_label = self.error_label
                     self.layout_.addWidget(self.error_label)
                     self.error_label.show()
-                    self.doc_panelstring = DocStringDock(self.parent_, True)
-                    self.editor.doc_panel = self.doc_panelstring.doc_panel
-                    # self.editor.completer.setWidget(self.editor)
+                    # try:
+                    # if not self.doc_panelstring:
+                    if self.is_panel:
+                        self.doc_panelstring = DocStringDock(self.parent_, True)
+                        self.editor.doc_panel = self.doc_panelstring.doc_panel
+                    self.is_panel = False
+                    # else:
+                    #     print('not found')
+                        # self.parent_.removeDockWidget(self.doc_panelstring)
+                        # self.doc_panelstring.deleteLater()
+                    # except Exception:
+                    #     pass
+                    commenting = '#'
+
+
+                elif file_name.lower().endswith('.ini') or file_name.lower().endswith('.settings') or file_name.lower().endswith('.conf') or file_name.lower().endswith('.cfg') or file_name.lower().endswith('.config'):
+                    self.highlighter = PythonSyntaxHighlighter(False, self.editor.document())
+                    self.highlighter.deleteLater()
+                    self.highlighter = ConfigSyntaxHighlighter(True, self.editor.document())
+
+                    if self.error_label:
+                        self.error_label.hide()
+                    try:
+
+                        if self.doc_panelstring:
+                            self.parent_.removeDockWidget(self.doc_panelstring)
+                            self.doc_panelstring.deleteLater()
+
+                    except Exception:
+                        pass
+                    self.doc_panelstring = None
+                    self.editor.doc_panel = None
+                    self.editor.show_completer = False
+                    self.editor.completer.setCompletionPrefix("")
+                    commenting = ';'
+                    self.is_panel = True
+
 
                 else:
                     if self.error_label:
                         self.error_label.hide()
-                    self.doc_panelstring = DocStringDock(self.parent_, False)
-                    self.parent_.removeDockWidget(self.doc_panelstring)
+                    try:
+                        if self.doc_panelstring:
+                            self.parent_.removeDockWidget(self.doc_panelstring)
+                            self.doc_panelstring.deleteLater()
+                    except Exception:
+                        pass
+
                     self.doc_panelstring = None
                     self.editor.doc_panel = None
-                    # self.editor.completer.setWidget(None)
+                    self.editor.show_completer = False
+                    self.editor.completer.setCompletionPrefix("")
+                    commenting = ''
+                    self.is_panel = True
 
                     self.highlighter = PythonSyntaxHighlighter(False, self.editor.document())
+                    self.highlighter.deleteLater()
 
                 with open(path, 'r', encoding = 'utf-8') as file:
                     self.editor.setPlainText(file.read())

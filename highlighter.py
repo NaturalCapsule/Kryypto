@@ -2,6 +2,7 @@ import ast
 from PyQt6.QtGui import QSyntaxHighlighter, QTextCharFormat, QColor, QFont
 from PyQt6.QtCore import QRegularExpression
 
+
 class PythonSyntaxHighlighter(QSyntaxHighlighter):
     def __init__(self,use_highlighter ,parent=None):
         super().__init__(parent)
@@ -127,7 +128,7 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
         ]
 
 
-        
+
         for builtin in builtins:
             pattern = QRegularExpression(f'\\b{builtin}\\b')
             self.highlighting_rules.append((pattern, builtin_format, 'builtins'))
@@ -438,3 +439,117 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
             except RuntimeError:
                 pass
                 # self.c_instances.clear()
+
+class ConfigSyntaxHighlighter(QSyntaxHighlighter):
+    def __init__(self,use_highlighter ,parent=None):
+        super().__init__(parent)
+
+        self.useit = use_highlighter
+
+        if self.useit:
+            self.highlighting_rules = []
+            self.setup_highlighting_rules()
+
+        else:
+            pass
+
+
+    def setup_highlighting_rules(self):
+        comment_format = QTextCharFormat()
+        comment_format.setForeground(QColor(128, 128, 128))
+        comment_format.setFontItalic(True)
+        self.highlighting_rules.append((QRegularExpression(';[^\n]*'), comment_format, 'comment'))
+
+
+        string_format = QTextCharFormat()
+        string_format.setForeground(QColor(166, 227, 161))
+        self.highlighting_rules.append((QRegularExpression('"[^"\\\\]*(\\\\.[^"\\\\]*)*"'), string_format, 'string'))
+        self.highlighting_rules.append((QRegularExpression("'[^'\\\\]*(\\\\.[^'\\\\]*)*'"), string_format, 'string'))
+
+
+        number_format = QTextCharFormat()
+        number_format.setForeground(QColor(250, 179, 135))
+
+        self.highlighting_rules.append((QRegularExpression('\\b\\d+\\.?\\d*\\b'), number_format, 'number'))
+
+        section_format = QTextCharFormat()
+        section_format.setForeground(QColor(249, 226, 175))
+        section_format.setFontWeight(QFont.Weight.Bold)
+        section_format.setFontItalic(True)
+
+        self.highlighting_rules.append((QRegularExpression('\[.*?\]'), section_format, 'section'))
+
+        variable_format = QTextCharFormat()
+        variable_format.setForeground(QColor(137, 180, 250))  # Blue
+
+        variable_format.setFontWeight(QFont.Weight.Bold)
+        variable_format.setFontItalic(True)
+
+        # self.highlighting_rules.append((QRegularExpression('\s*'), variable_format, 'variable'))
+        self.highlighting_rules.append((QRegularExpression('^\s*\w+(?=\s*=)'), variable_format, 'variable'))
+
+
+        for punctuation in ['!', '@', '$', '%', '^', '&', '*', '-', '=', '+']:
+            punction_format = QTextCharFormat()
+            punction_format.setForeground(QColor(243, 139, 168))
+
+            escaped = QRegularExpression.escape(punctuation)
+            punction_regex = QRegularExpression(escaped)
+            self.highlighting_rules.append((punction_regex, punction_format, 'punctuation'))
+
+        for bracket in ['(', ')', '{', '}']:
+            bracket_format = QTextCharFormat()
+            bracket_format.setForeground(QColor(243, 139, 168))
+            escaped = QRegularExpression.escape(bracket)
+            bracket_regex = QRegularExpression(escaped)
+            self.highlighting_rules.append((bracket_regex, bracket_format, 'bracket'))
+
+
+
+
+        # variable_formar = QTextCharFormat()
+        # variable_formar.setForeground(QColor(0, 128, 0))  # Dark green
+        # assignment_format.setFontWeight(QFont.Weight.Bold)
+
+        # Regex explanation:
+        #   \b       = word boundary
+        #   \w+      = variable name
+        #   \s*=\s*  = equals with optional spaces
+        #   \w+      = class or identifier
+
+
+
+        #assignment_regex = QRegularExpression(r'\b(\w+)\s*=\s*')
+        # this works try it on..!!
+        # assignment_regex = QRegularExpression(r'\b(\w+)\s*=')
+        # variable_regex = QRegularExpression(r'\b(\w+)\s*=')
+        # self.highlighting_rules.append((variable_regex, variable_formar, 'variable'))
+
+
+    def highlightBlock(self, text):
+
+        def is_overlapping(start, length, used_ranges):
+            end = start + length
+            for begin, finish in used_ranges:
+                if start < finish and end > begin:
+                    return True
+            return False
+
+        used_ranges = set()
+
+        for pattern, fmt, name in self.highlighting_rules:
+
+
+            matches = pattern.globalMatch(text)
+            while matches.hasNext():
+                match = matches.next()
+
+                start = match.capturedStart()
+                length = match.capturedLength()
+
+                if is_overlapping(start, length, used_ranges):
+                    continue
+
+
+                self.setFormat(start, length, fmt)
+                used_ranges.add((start, start + length))
