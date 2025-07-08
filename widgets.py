@@ -761,18 +761,11 @@ class ShowOpenedFile(QTabBar):
                     self.show_error.error_label = self.error_label
                     self.layout_.addWidget(self.error_label)
                     self.error_label.show()
-                    # try:
-                    # if not self.doc_panelstring:
                     if self.is_panel:
                         self.doc_panelstring = DocStringDock(self.parent_, True)
                         self.editor.doc_panel = self.doc_panelstring.doc_panel
                     self.is_panel = False
-                    # else:
-                    #     print('not found')
-                        # self.parent_.removeDockWidget(self.doc_panelstring)
-                        # self.doc_panelstring.deleteLater()
-                    # except Exception:
-                    #     pass
+
                     commenting = '#'
 
 
