@@ -35,6 +35,7 @@ class MainText(QPlainTextEdit):
         self.setCursorWidth(0)
         self.selected_line = None
         self.selected_text = None
+        self.setContextMenuPolicy(Qt.ContextMenuPolicy.NoContextMenu)
 
         # self.doc_panel = doc_panel
         self.doc_panel = None
@@ -120,10 +121,13 @@ class MainText(QPlainTextEdit):
         
         return ""
 
+
     def keyPressEvent(self, event: QKeyEvent):
         key = event.key()
         text = event.text()
         pairs = {'"': '"', "'": "'", '(': ')', '[': ']', '{': '}'}
+
+
 
         if self.completer.popup().isVisible():
             if key in (Qt.Key.Key_Enter, Qt.Key.Key_Return, Qt.Key.Key_Tab):
@@ -683,7 +687,6 @@ class ShowOpenedFile(QTabBar):
         self.setStyleSheet(get_css_style())
 
         self.doc_panelstring = DocStringDock(self.parent_, False)
-        # self.editor.doc_panel = self.doc_panelstring.doc_panel
 
         layout.addWidget(self)
 
@@ -743,6 +746,7 @@ class ShowOpenedFile(QTabBar):
 
 
     def track_tabs(self):
+        global commenting
         if self.currentIndex() == -1:
             self.editor.setPlainText("")
             file_description.clear()
@@ -753,7 +757,6 @@ class ShowOpenedFile(QTabBar):
         for path, file_name in file_description.items():
             if file_name == tab_text:
                 if file_name.endswith('.py') or file_name.endswith('.pyi'):
-                    # self.is_panel = True
 
                     self.highlighter = PythonSyntaxHighlighter(use_highlighter = True, parent=self.editor.document())
                     self.show_error = ShowErrors(self.editor, self.highlighter)
@@ -774,6 +777,13 @@ class ShowOpenedFile(QTabBar):
                     self.highlighter.deleteLater()
                     self.highlighter = ConfigSyntaxHighlighter(True, self.editor.document())
 
+                    try:
+                        if self.show_error:
+                            self.show_error.error_label = None
+                            self.show_error = None
+                    except Exception as e:
+                        pass
+
                     if self.error_label:
                         self.error_label.hide()
                     try:
@@ -793,6 +803,13 @@ class ShowOpenedFile(QTabBar):
 
 
                 else:
+                    try:
+                        if self.show_error:
+                            self.show_error.error_label = None
+                            self.show_error = None
+                    except Exception as e:
+                        pass
+
                     if self.error_label:
                         self.error_label.hide()
                     try:

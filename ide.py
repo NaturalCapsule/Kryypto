@@ -26,33 +26,14 @@ class IDE(QMainWindow):
 
     def setupWidgets(self):
         import widgets
-        # self.doc_string_dock = widgets.DocStringDock(self)
-
-        # main_text = widgets.MainText(self.doc_string_dock.doc_panel, widgets.layout, self.clipboard)
         main_text = widgets.MainText(widgets.layout, self.clipboard)
-
-        # main_text.doc_panel = self.doc_string_dock.doc_panel
-
         self.tab_bar = widgets.ShowOpenedFile(main_text, widgets.layout, widgets.error_label, self)
-        # self.tab_bar.commenting
-        # self.removeDockWidget()
         widgets.layout.addWidget(main_text)
-        # widgets.layout.removeWidget()
-        # main_text.find()
-        # with open('lines.py', 'r', encoding='utf-8') as f:
-        #     main_text.setPlainText(f.read())
-
-        # self.highlighter = PythonSyntaxHighlighter(main_text.document())
         self.editor_shortcuts = MainTextShortcuts(main_text, main_text.completer, self.tab_bar, widgets.layout)
-        # self.show_error = ShowErrors(main_text, self.highlighter)
         main_text.setFont(QFont("Maple Mono", self.editor_shortcuts.font_size))
 
-        # self.show_error.error_label = widgets.error_label
-        # widgets.layout.addWidget(widgets.error_label)
         self.show_files = widgets.ShowFiles(self, main_text, self.tab_bar)
-        # self.terminal = widgets.Terminal(self)
         FileDockShortcut(self, self.show_files, self.show_files.file_viewer, main_text, widgets.file_description, self.tab_bar)
-        # FileDockShortcut(self, self.show_files, self.show_files.file_viewer, self.doc_string_dock, self.doc_string_dock.doc_panel, main_text, widgets.file_description, self.tab_bar)
 
 
 
