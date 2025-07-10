@@ -203,10 +203,8 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
 
 
 
-        ########################## 
         self.c_instance_foramt = QTextCharFormat()
-        # self.c_instance_foramt.setForeground(QColor('cyan'))
-        self.c_instance_foramt.setForeground(QColor(249, 226, 175))  # Purple
+        self.c_instance_foramt.setForeground(QColor(249, 226, 175))
 
         self.c_instance_foramt.setFontWeight(QFont.Weight.Bold)  # Make class names bold
         self.c_instance_foramt.setFontItalic(True)  
@@ -485,11 +483,12 @@ class ConfigSyntaxHighlighter(QSyntaxHighlighter):
         variable_format.setFontWeight(QFont.Weight.Bold)
         variable_format.setFontItalic(True)
 
-        # self.highlighting_rules.append((QRegularExpression('\s*'), variable_format, 'variable'))
         self.highlighting_rules.append((QRegularExpression('^\s*\w+(?=\s*=)'), variable_format, 'variable'))
+        self.highlighting_rules.append((QRegularExpression('^\s*\w+(?=\s* )'), variable_format, 'variable'))
+        self.highlighting_rules.append((QRegularExpression(r'\b\w+(?=\s*=)'), variable_format, 'variable'))
 
 
-        for punctuation in ['!', '@', '$', '%', '^', '&', '*', '-', '=', '+']:
+        for punctuation in ['#', '!', '@', '$', '%', '^', '&', '*', '-', '=', '+']:
             punction_format = QTextCharFormat()
             punction_format.setForeground(QColor(243, 139, 168))
 
@@ -497,13 +496,20 @@ class ConfigSyntaxHighlighter(QSyntaxHighlighter):
             punction_regex = QRegularExpression(escaped)
             self.highlighting_rules.append((punction_regex, punction_format, 'punctuation'))
 
-        for bracket in ['(', ')', '{', '}']:
+        for bracket in ['(', ')', '{', '}', '[', ']']:
             bracket_format = QTextCharFormat()
             bracket_format.setForeground(QColor(243, 139, 168))
             escaped = QRegularExpression.escape(bracket)
             bracket_regex = QRegularExpression(escaped)
             self.highlighting_rules.append((bracket_regex, bracket_format, 'bracket'))
 
+
+
+        # string_format = QTextCharFormat()
+        # string_format.setForeground(QColor(166, 227, 161))
+
+        # self.highlighting_rules.append((QRegularExpression('"[^"\\\\]*(\\\\.[^"\\\\]*)*"'), string_format, 'string'))
+        # self.highlighting_rules.append((QRegularExpression("'[^'\\\\]*(\\\\.[^'\\\\]*)*'"), string_format, 'string'))
 
 
 

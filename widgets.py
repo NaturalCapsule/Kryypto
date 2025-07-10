@@ -154,7 +154,7 @@ class MainText(QPlainTextEdit):
 
 
         if key == Qt.Key.Key_Slash and event.modifiers() & Qt.KeyboardModifier.ControlModifier:
-            
+
             cursor = self.textCursor()
             self.setUpdatesEnabled(False)
             self.blockSignals(True)
@@ -180,8 +180,6 @@ class MainText(QPlainTextEdit):
             cursor.endEditBlock()
             self.setUpdatesEnabled(True)
             self.blockSignals(False)
-            
-            
             return
 
         if key == Qt.Key.Key_C and event.modifiers() & Qt.KeyboardModifier.ControlModifier:
@@ -200,7 +198,6 @@ class MainText(QPlainTextEdit):
                 cursor.endEditBlock()
                 self.setUpdatesEnabled(True)
                 self.blockSignals(False)
-                # pyperclip.copy(self.selected_line)
                 self.clipboard.setText(self.selected_line)
 
                 self.selected_text = None
@@ -208,7 +205,6 @@ class MainText(QPlainTextEdit):
             else:
                 self.selected_text = cursor.selectedText()
                 self.selected_line = None
-                # pyperclip.copy(self.selected_text)
                 self.clipboard.setText(self.selected_text)
 
             return
@@ -220,7 +216,6 @@ class MainText(QPlainTextEdit):
                 self.blockSignals(True)
                 cursor.beginEditBlock()
 
-                # cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock)
                 self.setTextCursor(cursor)
 
                 cursor.insertText(self.selected_text)
@@ -387,7 +382,6 @@ class DocStringDock(QDockWidget):
         super().__init__()
 
         if use:
-
             self.clearFocus()
 
             self.doc_panel = QTextEdit()
@@ -469,26 +463,6 @@ class ShowFiles(QDockWidget):
         self.setStyleSheet(get_css_style())
         self.file_viewer.clicked.connect(self.set_file)
 
-    # def set_text(self, index):
-        # if self.opened_tabs.currentIndex() == -1:
-        #     self.main_text.setPlainText("")
-        #     file_description.clear()
-
-        # # model = self.file_viewer.model()
-        # # index = self.file_viewer.currentIndex()
-        # # path = model.filePath(index)
-        # # str_path = str(path)
-        # # file_name = str_path.split('/')[-1]
-
-        # current_index = self.opened_tabs.currentIndex()
-
-        # tab_text = self.opened_tabs.tabText(current_index)
-
-        # for path, file_name_ in file_description.items():
-        #     if file_name_ == tab_text:
-        #         # print(path, file_name)
-        #         with open(path, 'r', encoding = 'utf-8') as file:
-        #             self.main_text.setPlainText(file.read())
 
     def set_file(self, index):
         try:
@@ -649,7 +623,7 @@ class CustomIcons(QFileIconProvider):
             return QIcon("icons/fileIcons/python.svg")
         elif info.suffix().lower() == 'json':
             return QIcon("icons/fileIcons/json.svg")
-        elif info.suffix().lower() == 'ini' or info.suffix() == 'cfg' or info.suffix() == 'settings' or info.suffix() == 'conf' or info.suffix() == 'config':
+        elif info.suffix().lower() == 'ini' or info.suffix().lower() == 'cfg' or info.suffix().lower() == 'settings' or info.suffix().lower() == 'conf' or info.suffix().lower() == 'config':
             return QIcon("icons/fileIcons/settings.svg")
         elif info.suffix().lower() in image_formats:
             return QIcon("icons/fileIcons/image.svg")
@@ -870,7 +844,6 @@ class findingText(QLineEdit):
         self.returnPressed.connect(lambda: self.find_next(main_text))
 
 
-
     def keyPressEvent(self, event):
         key = event.key()
         if key == Qt.Key.Key_Escape:
@@ -879,11 +852,10 @@ class findingText(QLineEdit):
         super().keyPressEvent(event)
 
     def find_next(self, main_text):
-        if not main_text.find(self.text()):
+        if not main_text.find(self.text().lower()):
             main_text.moveCursor(QTextCursor.MoveOperation.Start)
-            main_text.find(self.text())
-
+            main_text.find(self.text().lower())
 
     def changed(self, main_text):
         main_text.moveCursor(QTextCursor.MoveOperation.Start)
-        main_text.find(self.text())
+        main_text.find(self.text().lower())
