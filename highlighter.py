@@ -559,3 +559,86 @@ class ConfigSyntaxHighlighter(QSyntaxHighlighter):
 
                 self.setFormat(start, length, fmt)
                 used_ranges.add((start, start + length))
+
+
+class JsonSyntaxHighlighter(QSyntaxHighlighter):
+    def __init__(self,use_highlighter ,parent=None):
+        super().__init__(parent)
+
+        self.useit = use_highlighter
+
+        if self.useit:
+            self.highlighting_rules = []
+            self.setup_highlighting_rules()
+
+        else:
+            pass
+
+
+    def setup_highlighting_rules(self):
+        string_format = QTextCharFormat()
+        string_format.setForeground(QColor(166, 227, 161))
+        self.highlighting_rules.append((QRegularExpression('"[^"\\\\]*(\\\\.[^"\\\\]*)*"'), string_format, 'string'))
+
+        comment_format = QTextCharFormat()
+        comment_format.setForeground(QColor(128, 128, 128))
+        comment_format.setFontItalic(True)
+        self.highlighting_rules.append((QRegularExpression('//[^\n]*'), comment_format, 'comment'))
+
+
+
+
+        number_format = QTextCharFormat()
+        number_format.setForeground(QColor(250, 179, 135))
+
+        self.highlighting_rules.append((QRegularExpression('\\b\\d+\\.?\\d*\\b'), number_format, 'number'))
+
+
+        for punctuation in ['#', '!', '@', '$', '%', '^', '&', '*', '-', '=', '+']:
+            punction_format = QTextCharFormat()
+            punction_format.setForeground(QColor(243, 139, 168))
+
+            escaped = QRegularExpression.escape(punctuation)
+            punction_regex = QRegularExpression(escaped)
+            self.highlighting_rules.append((punction_regex, punction_format, 'punctuation'))
+
+
+        for bracket in ['{', '}']:
+            bracket_format = QTextCharFormat()
+            bracket_format.setForeground(QColor(249, 226, 175))
+            escaped = QRegularExpression.escape(bracket)
+            bracket_regex = QRegularExpression(escaped)
+            self.highlighting_rules.append((bracket_regex, bracket_format, 'bracket'))
+
+        for bracket in ['(', ')', '[', ']']:
+            bracket_format = QTextCharFormat()
+            bracket_format.setForeground(QColor(243, 139, 168))
+            escaped = QRegularExpression.escape(bracket)
+            bracket_regex = QRegularExpression(escaped)
+            self.highlighting_rules.append((bracket_regex, bracket_format, 'bracket'))
+
+    def highlightBlock(self, text):
+        def is_overlapping(start, length, used_ranges):
+            end = start + length
+            for begin, finish in used_ranges:
+                if start < finish and end > begin:
+                    return True
+            return False
+
+        used_ranges = set()
+
+        for pattern, fmt, name in self.highlighting_rules:
+
+
+            matches = pattern.globalMatch(text)
+            while matches.hasNext():
+                match = matches.next()
+
+                start = match.capturedStart()
+                length = match.capturedLength()
+
+                if is_overlapping(start, length, used_ranges):
+                    continue
+
+                self.setFormat(start, length, fmt)
+                used_ranges.add((start, start + length))

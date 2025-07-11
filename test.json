@@ -1,0 +1,143 @@
+{
+    "explaning": [
+        "In the 'bar widgets' and 'panel widgets' section you can add your own labels or buttons using the examples i provided and make your own buttons and lables",
+        "If you dont like the layouts you can move the labels and buttons to match your layout like you can remove the 'menu' and move it to the first section",
+        "If you have any layouts problem (like the middle layout is a little to the left or right) you can add lables and make them trasparent to make the middle layout in the middle",
+        
+        "in the 'icon' you can set any texts you like, or you can set a glyph icon from https://fontawesome.com and https://pictogrammers.com/library/mdi/, or any glyph websites",
+
+        "the 'name' in the custom lables and buttons can be modified in the style.css (go to style.css and search for label1, label2, etc,)",
+
+        "for the buttons you can add your own actions that supports cmd commands, like you see in the buttons examples",
+        "I have made some system info for the labels in the 'text' section, if you want to show the ram info, cpu and gpu you can add these to 'text'(cputemp, cpuUsage, ramtotalGB, ramusedGB, ramusage, nvidiatemp, nvidiausage, nvidiaTOTVram, nvidiaUSEDVram, nvidiaName), these are pretty clear for what they do."
+        ],
+
+    "panel widgets": [
+        {
+            "type": "label",
+            "text": "label",
+            "name": "label555",
+            "x": 300,
+            "y": 40000
+        },
+        {
+            "type": "button",
+            "text": "button",
+            "name": "button444",
+            "action": "start chrome",
+            "x": 300,
+            "y": 40000
+        },
+        {
+            "type": "label",
+            "text": "label222",
+            "name": "label23",
+            "x": 300,
+            "y": 40000
+        },
+        {
+            "type": "button",
+            "text": "button222",
+            "name": "button21",
+            "action": "explorer",
+            "x": 300,
+            "y": 40000
+        }
+    ],
+
+
+    "bar widgets": [
+        {
+            "type": "label",
+            "name": "label1",
+            "layout": "middle",
+            "text": "Hello User!"
+        },
+        {
+            "type": "label",
+            "name": "label2",
+            "layout": "left",
+            "text": "GPU: nvidiaName"
+        },
+        {
+            "type": "label",
+            "name": "label2",
+            "layout": "right",
+            "text": "RAM: ramusage%"
+        },
+        {
+            "type": "label",
+            "name": "label2",
+            "layout": "right",
+            "text": "CPU: cpuUsage%"
+        },
+        {
+            "type": "button",
+            "name": "button3",
+            "text": "Open telegram",
+            "layout": "SELECT A LAYOUT",
+            "action": "C:/Users/sxxve/AppData/Roaming/Telegram Desktop/Telegram.exe"
+        },
+        {
+            "type": "button",
+            "name": "button2",
+            "text": "Open explorer",
+            "layout": "SELECT A LAYOUT",
+            "action": "explorer"
+        },
+        {
+            "type": "button",
+            "name": "button1",
+            "text": "start firefox",
+            "layout": "SELECT A LAYOUT",
+            "action": "start firefox"
+        },
+        {
+            "docks": "",
+            "layout": "SELECT A LAYOUT",
+            "icon": ""
+        },
+        {
+            "wifi": "",
+            "layout": "SELECT A LAYOUT",
+            "onlineIcon": "",
+            "offlineIcon": ""
+
+        },
+        {
+            "battery": "",
+            "layout": "SELECT A LAYOUT",
+            "icon": ""
+        },
+        {
+            "time": "",
+            "layout": "SELECT A LAYOUT",
+            "icon": ""
+        },
+        {
+            "system info": "",
+            "layout": "SELECT A LAYOUT",
+            "icon": ""
+        },
+        {
+            "trash": "",
+            "layout": "SELECT A LAYOUT",
+            "icon": ""
+        },
+        {
+            "menu": "",
+            "layout": "SELECT A LAYOUT",
+            "icon": ""
+        },
+        {
+            "launcher": "",
+            "layout": "SELECT A LAYOUT",
+            "icon": ""
+        },
+        {
+            "window title": "true",
+            "layout": "left"
+        }
+
+    ]
+}

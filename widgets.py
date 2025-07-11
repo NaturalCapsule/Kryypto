@@ -11,7 +11,7 @@ from lines import ShowLines
 
 from get_style import get_css_style
 
-from highlighter import PythonSyntaxHighlighter, ConfigSyntaxHighlighter
+from highlighter import *
 from show_errors import ShowErrors
 
 central_widget = QWidget()
@@ -28,7 +28,6 @@ layout = QVBoxLayout(central_widget)
 
 class MainText(QPlainTextEdit):
     def __init__(self, parent, window):
-    # def __init__(self, parent):
         super().__init__()
         global commenting
         self.clipboard = window
@@ -169,9 +168,16 @@ class MainText(QPlainTextEdit):
             leading_spaces = len(line_text) - len(line_text.lstrip())
             indent = line_text[:leading_spaces]
             content = line_text[leading_spaces:]
+            # print(content)
 
             if content.startswith(commenting):
-                new_line = indent + content[1:].lstrip()
+                if content.startswith('//'):
+                    content = content[2:].lstrip()
+                else:
+                    content = content[1:].lstrip()
+                # new_line = indent + content[1:].lstrip()
+                new_line = indent + content
+
             else:
                 new_line = indent + f"{commenting} " + content
 
@@ -744,6 +750,55 @@ class ShowOpenedFile(QTabBar):
                     self.is_panel = False
 
                     commenting = '#'
+
+
+                elif file_name.lower().endswith('.json') or file.lower().endswith('.jsonc'):
+                    self.highlighter = PythonSyntaxHighlighter(False, self.editor.document())
+                    self.highlighter.deleteLater()
+                    self.highlighter = JsonSyntaxHighlighter(True, self.editor.document())
+
+                    try:
+                        if self.show_error:
+                            self.show_error.error_label = None
+                            self.show_error = None
+                    except Exception as e:
+                        pass
+
+                    if self.error_label:
+                        self.error_label.hide()
+                    try:
+
+                        if self.doc_panelstring:
+                            self.parent_.removeDockWidget(self.doc_panelstring)
+                            self.doc_panelstring.deleteLater()
+
+                    except Exception:
+                        pass
+                    self.doc_panelstring = None
+                    self.editor.doc_panel = None
+                    self.editor.show_completer = False
+                    self.editor.completer.setCompletionPrefix("")
+                    commenting = '//'
+                    self.is_panel = True
+
+
+                # else:
+                    try:
+                        if self.show_error:
+                            self.show_error.error_label = None
+                            self.show_error = None
+                    except Exception as e:
+                        pass
+
+                    if self.error_label:
+                        self.error_label.hide()
+                    try:
+                        if self.doc_panelstring:
+                            self.parent_.removeDockWidget(self.doc_panelstring)
+                            self.doc_panelstring.deleteLater()
+                    except Exception:
+                        pass
+
 
 
                 elif file_name.lower().endswith('.ini') or file_name.lower().endswith('.settings') or file_name.lower().endswith('.conf') or file_name.lower().endswith('.cfg') or file_name.lower().endswith('.config'):
