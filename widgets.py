@@ -12,7 +12,7 @@ from lines import ShowLines
 from get_style import get_css_style
 
 from highlighter import *
-from show_errors import ShowErrors
+from show_errors import ShowErrors, ShowJsonErrors
 
 central_widget = QWidget()
 
@@ -757,6 +757,8 @@ class ShowOpenedFile(QTabBar):
                     self.highlighter.deleteLater()
                     self.highlighter = JsonSyntaxHighlighter(True, self.editor.document())
 
+                    # self.show_error = ShowJsonErrors(self.editor, self.highlighter, path)
+
                     try:
                         if self.show_error:
                             self.show_error.error_label = None
@@ -767,6 +769,8 @@ class ShowOpenedFile(QTabBar):
                     if self.error_label:
                         self.error_label.hide()
                     try:
+
+
 
                         if self.doc_panelstring:
                             self.parent_.removeDockWidget(self.doc_panelstring)
@@ -783,23 +787,26 @@ class ShowOpenedFile(QTabBar):
 
 
                 # else:
-                    try:
-                        if self.show_error:
-                            self.show_error.error_label = None
-                            self.show_error = None
-                    except Exception as e:
-                        pass
+                    # try:
+                    #     if self.show_error:
+                    #         self.show_error.error_label = None
+                    #         self.show_error = None
+                    # except Exception as e:
+                    #     pass
 
-                    if self.error_label:
-                        self.error_label.hide()
-                    try:
-                        if self.doc_panelstring:
-                            self.parent_.removeDockWidget(self.doc_panelstring)
-                            self.doc_panelstring.deleteLater()
-                    except Exception:
-                        pass
-
-
+                    # if self.error_label:
+                    #     self.error_label.hide()
+                    # try:
+                    #     if self.doc_panelstring:
+                    #         self.parent_.removeDockWidget(self.doc_panelstring)
+                    #         self.doc_panelstring.deleteLater()
+                    # except Exception:
+                    #     pass
+                    self.show_error = ShowJsonErrors(self.editor, self.highlighter, path)
+                    self.show_error.error_label = self.error_label
+                    self.layout_.addWidget(self.error_label)
+                    self.error_label.show()
+                    # print(path)
 
                 elif file_name.lower().endswith('.ini') or file_name.lower().endswith('.settings') or file_name.lower().endswith('.conf') or file_name.lower().endswith('.cfg') or file_name.lower().endswith('.config'):
                     self.highlighter = PythonSyntaxHighlighter(False, self.editor.document())
