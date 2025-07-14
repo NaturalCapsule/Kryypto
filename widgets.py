@@ -627,7 +627,7 @@ class CustomIcons(QFileIconProvider):
             return QIcon("icons/fileIcons/folder.webp")
         elif info.suffix().lower() == "py" or info.suffix().lower() == 'pyi':
             return QIcon("icons/fileIcons/python.svg")
-        elif info.suffix().lower() == 'json':
+        elif info.suffix().lower() == 'json' or info.suffix().lower() == 'jsonc':
             return QIcon("icons/fileIcons/json.svg")
         elif info.suffix().lower() == 'ini' or info.suffix().lower() == 'cfg' or info.suffix().lower() == 'settings' or info.suffix().lower() == 'conf' or info.suffix().lower() == 'config':
             return QIcon("icons/fileIcons/settings.svg")
@@ -684,7 +684,7 @@ class ShowOpenedFile(QTabBar):
         elif self.tabText(index).endswith('txt'):
             self.setTabIcon(index, QIcon('icons/fileIcons/txt.png'))
 
-        elif self.tabText(index).endswith('json'):
+        elif self.tabText(index).endswith('json') or self.tabText(index).endswith('jsonc'):
             self.setTabIcon(index, QIcon('icons/fileIcons/json.svg'))
 
         elif self.tabText(index).endswith('svg'):
@@ -752,12 +752,11 @@ class ShowOpenedFile(QTabBar):
                     commenting = '#'
 
 
-                elif file_name.lower().endswith('.json') or file.lower().endswith('.jsonc'):
+                elif file_name.lower().endswith('.json') or file_name.lower().endswith('.jsonc'):
                     self.highlighter = PythonSyntaxHighlighter(False, self.editor.document())
                     self.highlighter.deleteLater()
                     self.highlighter = JsonSyntaxHighlighter(True, self.editor.document())
 
-                    # self.show_error = ShowJsonErrors(self.editor, self.highlighter, path)
 
                     try:
                         if self.show_error:
@@ -785,28 +784,14 @@ class ShowOpenedFile(QTabBar):
                     commenting = '//'
                     self.is_panel = True
 
+                    if file_name.lower().endswith('.jsonc'):
+                        self.show_error = ShowJsonErrors(self.editor, self.highlighter, path, True)
 
-                # else:
-                    # try:
-                    #     if self.show_error:
-                    #         self.show_error.error_label = None
-                    #         self.show_error = None
-                    # except Exception as e:
-                    #     pass
-
-                    # if self.error_label:
-                    #     self.error_label.hide()
-                    # try:
-                    #     if self.doc_panelstring:
-                    #         self.parent_.removeDockWidget(self.doc_panelstring)
-                    #         self.doc_panelstring.deleteLater()
-                    # except Exception:
-                    #     pass
-                    self.show_error = ShowJsonErrors(self.editor, self.highlighter, path)
+                    elif file_name.lower().endswith('.json'):
+                        self.show_error = ShowJsonErrors(self.editor, self.highlighter, path, False)
                     self.show_error.error_label = self.error_label
                     self.layout_.addWidget(self.error_label)
                     self.error_label.show()
-                    # print(path)
 
                 elif file_name.lower().endswith('.ini') or file_name.lower().endswith('.settings') or file_name.lower().endswith('.conf') or file_name.lower().endswith('.cfg') or file_name.lower().endswith('.config'):
                     self.highlighter = PythonSyntaxHighlighter(False, self.editor.document())

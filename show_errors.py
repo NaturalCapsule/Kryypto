@@ -3,7 +3,8 @@ from PyQt6.QtGui import QTextCursor, QColor, QTextCharFormat, QTextCursor, QColo
 from PyQt6.QtCore import QTimer
 
 from func_classes import list_classes_functions
-import json
+import json, commentjson
+from lark.exceptions import UnexpectedCharacters, UnexpectedToken
 from threading import Thread
 
 class ShowErrors:
@@ -73,7 +74,7 @@ class ShowErrors:
 
 
 class ShowJsonErrors:
-    def __init__(self, parent, highlighter, file_path):
+    def __init__(self, parent, highlighter, file_path, use_jsonc):
         parent.textChanged.connect(self.schedule_check)
         self.timer = QTimer()
         self.timer.setSingleShot(True)
@@ -82,45 +83,57 @@ class ShowJsonErrors:
         self.parent = parent
         self.highlighter = highlighter
         self.file_path = file_path
-        self.new_file = 'new_file'
-        self.old_file = 'old_fle'
+        self.use_jsonc = use_jsonc
+        self.count_json = 0
+        self.count_jsonc = 0
 
     def schedule_check(self):
             self.timer.start(500)
 
     def check_syntax(self):
-        code = self.parent.toPlainText()
-
-
         self.clear_error_highlighting()
-        try:
-        
-            # if self.new_file == self.old_file:
-                # continue
-                # pass
-                # self.new_file = self.old_file
-                # print('stopped updating')
+        if not self.use_jsonc:
+            try:
+                with open(fr'{self.file_path}', 'r', encoding = 'utf-8') as file:
+                    self.count_json += 1
+                    if self.count_json == 1:
+                            if len(file.read()) == 0:
+                                self.parent.setPlainText('{\n    \n}')
+                    json.load(file)
+                    self.old_file = file.read()
+                if self.error_label:
+                    self.error_label.setText("✅ No syntax errors")
 
-            # else:
-            with open(fr'{self.file_path}', 'r') as file:
-                # print("updating")
-                json.load(file)
-                self.old_file = file.read()
-            if self.error_label:
-                self.error_label.setText("✅ No syntax errors")
+                file.close()
 
-            file.close()
+                Thread(target = lambda: self.analyze_code(self.parent), daemon = False).start()
 
-            Thread(target = lambda: self.analyze_code(self.parent), daemon = False).start()
 
-            # self.new_file = None
+            except json.JSONDecodeError as e:
+                if self.error_label:
+                    self.error_label.setText(f"❌ Line {e.lineno}: {e.msg}")
 
-        except json.JSONDecodeError as e:
-            self.new_file = self.old_file
-            if self.error_label:
-                self.error_label.setText(f"❌ Line {e.lineno}: {e.msg}")
+                self.underline_error(e.lineno, e.colno)
+        else:
+            try:
+                with open(fr'{self.file_path}', 'r', encoding='utf-8') as file:
+                    self.count_jsonc += 1
+                    content = file.read()
+                    if self.count_json == 1:
+                        if len(content) == 0:
+                            self.parent.setPlainText("{    \n}")
+                    
+                    data = commentjson.loads(content)
 
-            self.underline_error(e.lineno, e.colno)
+                if self.error_label:
+                    self.error_label.setText("✅ No syntax errors")
+
+                Thread(target=lambda: self.analyze_code(self.parent), daemon=False).start()
+
+            except (UnexpectedToken, ValueError) as e:
+                if self.error_label:
+                    self.error_label.setText(f"❌ Error: {str(e)}")
+
 
     def clear_error_highlighting(self):
         cursor = self.parent.textCursor()
@@ -150,7 +163,6 @@ class ShowJsonErrors:
                 cursor.movePosition(QTextCursor.MoveOperation.Down)
 
         cursor.movePosition(QTextCursor.MoveOperation.Right, n=column - 1)
-        # cursor.movePosition(QTextCursor.MoveOperation.Right, n=column)
 
         cursor.movePosition(QTextCursor.MoveOperation.Right, QTextCursor.MoveMode.KeepAnchor)
 
@@ -160,7 +172,4 @@ class ShowJsonErrors:
         cursor.setCharFormat(fmt)
 
     def analyze_code(self, main_text):
-        # code = main_text.toPlainText()
-        # self.highlighter.set_code(code)
-
         self.highlighter.rehighlight()
