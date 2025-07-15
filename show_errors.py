@@ -115,11 +115,11 @@ class ShowJsonErrors:
             try:
                 self.count_jsonc += 1
                 content = self.parent.toPlainText()
-                if self.count_json == 1:
+                if self.count_jsonc == 1:
                     if len(content) == 0:
                         self.parent.setPlainText("{\n    \n}")
 
-                    data = commentjson.loads(content)
+                commentjson.loads(content)
 
                 if self.error_label:
                     self.error_label.setText("✅ No syntax errors")

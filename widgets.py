@@ -757,7 +757,6 @@ class ShowOpenedFile(QTabBar):
                     self.highlighter.deleteLater()
                     self.highlighter = JsonSyntaxHighlighter(True, self.editor.document())
 
-
                     try:
                         if self.show_error:
                             self.show_error.error_label = None
@@ -768,8 +767,6 @@ class ShowOpenedFile(QTabBar):
                     if self.error_label:
                         self.error_label.hide()
                     try:
-
-
 
                         if self.doc_panelstring:
                             self.parent_.removeDockWidget(self.doc_panelstring)

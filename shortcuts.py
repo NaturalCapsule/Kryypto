@@ -45,7 +45,12 @@ class MainTextShortcuts:
     def get_text(self, error_label, clipboard):
         if error_label:
             text = error_label.text()
-            clipboard.setText(text)
+            if text != '✅ No syntax errors':
+                splitting = text.split(' ')
+                if splitting[1] == 'Line':
+                    text = splitting[3:]
+                    text = ' '.join(text)
+                clipboard.setText(text)
 
         # find_text = QShortcut(QKeySequence('Ctrl+F'), parent)
         # find_text.activated.connect(lambda: findingText(bawky_parent, parent))
