@@ -1,11 +1,8 @@
 import re
 from PyQt6.QtGui import QFont, QShortcut, QKeySequence, QTextCursor
-from PyQt6.QtWidgets import QLineEdit
-from PyQt6.QtCore import Qt
-from get_style import get_css_style
 
 class MainTextShortcuts:
-    def __init__(self, parent, completer, tab, bawky_parent):
+    def __init__(self, parent, completer, tab, error_label, clipboard):
         self.font_size = 19
         # self.num_lines = num_lines
 
@@ -41,6 +38,14 @@ class MainTextShortcuts:
 
         move_tab_left = QShortcut(QKeySequence("Ctrl+Shift+E"), parent)
         move_tab_left.activated.connect(lambda: self.move_tab_left(tab))
+
+        get_error_text = QShortcut(QKeySequence("Ctrl+Shift+C"), parent)
+        get_error_text.activated.connect(lambda: self.get_text(error_label, clipboard))
+
+    def get_text(self, error_label, clipboard):
+        if error_label:
+            text = error_label.text()
+            clipboard.setText(text)
 
         # find_text = QShortcut(QKeySequence('Ctrl+F'), parent)
         # find_text.activated.connect(lambda: findingText(bawky_parent, parent))

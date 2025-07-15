@@ -29,7 +29,7 @@ class IDE(QMainWindow):
         main_text = widgets.MainText(widgets.layout, self.clipboard)
         self.tab_bar = widgets.ShowOpenedFile(main_text, widgets.layout, widgets.error_label, self)
         widgets.layout.addWidget(main_text)
-        self.editor_shortcuts = MainTextShortcuts(main_text, main_text.completer, self.tab_bar, widgets.layout)
+        self.editor_shortcuts = MainTextShortcuts(main_text, main_text.completer, self.tab_bar, widgets.error_label, self.clipboard)
         main_text.setFont(QFont("Maple Mono", self.editor_shortcuts.font_size))
 
         self.show_files = widgets.ShowFiles(self, main_text, self.tab_bar)

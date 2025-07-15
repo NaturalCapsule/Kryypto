@@ -19,7 +19,7 @@ central_widget = QWidget()
 error_label = QLabel("Ready")
 error_label.setObjectName("SyntaxChecker")
 error_label.setStyleSheet(get_css_style())
-
+# error_label.text()
 file_description = {}
 
 commenting = ''

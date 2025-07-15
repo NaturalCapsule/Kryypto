@@ -586,6 +586,11 @@ class JsonSyntaxHighlighter(QSyntaxHighlighter):
         self.highlighting_rules.append((QRegularExpression('//[^\n]*'), comment_format, 'comment'))
 
 
+        boolean = QTextCharFormat()
+        boolean.setForeground(QColor(0, 179, 135))
+
+        self.highlighting_rules.append((QRegularExpression('true'), boolean, 'bool'))
+        self.highlighting_rules.append((QRegularExpression('false'), boolean, 'bool'))
 
 
         number_format = QTextCharFormat()

@@ -94,17 +94,14 @@ class ShowJsonErrors:
         self.clear_error_highlighting()
         if not self.use_jsonc:
             try:
-                with open(fr'{self.file_path}', 'r', encoding = 'utf-8') as file:
-                    self.count_json += 1
-                    if self.count_json == 1:
-                            if len(file.read()) == 0:
-                                self.parent.setPlainText('{\n    \n}')
-                    json.load(file)
-                    self.old_file = file.read()
+                file = self.parent.toPlainText()
+                self.count_json += 1
+                if self.count_json == 1:
+                        if len(file) == 0:
+                            self.parent.setPlainText('{\n    \n}')
+                json.loads(file)
                 if self.error_label:
                     self.error_label.setText("✅ No syntax errors")
-
-                file.close()
 
                 Thread(target = lambda: self.analyze_code(self.parent), daemon = False).start()
 
@@ -116,13 +113,12 @@ class ShowJsonErrors:
                 self.underline_error(e.lineno, e.colno)
         else:
             try:
-                with open(fr'{self.file_path}', 'r', encoding='utf-8') as file:
-                    self.count_jsonc += 1
-                    content = file.read()
-                    if self.count_json == 1:
-                        if len(content) == 0:
-                            self.parent.setPlainText("{    \n}")
-                    
+                self.count_jsonc += 1
+                content = self.parent.toPlainText()
+                if self.count_json == 1:
+                    if len(content) == 0:
+                        self.parent.setPlainText("{\n    \n}")
+
                     data = commentjson.loads(content)
 
                 if self.error_label:
