@@ -1,10 +1,6 @@
-## TO-DO: make the auto completer work only for .py files.
-
 import sys
 from PyQt6.QtWidgets import QApplication, QMainWindow
 from PyQt6.QtGui import  QFont, QSurfaceFormat
-from highlighter import PythonSyntaxHighlighter
-from show_errors import ShowErrors
 from shortcuts import *
 from get_style import get_css_style
 

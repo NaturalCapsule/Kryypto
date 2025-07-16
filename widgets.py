@@ -1,5 +1,3 @@
-## TO-DO: make the auto completer work only for .py files.
-
 import jedi
 import re
 import os
@@ -216,6 +214,22 @@ class MainText(QPlainTextEdit):
             return
 
         if key == Qt.Key.Key_V and event.modifiers() & Qt.KeyboardModifier.ControlModifier:
+
+            # if self.clipboard.text() != '':
+            #     cursor = self.textCursor()
+            #     self.setUpdatesEnabled(False)
+            #     self.blockSignals(True)
+            #     cursor.beginEditBlock()
+
+            #     self.setTextCursor(cursor)
+
+            #     cursor.insertText(self.clipboard.text())
+            #     cursor.endEditBlock()
+            #     self.setUpdatesEnabled(True)
+            #     self.blockSignals(False)
+                # self.selected_line = None
+                # self.selected_text = None
+
             if self.selected_text is not None:
                 cursor = self.textCursor()
                 self.setUpdatesEnabled(False)
@@ -224,7 +238,12 @@ class MainText(QPlainTextEdit):
 
                 self.setTextCursor(cursor)
 
-                cursor.insertText(self.selected_text)
+                if self.clipboard.text() != '':
+                    cursor.insertText(self.clipboard.text())
+
+                else:
+
+                    cursor.insertText(self.selected_text)
                 cursor.endEditBlock()
                 self.setUpdatesEnabled(True)
                 self.blockSignals(False)
@@ -240,11 +259,27 @@ class MainText(QPlainTextEdit):
                 self.setTextCursor(cursor)
 
                 cursor.insertText("\n" + self.selected_line)
-                print(self.selected_line)
+
                 cursor.endEditBlock()
                 self.setUpdatesEnabled(True)
                 self.blockSignals(False)
                 self.selected_text = None
+
+            # else:
+            #     self.selected_text = None
+            #     self.selected_line = None
+            #     cursor = self.textCursor()
+            #     self.setUpdatesEnabled(False)
+            #     self.blockSignals(True)
+            #     cursor.beginEditBlock()
+
+            #     self.setTextCursor(cursor)
+
+            #     cursor.insertText(self.clipboard.text())
+            #     cursor.endEditBlock()
+            #     self.setUpdatesEnabled(True)
+            #     self.blockSignals(False)
+
             return
 
         if key == Qt.Key.Key_F and event.modifiers() & Qt.KeyboardModifier.ControlModifier:

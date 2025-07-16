@@ -52,8 +52,6 @@ class MainTextShortcuts:
                     text = ' '.join(text)
                 clipboard.setText(text)
 
-        # find_text = QShortcut(QKeySequence('Ctrl+F'), parent)
-        # find_text.activated.connect(lambda: findingText(bawky_parent, parent))
 
     # class findingText(QLineEdit):
     #     def __init__(self, bawky_parent, main_text):
