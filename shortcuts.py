@@ -27,9 +27,6 @@ class MainTextShortcuts:
         remove_indent = QShortcut(QKeySequence("Ctrl+["), parent)
         remove_indent.activated.connect(lambda: self.remove_indentation(parent))
 
-        # comment = QShortcut(QKeySequence("Ctrl+/"), parent)
-        # comment.activated.connect(lambda: self.comment(parent))
-
         remove_current_tab = QShortcut(QKeySequence("Ctrl+Shift+R"), parent)
         remove_current_tab.activated.connect(lambda: self.remove_tab_(tab))
 

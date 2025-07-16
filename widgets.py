@@ -214,22 +214,6 @@ class MainText(QPlainTextEdit):
             return
 
         if key == Qt.Key.Key_V and event.modifiers() & Qt.KeyboardModifier.ControlModifier:
-
-            # if self.clipboard.text() != '':
-            #     cursor = self.textCursor()
-            #     self.setUpdatesEnabled(False)
-            #     self.blockSignals(True)
-            #     cursor.beginEditBlock()
-
-            #     self.setTextCursor(cursor)
-
-            #     cursor.insertText(self.clipboard.text())
-            #     cursor.endEditBlock()
-            #     self.setUpdatesEnabled(True)
-            #     self.blockSignals(False)
-                # self.selected_line = None
-                # self.selected_text = None
-
             if self.selected_text is not None:
                 cursor = self.textCursor()
                 self.setUpdatesEnabled(False)
@@ -264,22 +248,6 @@ class MainText(QPlainTextEdit):
                 self.setUpdatesEnabled(True)
                 self.blockSignals(False)
                 self.selected_text = None
-
-            # else:
-            #     self.selected_text = None
-            #     self.selected_line = None
-            #     cursor = self.textCursor()
-            #     self.setUpdatesEnabled(False)
-            #     self.blockSignals(True)
-            #     cursor.beginEditBlock()
-
-            #     self.setTextCursor(cursor)
-
-            #     cursor.insertText(self.clipboard.text())
-            #     cursor.endEditBlock()
-            #     self.setUpdatesEnabled(True)
-            #     self.blockSignals(False)
-
             return
 
         if key == Qt.Key.Key_F and event.modifiers() & Qt.KeyboardModifier.ControlModifier:
@@ -496,7 +464,6 @@ class ShowFiles(QDockWidget):
         self.setObjectName('Docks')
         self.file_viewer.setStyleSheet(get_css_style())
 
-        # self.opened_tabs.currentChanged.connect(self.set_text)
 
         self.setWidget(self.file_viewer)
         self.setFeatures(QDockWidget.DockWidgetFeature.DockWidgetMovable)
@@ -882,8 +849,11 @@ class ShowOpenedFile(QTabBar):
                     self.highlighter = PythonSyntaxHighlighter(False, self.editor.document())
                     self.highlighter.deleteLater()
 
-                with open(path, 'r', encoding = 'utf-8') as file:
-                    self.editor.setPlainText(file.read())
+                try:
+                    with open(path, 'r', encoding = 'utf-8') as file:
+                        self.editor.setPlainText(file.read())
+                except FileNotFoundError:
+                    self.remove_tab(self.currentIndex())
 
 # class Terminal(QDockWidget):
 #     def __init__(self, parent):

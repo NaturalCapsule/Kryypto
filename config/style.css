@@ -9,6 +9,7 @@
 
 #Editor {
     background-color: #1e1e2e;
+
     color: white;
     selection-background-color: rgba(255, 255, 255, 0.5);
     padding: 2px;
@@ -19,34 +20,6 @@
                                 stop:0 red, stop:1 blue); */
 }
 
-
-/* #AutoCompleter {
-    background-color: #1e1e2e;
-    color: #ffffff;
-    font-size: 23px;
-    selection-background-color: rgba(255, 255, 255, 0.5);
-    selection-color: white;
-    border: 1px solid #444;
-    padding: 2px;
-    border-radius: 10px;
-    border: 2px solid #F38BA8
-}
-
-
-#AutoCompleter::item:hover {
-    outline: none;
-    border: none;
-
-    border-radius: 10px;
-    background-color: #3a3a3a;
-}
-
-#AutoCompleter::item:selected {
-    outline: none;
-    border-radius: 10px;
-    background-color: #5a5a5a;
-    color: white;
-} */
 
 #Finder {
     background-color: #1e1e2e;
@@ -96,7 +69,8 @@
     color: white;
     border: 2px solid #F9E2AF;
     border-radius: 10px;
-    font-family: Consolas, monospace;
+    font-family: 'Maple Mono';
+    /* font-weight: bold; */
     font-size: 19px;
     padding: 5px;
 }
@@ -113,17 +87,6 @@
     border: 1px solid #3c3c3c;
     color: #ffffff;                             
 }
-
-/* #DirectoryViewer {
-    background-color: #1e1e2e;
-    border: 2px solid #89b4fa;
-    selection-background-color: purple;
-    selection-color: purple;
-    border-radius: 10px;
-    color: #ffffff;
-    font-size: 18px;
-} */
-
 
 #DirectoryViewer {
     background-color: #1e1e2e;

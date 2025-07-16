@@ -169,7 +169,7 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
         self.highlighting_rules.append((QRegularExpression('\\bclass\\s+(\\w+)'), class_format, 'class'))
 
 
-        for punctuation in ['!', '@', '$', '%', '^', '&', '*', '-', '=', '+']:
+        for punctuation in ['!', '@', '$', '%', '^', '&', '*', '-', '=', '+', '>', '<']:
             punction_format = QTextCharFormat()
             # punction_format.setForeground(QColor(255, 0, 0))  # Red
             punction_format.setForeground(QColor(243, 139, 168))  # Orange
