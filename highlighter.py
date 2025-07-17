@@ -666,30 +666,69 @@ class CssSyntaxHighlighter(QSyntaxHighlighter):
 
 
     def setup_highlighting_rules(self):
-        string_format = QTextCharFormat()
-        string_format.setForeground(QColor(166, 227, 161))
-        self.highlighting_rules.append((QRegularExpression('"[^"\\\\]*(\\\\.[^"\\\\]*)*"'), string_format, 'string'))
-
         comment_format = QTextCharFormat()
         comment_format.setForeground(QColor(128, 128, 128))
         comment_format.setFontItalic(True)
-        self.highlighting_rules.append((QRegularExpression('//[^\n]*'), comment_format, 'comment'))
+        self.highlighting_rules.append((QRegularExpression('/\*.*?\*/'), comment_format, 'comment'))
 
 
-        boolean = QTextCharFormat()
-        boolean.setForeground(QColor(0, 179, 135))
+        string_format = QTextCharFormat()
+        string_format.setForeground(QColor(166, 227, 161))
+        self.highlighting_rules.append((QRegularExpression('"[^"\\\\]*(\\\\.[^"\\\\]*)*"'), string_format, 'string'))
+        self.highlighting_rules.append((QRegularExpression("'[^'\\\\]*(\\\\.[^'\\\\]*)*'"), string_format, 'string'))
 
-        self.highlighting_rules.append((QRegularExpression('true'), boolean, 'bool'))
-        self.highlighting_rules.append((QRegularExpression('false'), boolean, 'bool'))
+        # class_format = QTextCharFormat()
+        # class_format.setForeground(QColor(249, 226, 175))
 
+
+        class_format = QTextCharFormat()
+        class_format.setForeground(QColor(249, 226, 175))  # Choose your color
+        class_format.setFontWeight(QFont.Weight.Bold)
+        class_format.setFontItalic(True)
+
+        self.highlighting_rules.append((
+            QRegularExpression(r'#(?![0-9a-fA-F]{3}(?:[0-9a-fA-F]{3})?\b)[\w-]+'),
+            class_format,
+            'css-id'
+        ))
+
+        self.highlighting_rules.append((
+            QRegularExpression(r'\.(?!\d)\w[\w-]*'),
+            class_format,
+            'css-class'
+        ))
+
+        color_format = QTextCharFormat()
+        color_format.setForeground(QColor(203, 166, 247))
+
+        self.highlighting_rules.append((
+            QRegularExpression(r'#(?:[0-9a-fA-F]{3}){1,2}\b'),
+            color_format,
+            'hex-color'
+        ))
+
+
+        property_format = QTextCharFormat()
+        property_format.setForeground(QColor(137, 180, 250))
+        property_format.setFontWeight(QFont.Weight.Bold)
+        property_format.setFontItalic(True)
+
+        self.highlighting_rules.append((QRegularExpression(r'[a-zA-Z-]+(?=:)'), property_format, 'property'))
 
         number_format = QTextCharFormat()
         number_format.setForeground(QColor(250, 179, 135))
 
-        self.highlighting_rules.append((QRegularExpression('\\b\\d+\\.?\\d*\\b'), number_format, 'number'))
+        self.highlighting_rules.append((QRegularExpression(r'\b\d+\.?\d*(px|em|rem|%|vh|vw|vmin|vmax|pt|cm|mm|in)?\b'), number_format, 'number')
+)
+
+        none_format = QTextCharFormat()
+        none_format.setForeground(QColor(243, 139, 168))
 
 
-        for punctuation in ['#', '!', '@', '$', '%', '^', '&', '*', '-', '=', '+']:
+        self.highlighting_rules.append((QRegularExpression('none'), none_format, 'none'))
+
+
+        for punctuation in ['!', '@', '$', '%', '^', '&', '*', '-', '=', '+']:
             punction_format = QTextCharFormat()
             punction_format.setForeground(QColor(243, 139, 168))
 
@@ -698,14 +737,7 @@ class CssSyntaxHighlighter(QSyntaxHighlighter):
             self.highlighting_rules.append((punction_regex, punction_format, 'punctuation'))
 
 
-        for bracket in ['{', '}']:
-            bracket_format = QTextCharFormat()
-            bracket_format.setForeground(QColor(249, 226, 175))
-            escaped = QRegularExpression.escape(bracket)
-            bracket_regex = QRegularExpression(escaped)
-            self.highlighting_rules.append((bracket_regex, bracket_format, 'bracket'))
-
-        for bracket in ['(', ')', '[', ']']:
+        for bracket in ['(', ')', '[', ']', '{', '}']:
             bracket_format = QTextCharFormat()
             bracket_format.setForeground(QColor(243, 139, 168))
             escaped = QRegularExpression.escape(bracket)

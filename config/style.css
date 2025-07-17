@@ -29,11 +29,15 @@
     color: #ffffff;
 }
 
+
+
 #AutoCompleter {
     background-color: #1e1e2e;
     color: #ffffff;
     font-size: 19px;
-    selection-background-color: rgba(255, 255, 255, 0.5);
+    /* selection-background-color: rgba(255, 255, 255, 0.5); */
+    selection-background-color: white;
+
     selection-color: white;
     border: 2px solid #F38BA8;
     border-radius: 10px;
@@ -44,18 +48,17 @@
     border: none;
     outline: none;
     padding: 6px;
+
 }
 
-#AutoCompleter:hover::item,
-#AutoCompleter:selected::item{
-    /* background-color: #5a5a5a; */
+#AutoCompleter::item:hover,
+#AutoCompleter::item:selected {
+    background-color: #89b4fa;
     border-radius: 15px;
     color: white;
     border: none;
-    border: 1px solid white;
     outline: none;
 }
-
 
 
 #Docks {
@@ -71,7 +74,6 @@
     border: 2px solid #F9E2AF;
     border-radius: 10px;
     font-family: 'Maple Mono';
-    /* font-weight: bold; */
     font-size: 19px;
     padding: 5px;
 }
@@ -89,13 +91,6 @@
     color: #ffffff;                             
 }
 
-/* #DirectoryViewer {
-    background-color: #1e1e2e;
-    border: 2px solid #89b4fa;
-    border-radius: 10px;
-    color: #ffffff;
-    font-size: 18px;
-} */
 
 #DirectoryViewer:hover::item{
     background-color: #3a3a3a;
@@ -107,38 +102,33 @@
 
 }
 
-
-
 #DirectoryViewer {
     color: #ffffff;
     font-size: 19px;
     selection-background-color: rgba(255, 255, 255, 0.5);
     selection-color: white;
-    border: 2px solid #F38BA8;
     border-radius: 10px;
-    outline: none;
+    border: 2px solid #F38BA8;
+    /* outline: none; */
 }
 
 
-#AutoComDirectoryViewerpleter::item {
-    border: none;
-    outline: none;
-    padding: 6px;
-}
 
 #DirectoryViewer:hover::item,
 #DirectoryViewer:selected::item{
     background-color: transparent;
     border-radius: 15px;
     color: white;
+
 }
 
 #DirectoryViewer:selected::item{
     color: white;
     border: none;
     outline: none;
-    /* border: 2px solid #89b4fa; */
     border-radius: 15px;
+    border: 2px solid #F38BA8;
+
 }
 
 
@@ -227,7 +217,6 @@ QScrollBar:vertical {
 
 QScrollBar::handle:vertical{
     background: white;
-    /* background-color: black; */
     color: white;
     min-height: 20px;
 }
@@ -237,13 +226,3 @@ QScrollBar::sub-line:vertical {
     height: 0px;
     color: white;
 }
-
-/* QScrollBar:vertical::add-line {
-    height: 0px;
-    color: white;
-}
-
-QScrollBar:vertical::sub-line {
-    height: 0px;
-    color: white;
-} */

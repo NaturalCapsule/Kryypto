@@ -166,17 +166,26 @@ class MainText(QPlainTextEdit):
             leading_spaces = len(line_text) - len(line_text.lstrip())
             indent = line_text[:leading_spaces]
             content = line_text[leading_spaces:]
-            # print(content)
+
 
             if content.startswith(commenting):
                 if content.startswith('//'):
                     content = content[2:].lstrip()
+
+
+                elif content.startswith('/*'):
+                    content = content[2:].lstrip()
+                    content = content[:-2]
+                    new_line = indent + content
+
                 else:
                     content = content[1:].lstrip()
-                # new_line = indent + content[1:].lstrip()
                 new_line = indent + content
 
             else:
+                if commenting == '/*':
+                    content += '*/'
+                    
                 new_line = indent + f"{commenting} " + content
 
             cursor.insertText(new_line)
@@ -795,7 +804,7 @@ class ShowOpenedFile(QTabBar):
                 elif file_name.lower().endswith('.css'):
                     self.highlighter = PythonSyntaxHighlighter(False, self.editor.document())
                     self.highlighter.deleteLater()
-                    self.highlighter = JsonSyntaxHighlighter(True, self.editor.document())
+                    self.highlighter = CssSyntaxHighlighter(True, self.editor.document())
 
                     try:
                         if self.show_error:
@@ -818,7 +827,7 @@ class ShowOpenedFile(QTabBar):
                     self.editor.doc_panel = None
                     self.editor.show_completer = False
                     self.editor.completer.setCompletionPrefix("")
-                    commenting = '//'
+                    commenting = '/*'
                     self.is_panel = True
 
                     self.show_error = ShowCssErrors(self.editor, self.highlighter)
