@@ -1,11 +1,18 @@
 import ast
+import cssutils
+import io
+import logging
+import re
+import json, commentjson
+
 from PyQt6.QtGui import QTextCursor, QColor, QTextCharFormat, QTextCursor, QColor
 from PyQt6.QtCore import QTimer
 
 from func_classes import list_classes_functions
-import json, commentjson
 from lark.exceptions import UnexpectedCharacters, UnexpectedToken
 from threading import Thread
+
+
 
 class ShowErrors:
     def __init__(self, parent, highlighter):
@@ -169,3 +176,90 @@ class ShowJsonErrors:
 
     def analyze_code(self, main_text):
         self.highlighter.rehighlight()
+
+
+class ShowCssErrors:
+    def __init__(self, parent, highlighter):
+        parent.textChanged.connect(self.schedule_check)
+        self.timer = QTimer()
+        self.timer.setSingleShot(True)
+        self.timer.timeout.connect(self.check_syntax)
+        self.error_label = None
+        self.parent = parent
+        self.highlighter = highlighter
+
+
+
+    def schedule_check(self):
+            self.timer.start(500)
+
+    def check_syntax(self):
+        log_output = io.StringIO()
+        handler = logging.StreamHandler(log_output)
+        cssutils.log.setLevel(logging.ERROR)
+        cssutils.log.addHandler(handler)
+        cssutils.parseString(self.parent.toPlainText())
+        cssutils.log.removeHandler(handler)
+        log_text = log_output.getvalue()
+        cssutils.ser.prefs.useMinified()
+        cssutils.log.setLevel(logging.FATAL) 
+
+
+
+
+        self.clear_error_highlighting()
+        # pattern = r"\[(\d+):(\d+):"
+        # pattern = r"\[(\d+):(\d+):[^\]]+\]"
+        pattern = r"\[(\d+):(\d+):.*?\]"
+
+
+
+        matches = re.findall(pattern, log_text)
+
+        if matches:
+
+            for line, col in matches:
+                # print(f"  ➤ Line {int(line) - 1}, Column {col}")
+
+                self.underline_error(line, col)
+                if self.error_label:
+                    self.error_label.setText(f"❌ Line: {int(line) - 1}: {col}")
+
+        else:
+            if self.error_label:
+                self.error_label.setText("No Errors!")
+
+        Thread(target=lambda: self.analyze_code, daemon=False).start()
+        log_output.close()
+
+
+    def clear_error_highlighting(self):
+        cursor = self.parent.textCursor()
+
+        cursor.select(QTextCursor.SelectionType.Document)
+        fmt = QTextCharFormat()
+        fmt.setUnderlineStyle(QTextCharFormat.UnderlineStyle.NoUnderline)
+        cursor.setCharFormat(fmt)
+
+    def underline_error(self, line, column):
+
+        cursor = self.parent.textCursor()
+
+        cursor.movePosition(QTextCursor.MoveOperation.Start)
+
+        for _ in range(int(line) - 1):
+            cursor.movePosition(QTextCursor.MoveOperation.Down)
+
+        # cursor.movePosition(QTextCursor.MoveOperation.Down)
+
+        cursor.movePosition(QTextCursor.MoveOperation.Right, n=int(column) - 1)
+
+        cursor.movePosition(QTextCursor.MoveOperation.Right, QTextCursor.MoveMode.KeepAnchor)
+
+        fmt = QTextCharFormat()
+        fmt.setUnderlineStyle(QTextCharFormat.UnderlineStyle.SpellCheckUnderline)
+        fmt.setUnderlineColor(QColor("red"))
+        cursor.setCharFormat(fmt)
+
+    def analyze_code(self):
+        self.highlighter.rehighlight()        

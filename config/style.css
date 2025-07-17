@@ -46,12 +46,13 @@
     padding: 6px;
 }
 
-#AutoCompleter::item:hover,
-#AutoCompleter::item:selected {
-    background-color: #5a5a5a;
+#AutoCompleter:hover::item,
+#AutoCompleter:selected::item{
+    /* background-color: #5a5a5a; */
     border-radius: 15px;
     color: white;
     border: none;
+    border: 1px solid white;
     outline: none;
 }
 
@@ -88,17 +89,16 @@
     color: #ffffff;                             
 }
 
-#DirectoryViewer {
+/* #DirectoryViewer {
     background-color: #1e1e2e;
     border: 2px solid #89b4fa;
     border-radius: 10px;
     color: #ffffff;
     font-size: 18px;
-}
+} */
 
-#DirectoryViewer::item:hover {
+#DirectoryViewer:hover::item{
     background-color: #3a3a3a;
-    background-color: #5a5a5a;
     color: white;
 
     border-radius: 15px;
@@ -107,17 +107,9 @@
 
 }
 
-#DirectoryViewer::item:selected {
-    background-color: #5a5a5a;
-    color: white;
-    border: none;
-    outline: none;
-    border: 2px solid #89b4fa;
-    border-radius: 15px;
-}
+
 
 #DirectoryViewer {
-    background-color: #1e1e2e;
     color: #ffffff;
     font-size: 19px;
     selection-background-color: rgba(255, 255, 255, 0.5);
@@ -127,20 +119,50 @@
     outline: none;
 }
 
+
 #AutoComDirectoryViewerpleter::item {
     border: none;
     outline: none;
     padding: 6px;
 }
 
-#DirectoryViewer::item:hover,
-#DirectoryViewer::item:selected {
-    background-color: #5a5a5a;
+#DirectoryViewer:hover::item,
+#DirectoryViewer:selected::item{
+    background-color: transparent;
     border-radius: 15px;
     color: white;
-    /* border: none;
-    outline: none; */
 }
+
+#DirectoryViewer:selected::item{
+    color: white;
+    border: none;
+    outline: none;
+    /* border: 2px solid #89b4fa; */
+    border-radius: 15px;
+}
+
+
+
+#DirectoryViewer::item {
+    padding: 5px;
+    border: none;
+    border-radius: 10px;
+}
+
+#DirectoryViewer::item:selected {
+    background-color: #89b4fa;
+    color: black;
+    margin: 2px;
+    border-radius: 10px;
+}
+
+#DirectoryViewer::item:hover {
+    background-color: #3a3a3a;
+    color: white;
+    border-radius: 10px;
+}
+
+
 
 #OpenedFiles {
     background-color: #1e1e2e;
@@ -157,12 +179,12 @@
     border-top-right-radius: 4px;
 }
 
-#OpenedFiles::tab:selected {
+#OpenedFiles::tab:selected{
     background: #585b70;
     color: #f5f5f5;
 }
 
-#OpenedFiles::tab:hover {
+#OpenedFiles::tab:hover{
     background: #6c7086;
 }
 
@@ -203,8 +225,9 @@ QScrollBar:vertical {
     margin: 0px 0px 0px 0px;
 }
 
-QScrollBar::handle:vertical {
-    background: #1e1e2e;
+QScrollBar::handle:vertical{
+    background: white;
+    /* background-color: black; */
     color: white;
     min-height: 20px;
 }
@@ -214,3 +237,13 @@ QScrollBar::sub-line:vertical {
     height: 0px;
     color: white;
 }
+
+/* QScrollBar:vertical::add-line {
+    height: 0px;
+    color: white;
+}
+
+QScrollBar:vertical::sub-line {
+    height: 0px;
+    color: white;
+} */

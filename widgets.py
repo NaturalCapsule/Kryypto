@@ -10,7 +10,7 @@ from lines import ShowLines
 from get_style import get_css_style
 
 from highlighter import *
-from show_errors import ShowErrors, ShowJsonErrors
+from show_errors import *
 
 central_widget = QWidget()
 
@@ -791,6 +791,42 @@ class ShowOpenedFile(QTabBar):
                     self.show_error.error_label = self.error_label
                     self.layout_.addWidget(self.error_label)
                     self.error_label.show()
+
+                elif file_name.lower().endswith('.css'):
+                    self.highlighter = PythonSyntaxHighlighter(False, self.editor.document())
+                    self.highlighter.deleteLater()
+                    self.highlighter = JsonSyntaxHighlighter(True, self.editor.document())
+
+                    try:
+                        if self.show_error:
+                            self.show_error.error_label = None
+                            self.show_error = None
+                    except Exception as e:
+                        pass
+
+                    if self.error_label:
+                        self.error_label.hide()
+                    try:
+
+                        if self.doc_panelstring:
+                            self.parent_.removeDockWidget(self.doc_panelstring)
+                            self.doc_panelstring.deleteLater()
+
+                    except Exception:
+                        pass
+                    self.doc_panelstring = None
+                    self.editor.doc_panel = None
+                    self.editor.show_completer = False
+                    self.editor.completer.setCompletionPrefix("")
+                    commenting = '//'
+                    self.is_panel = True
+
+                    self.show_error = ShowCssErrors(self.editor, self.highlighter)
+
+                    self.show_error.error_label = self.error_label
+                    self.layout_.addWidget(self.error_label)
+                    self.error_label.show()
+
 
                 elif file_name.lower().endswith('.ini') or file_name.lower().endswith('.settings') or file_name.lower().endswith('.conf') or file_name.lower().endswith('.cfg') or file_name.lower().endswith('.config'):
                     self.highlighter = PythonSyntaxHighlighter(False, self.editor.document())
