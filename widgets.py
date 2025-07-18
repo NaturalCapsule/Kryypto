@@ -216,14 +216,24 @@ class MainText(QPlainTextEdit):
                 self.selected_text = None
 
             else:
+                self.setUpdatesEnabled(False)
+                self.blockSignals(True)
+                cursor.beginEditBlock()
+
                 self.selected_text = cursor.selectedText()
                 self.selected_line = None
                 self.clipboard.setText(self.selected_text)
 
+                cursor.endEditBlock()
+                self.setUpdatesEnabled(True)
+                self.blockSignals(False)
+
             return
 
         if key == Qt.Key.Key_V and event.modifiers() & Qt.KeyboardModifier.ControlModifier:
-            if self.selected_text is not None:
+            # print(self.clipboard.text())
+
+            if self.clipboard.text() != '' and self.selected_line is None:
                 cursor = self.textCursor()
                 self.setUpdatesEnabled(False)
                 self.blockSignals(True)
@@ -231,16 +241,27 @@ class MainText(QPlainTextEdit):
 
                 self.setTextCursor(cursor)
 
-                if self.clipboard.text() != '':
-                    cursor.insertText(self.clipboard.text())
-
-                else:
-
-                    cursor.insertText(self.selected_text)
+                cursor.insertText(self.clipboard.text())
                 cursor.endEditBlock()
                 self.setUpdatesEnabled(True)
                 self.blockSignals(False)
+
                 self.selected_line = None
+
+            # if self.selected_text is not None:
+            #     cursor = self.textCursor()
+            #     self.setUpdatesEnabled(False)
+            #     self.blockSignals(True)
+            #     cursor.beginEditBlock()
+
+            #     self.setTextCursor(cursor)
+
+
+            #     cursor.insertText(self.selected_text)
+            #     cursor.endEditBlock()
+            #     self.setUpdatesEnabled(True)
+            #     self.blockSignals(False)
+            #     self.selected_line = None
 
             if self.selected_line is not None:
                 cursor = self.textCursor()
@@ -336,7 +357,6 @@ class MainText(QPlainTextEdit):
             self.completer.popup().hide()
 
 
-    
     def cursor_to_line_column(self, pos):
         text = self.toPlainText()
         lines = text[:pos].splitlines()
@@ -408,6 +428,7 @@ class DocStringDock(QDockWidget):
             self.doc_panel.clearFocus()
 
             self.doc_panel.setObjectName("DocStrings")
+            self.setWindowTitle('Doc String')
             self.doc_panel.setStyleSheet(get_css_style())
 
             self.setWidget(self.doc_panel)
@@ -422,6 +443,15 @@ class ShowFiles(QDockWidget):
     def __init__(self, parent, main_text, opened_tabs):
         super().__init__(parent)
         self.main_text = main_text
+
+
+
+        # CONFIG THIS!!!
+        custom_title = QLabel("My Dock Title")
+        custom_title.setStyleSheet("background-color: #2b2b2b; color: white; padding: 4px; border-radius: 10px;")
+
+        self.setWindowTitle('Directory Viewer')
+        self.setTitleBarWidget(custom_title)
 
         self.opened_tabs = opened_tabs
 

@@ -16,7 +16,6 @@ class IDE(QMainWindow):
         self.setWindowTitle("IDE")
         self.setGeometry(100, 100, 800, 600)
         self.setCentralWidget(widgets.central_widget)
-
         self.setObjectName("MainWindow")
         self.setStyleSheet(get_css_style())
 
