@@ -125,8 +125,6 @@ class MainText(QPlainTextEdit):
         text = event.text()
         pairs = {'"': '"', "'": "'", '(': ')', '[': ']', '{': '}'}
 
-
-
         if self.completer.popup().isVisible():
             if key in (Qt.Key.Key_Enter, Qt.Key.Key_Return, Qt.Key.Key_Tab):
                 event.ignore()
@@ -152,49 +150,92 @@ class MainText(QPlainTextEdit):
 
 
         if key == Qt.Key.Key_Slash and event.modifiers() & Qt.KeyboardModifier.ControlModifier:
-
             cursor = self.textCursor()
+
+            if not cursor.hasSelection():
+                cursor.select(QTextCursor.SelectionType.LineUnderCursor)
+
+            start = cursor.selectionStart()
+            end = cursor.selectionEnd()
+
+            cursor.setPosition(start)
+            cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock)
+            start_block = cursor.blockNumber()
+
+            cursor.setPosition(end)
+            cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock)
+            end_block = cursor.blockNumber()
+
+            cursor.beginEditBlock()
             self.setUpdatesEnabled(False)
             self.blockSignals(True)
-            cursor.beginEditBlock()
 
+            for block_num in range(start_block, end_block + 1):
+                block = self.document().findBlockByNumber(block_num)
+                text = block.text()
 
-            cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock)
-            cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock, QTextCursor.MoveMode.KeepAnchor)
+                leading_spaces = len(text) - len(text.lstrip())
+                indent = text[:leading_spaces]
+                content = text[leading_spaces:]
 
-            line_text = cursor.selectedText()
+                cursor.setPosition(block.position())
+                cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock, QTextCursor.MoveMode.KeepAnchor)
 
-            leading_spaces = len(line_text) - len(line_text.lstrip())
-            indent = line_text[:leading_spaces]
-            content = line_text[leading_spaces:]
-
-
-            if content.startswith(commenting):
-                if content.startswith('//'):
-                    content = content[2:].lstrip()
-
-
-                elif content.startswith('/*'):
-                    content = content[2:].lstrip()
-                    content = content[:-2]
-                    new_line = indent + content
-
+                if content.startswith(commenting):
+                    content = content[len(commenting):].lstrip()
                 else:
-                    content = content[1:].lstrip()
-                new_line = indent + content
+                    content = f"{commenting} {content}"
 
-            else:
-                if commenting == '/*':
-                    content += '*/'
-                    
-                new_line = indent + f"{commenting} " + content
-
-            cursor.insertText(new_line)
+                cursor.insertText(indent + content)
 
             cursor.endEditBlock()
             self.setUpdatesEnabled(True)
             self.blockSignals(False)
             return
+
+
+            # cursor = self.textCursor()
+            # self.setUpdatesEnabled(False)
+            # self.blockSignals(True)
+            # cursor.beginEditBlock()
+
+
+            # cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock)
+            # cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock, QTextCursor.MoveMode.KeepAnchor)
+
+            # line_text = cursor.selectedText()
+
+            # leading_spaces = len(line_text) - len(line_text.lstrip())
+            # indent = line_text[:leading_spaces]
+            # content = line_text[leading_spaces:]
+
+
+            # if content.startswith(commenting):
+            #     if content.startswith('//'):
+            #         content = content[2:].lstrip()
+
+
+            #     elif content.startswith('/*'):
+            #         content = content[2:].lstrip()
+            #         content = content[:-2]
+            #         new_line = indent + content
+
+            #     else:
+            #         content = content[1:].lstrip()
+            #     new_line = indent + content
+
+            # else:
+            #     if commenting == '/*':
+            #         content += '*/'
+                    
+            #     new_line = indent + f"{commenting} " + content
+
+            # cursor.insertText(new_line)
+
+            # cursor.endEditBlock()
+            # self.setUpdatesEnabled(True)
+            # self.blockSignals(False)
+            # return
 
         if key == Qt.Key.Key_C and event.modifiers() & Qt.KeyboardModifier.ControlModifier:
             cursor = self.textCursor()
@@ -791,10 +832,8 @@ class ShowOpenedFile(QTabBar):
                 if previous_tabtext == file_name:
                     with open(path, 'w', encoding = 'utf-8') as previous_file:
                         previous_file.write(self.editor.toPlainText())
-                    # print(self.editor.toPlainText())
 
         self.previous_index = index
-        # previous_tabtext = self.tabText(previous_index)
 
 
 
@@ -806,15 +845,6 @@ class ShowOpenedFile(QTabBar):
         tab_text = self.tabText(current_index)
 
         for path, file_name in file_description.items():
-            # if previous_tabtext == file_name:
-            #     print(self.editor.toPlainText())
-                # print(path)
-
-                # with open(path, 'r+', encoding = 'utf-8') as previous_file:
-                    # print(previous_file.read())
-                    # previous_file.write()
-
-
             if file_name == tab_text:
                 if file_name.lower().endswith('.py') or file_name.lower().endswith('.pyi'):
 
@@ -999,12 +1029,18 @@ class findingText(QLineEdit):
         super().__init__()
         self.main_text = main_text
         self.setObjectName('Finder')
-        self.hide()
+
+
         self.setStyleSheet(get_css_style())
         bawky_parent.addWidget(self)
         self.setPlaceholderText("Find...🔎")
+        self.setFixedWidth(250)
+
+        self.hide()
+
         self.textChanged.connect(lambda: self.changed(main_text))
         self.returnPressed.connect(lambda: self.find_next(main_text))
+
 
 
     def keyPressEvent(self, event):
@@ -1022,3 +1058,44 @@ class findingText(QLineEdit):
     def changed(self, main_text):
         main_text.moveCursor(QTextCursor.MoveOperation.Start)
         main_text.find(self.text().lower())
+
+
+class GotoBlock(QLineEdit):
+    def __init__(self, main_text):
+        super().__init__(main_text)
+        self.main_text = main_text
+        self.setObjectName('GoLine')
+        self.setStyleSheet(get_css_style())
+        self.setPlaceholderText("Go to Line...")
+        self.textChanged.connect(lambda: self.goto_line(main_text))
+        self.cursor_ = main_text.textCursor()
+        self.setFocus()
+        self.setFixedWidth(150)
+
+        self.top_right_in_editor()
+
+        self.raise_()
+        self.show()
+
+    def top_right_in_editor(self):
+        editor = self.main_text.viewport()
+        editor_rect = editor.geometry()
+        x = editor_rect.width() - self.width() - 5
+        y = 15
+        self.move(x, y)
+
+
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key.Key_Escape:
+            self.deleteLater()
+            self.main_text.setFocus()
+        else:
+            super().keyPressEvent(event)
+
+    def goto_line(self, main_text):
+        if self.text().isdigit():
+            line_number = int(self.text())
+            block = main_text.document().findBlockByLineNumber(line_number - 1)
+            if block.isValid():
+                self.cursor_.setPosition(block.position())
+                main_text.setTextCursor(self.cursor_)

@@ -1,8 +1,10 @@
 import re
 from PyQt6.QtGui import QFont, QShortcut, QKeySequence, QTextCursor
+# from PyQt6.QtWidgets import QLineEdit
 
 class MainTextShortcuts:
-    def __init__(self, parent, completer, tab, error_label, clipboard):
+    # def __init__(self, parent, completer, tab, error_label, clipboard):
+    def __init__(self, parent, completer, tab, error_label, clipboard, bawky_parent):
         self.font_size = 19
         # self.num_lines = num_lines
 
@@ -39,10 +41,31 @@ class MainTextShortcuts:
         get_error_text = QShortcut(QKeySequence("Ctrl+Shift+C"), parent)
         get_error_text.activated.connect(lambda: self.get_text(error_label, clipboard))
 
+
+
+        goto_block = QShortcut(QKeySequence("Ctrl+Shift+H"), parent)
+        goto_block.activated.connect(lambda: self.goto_block_(parent, bawky_parent))
+
+    def goto_block_(self, parent, bawky_parent):
+        from widgets import GotoBlock
+
+        # cursor = parent.textCursor()
+        # block_pos = parent.document().findBlockByLineNumber(5 - 1).position()
+        # cursor.setPosition(block_pos)
+        # parent.setTextCursor(cursor)
+        self.goto_block = GotoBlock(main_text = parent)
+        # self.goto_block = GotoBlock(bawky_parent = bawky_parent, main_text = parent)
+
+        # self.goto_block.setFocus()
+
+
+
+
+
     def get_text(self, error_label, clipboard):
         if error_label:
             text = error_label.text()
-            if text != '✅ No syntax errors':
+            if text != '✔️ No syntax errors':
                 splitting = text.split(' ')
                 if splitting[1] == 'Line':
                     text = splitting[3:]
@@ -52,23 +75,36 @@ class MainTextShortcuts:
     def remove_current_line(self, text_edit):
         cursor = text_edit.textCursor()
 
+        if not cursor.hasSelection():
+            cursor.select(QTextCursor.SelectionType.LineUnderCursor)
+
+        start = cursor.selectionStart()
+        end = cursor.selectionEnd()
+
+        cursor.setPosition(start)
+        cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock)
+        start_block = cursor.blockNumber()
+
+        cursor.setPosition(end)
+        cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock)
+        end_block = cursor.blockNumber()
+
         text_edit.setUpdatesEnabled(False)
         text_edit.blockSignals(True)
         cursor.beginEditBlock()
 
-        cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock)
-        cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock, QTextCursor.MoveMode.KeepAnchor)
-
-        cursor.movePosition(QTextCursor.MoveOperation.Right, QTextCursor.MoveMode.KeepAnchor)
-
-        cursor.removeSelectedText()
-
-        cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock)
+        for block_num in reversed(range(start_block, end_block + 1)):
+            block = text_edit.document().findBlockByNumber(block_num)
+            cursor.setPosition(block.position())
+            cursor.select(QTextCursor.SelectionType.BlockUnderCursor)
+            cursor.removeSelectedText()
+            # cursor.deleteChar()
 
         cursor.endEditBlock()
         text_edit.setTextCursor(cursor)
         text_edit.setUpdatesEnabled(True)
         text_edit.blockSignals(False)
+
 
     def goto_next_block(self, text_edit):
         cursor = text_edit.textCursor()

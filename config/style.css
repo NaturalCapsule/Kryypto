@@ -22,14 +22,23 @@
 
 
 #Finder {
-    background-color: #1e1e2e;
-    /* border: 1px solid #3c3c3c; */
     border: 2px solid #F38BA8;
 
-    color: #ffffff;
+    font-size: 22px;
+    background-color: #1e1e2e;
+    color: white;
+    border-radius: 15px;
+    /* border: 2px solid rgb(249, 226, 175); */
+
 }
 
-
+#GoLine {
+    font-size: 22px;
+    background-color: #1e1e2e;
+    color: white;
+    border-radius: 15px;
+    border: 2px solid rgb(249, 226, 175);
+}
 
 #AutoCompleter {
     background-color: #1e1e2e;
