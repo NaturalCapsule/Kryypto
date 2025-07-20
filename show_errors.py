@@ -35,7 +35,7 @@ class ShowErrors:
         try:
             ast.parse(code)
             if self.error_label:
-                self.error_label.setText("✅ No syntax errors")
+                self.error_label.setText("✔️ No syntax errors")
 
             # self.analyze_code(self.parent)
             Thread(target = lambda: self.analyze_code(self.parent), daemon = False).start()
@@ -108,7 +108,7 @@ class ShowJsonErrors:
                             self.parent.setPlainText('{\n    \n}')
                 json.loads(file)
                 if self.error_label:
-                    self.error_label.setText("✅ No syntax errors")
+                    self.error_label.setText("✔️ No syntax errors")
 
                 Thread(target = lambda: self.analyze_code(self.parent), daemon = False).start()
 
@@ -129,7 +129,7 @@ class ShowJsonErrors:
                 commentjson.loads(content)
 
                 if self.error_label:
-                    self.error_label.setText("✅ No syntax errors")
+                    self.error_label.setText("✔️ No syntax errors")
 
                 Thread(target=lambda: self.analyze_code(self.parent), daemon=False).start()
 
@@ -262,4 +262,4 @@ class ShowCssErrors:
         cursor.setCharFormat(fmt)
 
     def analyze_code(self):
-        self.highlighter.rehighlight()        
+        self.highlighter.rehighlight()

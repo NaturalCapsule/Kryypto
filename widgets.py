@@ -29,6 +29,7 @@ class MainText(QPlainTextEdit):
         super().__init__()
         global commenting
         self.clipboard = window
+        
         self.setCursorWidth(0)
         self.selected_line = None
         self.selected_text = None
@@ -418,6 +419,14 @@ class MainText(QPlainTextEdit):
 class DocStringDock(QDockWidget):
     def __init__(self, parent, use):
         super().__init__()
+        custom_title = QLabel("Doc String")
+        # custom_title.setStyleSheet("background-color: #2b2b2b; color: white; padding: 4px; border-radius: 10px;")
+        # custom_title.setStyleSheet("background-color: transparent; color: white; padding: 4px; border-radius: 10px;")
+        custom_title.setStyleSheet("background-color: transparent; color: white; padding: 4px; border-radius: 10px; margin: 4px")
+
+
+        self.setTitleBarWidget(custom_title)
+
 
         if use:
             self.clearFocus()
@@ -444,14 +453,13 @@ class ShowFiles(QDockWidget):
         super().__init__(parent)
         self.main_text = main_text
 
+        custom_title = QLabel("Directory Viewer")
+        # custom_title.setStyleSheet("background-color: #2b2b2b; color: white; padding: 4px; border-radius: 10px;")
+        custom_title.setStyleSheet("background-color: transparent; color: white; padding: 4px; border-radius: 10px; margin: 4px")
 
 
-        # CONFIG THIS!!!
-        custom_title = QLabel("My Dock Title")
-        custom_title.setStyleSheet("background-color: #2b2b2b; color: white; padding: 4px; border-radius: 10px;")
-
-        self.setWindowTitle('Directory Viewer')
         self.setTitleBarWidget(custom_title)
+        self.setWindowTitle('Directory Viewer')
 
         self.opened_tabs = opened_tabs
 
@@ -697,6 +705,8 @@ class ShowOpenedFile(QTabBar):
         global file_description
         global commenting
         self.is_panel = True
+        self.previous_index = -1
+
 
         self.editor = editor
         self.layout_ = layout
@@ -766,8 +776,28 @@ class ShowOpenedFile(QTabBar):
         self.setTabButton(file_index, self.ButtonPosition.RightSide, close_button)
 
 
-    def track_tabs(self):
+    def track_tabs(self, index):
         global commenting
+
+        # current_index = self.currentIndex()
+        # previous_index = current_index - 1 if current_index > 0 else -1
+
+
+        previous_tabtext = ''
+
+        if self.previous_index != -1:
+            previous_tabtext = self.tabText(self.previous_index)
+            for path, file_name in file_description.items():
+                if previous_tabtext == file_name:
+                    with open(path, 'w', encoding = 'utf-8') as previous_file:
+                        previous_file.write(self.editor.toPlainText())
+                    # print(self.editor.toPlainText())
+
+        self.previous_index = index
+        # previous_tabtext = self.tabText(previous_index)
+
+
+
         if self.currentIndex() == -1:
             self.editor.setPlainText("")
             file_description.clear()
@@ -776,8 +806,17 @@ class ShowOpenedFile(QTabBar):
         tab_text = self.tabText(current_index)
 
         for path, file_name in file_description.items():
+            # if previous_tabtext == file_name:
+            #     print(self.editor.toPlainText())
+                # print(path)
+
+                # with open(path, 'r+', encoding = 'utf-8') as previous_file:
+                    # print(previous_file.read())
+                    # previous_file.write()
+
+
             if file_name == tab_text:
-                if file_name.endswith('.py') or file_name.endswith('.pyi'):
+                if file_name.lower().endswith('.py') or file_name.lower().endswith('.pyi'):
 
                     self.highlighter = PythonSyntaxHighlighter(use_highlighter = True, parent=self.editor.document())
                     self.show_error = ShowErrors(self.editor, self.highlighter)

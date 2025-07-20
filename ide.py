@@ -41,7 +41,6 @@ if __name__ == '__main__':
     format.setDepthBufferSize(144)
     QSurfaceFormat.setDefaultFormat(format)
     app = QApplication(sys.argv)
-    # app.setCursorFlashTime(1500)
     window = IDE(app.clipboard())
     window.show()
     sys.exit(app.exec())
