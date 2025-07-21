@@ -1,9 +1,10 @@
 import jedi
 import re
+import subprocess
 import os
-from PyQt6.QtCore import QTimer, Qt, QRect, Qt, QDir, QFileInfo
+from PyQt6.QtCore import QTimer, Qt, QRect, Qt, QDir, QFileInfo, pyqtSignal, QProcess
 from PyQt6.QtGui import QTextCursor, QKeyEvent, QPainter, QColor, QFont, QFontMetrics, QTextCursor, QColor, QFileSystemModel, QIcon, QStandardItemModel, QStandardItem
-from PyQt6.QtWidgets import QLabel, QPushButton, QHBoxLayout, QLineEdit, QPlainTextEdit, QVBoxLayout, QWidget, QCompleter, QDockWidget, QTextEdit, QTreeView, QFileIconProvider, QTabBar
+from PyQt6.QtWidgets import QComboBox, QLabel, QPushButton, QHBoxLayout, QLineEdit, QPlainTextEdit, QVBoxLayout, QWidget, QCompleter, QDockWidget, QTextEdit, QTreeView, QFileIconProvider, QTabBar
 
 from lines import ShowLines
 
@@ -459,7 +460,7 @@ class DocStringDock(QDockWidget):
 
             self.setStyleSheet(get_css_style())
 
-class ShowFiles(QDockWidget):
+class ShowDirectory(QDockWidget):
     def __init__(self, parent, main_text, opened_tabs):
         super().__init__(parent)
         self.main_text = main_text
@@ -999,29 +1000,268 @@ class ShowOpenedFile(QTabBar):
                 except FileNotFoundError:
                     self.remove_tab(self.currentIndex())
 
-# class Terminal(QDockWidget):
-#     def __init__(self, parent):
-#         super().__init__()
-#         self.setFeatures(QDockWidget.DockWidgetFeature.DockWidgetMovable)
-#         parent.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, self)
+class TerminalEmulator(QWidget):
+    command_input = pyqtSignal(str)
 
-#         self.terminal_editor = QPlainTextEdit(self)
-#         self.setWidget(self.terminal_editor)
+    def __init__(self, parent):
+        super().__init__()
+        self.layout = QVBoxLayout(self)
+        self.layout.setContentsMargins(0, 0, 0, 0)
 
-#         self.process = QProcess(self.terminal_editor)
-#         self.process.start('powershell')
-#         self.process.readyReadStandardOutput.connect(self.handle_stdout_output)
-        # process.kill()
+        self.setObjectName('Terminal')
+        self.setStyleSheet(get_css_style())
 
-    # def handle_stdout_output(self):
-        # Read all available data from standard output
-        # output_bytes = self.process.readAllStandardOutput().data()
-        # # Decode the bytes to a string (e.g., using UTF-8)
-        # output_string = output_bytes.decode('utf-8')
-        # # Process the output_string (e.g., print it, display in a widget)
-        # print("Standard Output:", output_string)
-        # output = self.process.readAllStandardOutput().data().decode('utf-8')
-        # self.terminal_editor.appendPlainText(output)
+        self.setup_selector()
+
+        self.terminal = QPlainTextEdit(self)
+        self.terminal.setObjectName('TermInput')
+        self.terminal.setStyleSheet((get_css_style()))
+
+        self.terminal.keyPressEvent = self.terminal_key_press_event
+
+        self.layout.addWidget(self.terminal)
+
+        self.processes = []
+        self.current_process_index = -1
+
+        self.command_history = []
+        self.history_index = 0
+
+        self.current_command = ""
+        self.prompt = "> "
+
+        self.startSession()
+
+    def set_terminal_font(self):
+        pass
+        # font_families = [
+        #     "Consolas",
+        #     "Courier New",
+        #     "Monospace",
+        # ]
+        # font = QFont(font_families[0], 10)
+        # font.setStyleHint(QFont.StyleHint.Monospace)
+        # self.terminal.setFont(font)
+
+    def setup_selector(self):
+        self.terminal_selector = QComboBox()
+        self.terminal_selector.setStyleSheet("QComboBox { min-width: 150px; }")
+
+    def startSession(self):
+        process = QProcess(self)
+        process.readyReadStandardOutput.connect(self.handle_stdout)
+        process.readyReadStandardError.connect(self.handle_stderr)
+        self.processes.append(process)
+        self.terminal_selector.setCurrentIndex(0)
+
+        self.start_powershell(0, project_path='')
+
+    def start_powershell(self, index, project_path=None):
+        powershell_path = self.find_powershell_core()
+        if project_path == "":
+            project_path = os.getcwd()
+
+        self.processes[index].setWorkingDirectory(project_path)
+
+        if powershell_path:
+            self.processes[index].start(powershell_path)
+            self.terminal.appendPlainText(
+                f"Your current working directory {project_path}.\n"
+            )
+        else:
+            self.processes[index].start("powershell.exe")
+            self.terminal.appendPlainText(
+                f"Your current working directory {project_path}.\n"
+            )
+
+        self.display_prompt()
+
+    def find_powershell_core(self):
+        paths_maybe = [
+            r"C:\Program Files\PowerShell\7\pwsh.exe",
+            r"C:\Program Files (x86)\PowerShell\7\pwsh.exe",
+            "/usr/local/bin/pwsh",
+            "/usr/bin/pwsh",
+        ]
+
+        for path in paths_maybe:
+            if os.path.exists(path):
+                return path
+        try:
+            result = subprocess.run(
+                ["where", "pwsh"] if os.name == "nt" else ["which", "pwsh"],
+                capture_output=True,
+                text=True,
+                check=True,
+            )
+            return result.stdout.strip()
+        except subprocess.CalledProcessError:
+            return None
+
+    def handle_stdout(self):
+        data = (
+            self.processes[self.current_process_index]
+            .readAllStandardOutput()
+            .data()
+            .decode()
+        )
+        self.terminal.moveCursor(QTextCursor.MoveOperation.End)
+        self.insert_colored_text(data)
+        self.terminal.moveCursor(QTextCursor.MoveOperation.End)
+        if not data.endswith("\n"):
+            self.terminal.insertPlainText("\n")
+        self.display_prompt()
+
+    def handle_stderr(self):
+        data = (
+            self.processes[self.current_process_index]
+            .readAllStandardError()
+            .data()
+            .decode()
+        )
+        self.terminal.moveCursor(QTextCursor.MoveOperation.End)
+        self.insert_colored_text(data, QColor(255, 0, 0))  # Red color for errors
+        self.terminal.moveCursor(QTextCursor.MoveOperation.End)
+        if not data.endswith("\n"):
+            self.terminal.insertPlainText("\n")
+        self.display_prompt()
+
+    def display_prompt(self):
+        self.terminal.appendPlainText(self.prompt)
+        self.terminal.moveCursor(QTextCursor.MoveOperation.End)
+
+    def insert_colored_text(self, text, default_color=QColor(255, 255, 255)):
+        cursor = self.terminal.textCursor()
+
+        ansi_escape = re.compile(r"\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])")
+        segments = ansi_escape.split(text)
+        codes = ansi_escape.findall(text)
+
+        current_color = default_color
+        for i, segment in enumerate(segments):
+            if segment:
+                format = cursor.charFormat()
+                format.setForeground(current_color)
+                cursor.setCharFormat(format)
+                cursor.insertText(segment)
+
+            if i < len(codes):
+                code = codes[i]
+                if code == "\x1B[0m":  # Reset
+                    current_color = default_color
+                elif code.startswith("\x1B[38;2;"):
+                    rgb = code[7:-1].split(";")
+                    if len(rgb) == 3:
+                        current_color = QColor(int(rgb[0]), int(rgb[1]), int(rgb[2]))
+
+        self.terminal.setTextCursor(cursor)
+
+    def keyPressEvent(self, event: QKeyEvent):
+        if event is not None:
+            if event.key() == Qt.Key.Key_Return or event.key() == Qt.Key.Key_Enter:
+                self.execute_command()
+            elif event.key() == Qt.Key.Key_Up:
+                self.show_previous_command()
+            elif event.key() == Qt.Key.Key_Down:
+                self.show_next_command()
+            else:
+                super().keyPressEvent(event)
+
+    def terminal_key_press_event(self, event: QKeyEvent):
+        cursor = self.terminal.textCursor()
+
+        if event.key() == Qt.Key.Key_Return or event.key() == Qt.Key.Key_Enter:
+            self.execute_command()
+        elif event.key() == Qt.Key.Key_Backspace:
+            if len(self.current_command) > 0:
+                self.current_command = self.current_command[:-1]
+                cursor.deletePreviousChar()
+        elif event.key() == Qt.Key.Key_Up:
+            self.show_previous_command()
+        elif event.key() == Qt.Key.Key_Down:
+            self.show_next_command()
+        elif event.key() == Qt.Key.Key_Left:
+            if cursor.positionInBlock() > len(self.prompt):
+                cursor.movePosition(QTextCursor.MoveOperation.Left)
+        elif event.key() == Qt.Key.Key_Home:
+            cursor.movePosition(QTextCursor.MoveOperation.StartOfLine)
+            cursor.movePosition(
+                QTextCursor.MoveOperation.Right,
+                QTextCursor.MoveMode.MoveAnchor,
+                len(self.prompt),
+            )
+        else:
+            if cursor.positionInBlock() >= len(self.prompt):
+                self.current_command += event.text()
+                QPlainTextEdit.keyPressEvent(self.terminal, event)
+
+    def execute_command(self):
+        self.terminal.appendPlainText("")
+        self.processes[self.current_process_index].write(
+            self.current_command.encode() + b"\n"
+        )
+        self.command_history.append(self.current_command)
+        self.history_index = len(self.command_history)
+        self.command_input.emit(self.current_command)
+        self.current_command = ""
+
+    def show_previous_command(self):
+        if self.history_index > 0:
+            self.history_index -= 1
+            self.show_command_from_history()
+
+    def show_next_command(self):
+        if self.history_index < len(self.command_history):
+            self.history_index += 1
+            self.show_command_from_history()
+
+    def show_command_from_history(self):
+        cursor = self.terminal.textCursor()
+        cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock)
+        cursor.movePosition(
+            QTextCursor.MoveOperation.StartOfBlock, QTextCursor.MoveMode.KeepAnchor
+        )
+        cursor.removeSelectedText()
+
+        if self.history_index < len(self.command_history):
+            self.current_command = self.command_history[self.history_index]
+        else:
+            self.current_command = ""
+
+        cursor.insertText(f"{self.prompt}{self.current_command}")
+
+    def run_command(self, command):
+        self.terminal.moveCursor(QTextCursor.MoveOperation.End)
+        self.terminal.insertPlainText(f"{self.prompt}{command}\n")
+        self.processes[self.current_process_index].write(command.encode() + b"\n")
+
+    def run_file(self, file_path):
+        file_name = os.path.basename(file_path)
+        self.run_command(file_name)
+
+    def change_directory(self, new_path):
+        self.run_command(f"cd '{new_path}'")
+
+    def parse_ansi_codes(self, text):
+        ansi_escape = re.compile(r"\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])")
+        return ansi_escape.sub("", text)
+
+class TerminalDock(QDockWidget):
+    def __init__(self, parent):
+        super().__init__()
+        self.setObjectName('Docks')
+        self.setStyleSheet(get_css_style())
+
+        self.termEmulator = TerminalEmulator(self)
+        self.setWidget(self.termEmulator)
+        self.termEmulator.show()
+        self.custom_title = QLabel("Terminal")
+        # custom_title.setStyleSheet("background-color: #2b2b2b; color: white; padding: 4px; border-radius: 10px;")
+        self.custom_title.setStyleSheet("background-color: transparent; color: white; padding: 4px; border-radius: 10px; margin: 4px")
+        self.setTitleBarWidget(self.custom_title)
+
+        self.setFeatures(QDockWidget.DockWidgetFeature.DockWidgetMovable)
+        parent.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, self)
 
 
 class findingText(QLineEdit):
