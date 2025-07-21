@@ -17,7 +17,6 @@ central_widget = QWidget()
 error_label = QLabel("Ready")
 error_label.setObjectName("SyntaxChecker")
 error_label.setStyleSheet(get_css_style())
-# error_label.text()
 file_description = {}
 
 commenting = ''
@@ -29,7 +28,7 @@ class MainText(QPlainTextEdit):
         super().__init__()
         global commenting
         self.clipboard = window
-        
+
         self.setCursorWidth(0)
         self.selected_line = None
         self.selected_text = None
@@ -151,6 +150,7 @@ class MainText(QPlainTextEdit):
 
         if key == Qt.Key.Key_Slash and event.modifiers() & Qt.KeyboardModifier.ControlModifier:
             cursor = self.textCursor()
+            last_text = ''
 
             if not cursor.hasSelection():
                 cursor.select(QTextCursor.SelectionType.LineUnderCursor)
@@ -181,9 +181,23 @@ class MainText(QPlainTextEdit):
                 cursor.setPosition(block.position())
                 cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock, QTextCursor.MoveMode.KeepAnchor)
 
-                if content.startswith(commenting):
+                if content.startswith(commenting) and not content.startswith('/*') and not content.startswith('<!--'):
                     content = content[len(commenting):].lstrip()
+
+                elif content.startswith('/*'):
+                    content = content[1:-2].lstrip()
+                    content = content[len(commenting):].lstrip()
+
+                elif content.startswith('<!--'):
+                    content = content[4:-3].lstrip()
+                    # content = content[len(commenting):].lstrip()
+
                 else:
+                    if commenting == '/*':
+                        content += '*/'
+                    elif commenting == '<!--':
+                        content += '-->'
+
                     content = f"{commenting} {content}"
 
                 cursor.insertText(indent + content)
@@ -192,50 +206,6 @@ class MainText(QPlainTextEdit):
             self.setUpdatesEnabled(True)
             self.blockSignals(False)
             return
-
-
-            # cursor = self.textCursor()
-            # self.setUpdatesEnabled(False)
-            # self.blockSignals(True)
-            # cursor.beginEditBlock()
-
-
-            # cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock)
-            # cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock, QTextCursor.MoveMode.KeepAnchor)
-
-            # line_text = cursor.selectedText()
-
-            # leading_spaces = len(line_text) - len(line_text.lstrip())
-            # indent = line_text[:leading_spaces]
-            # content = line_text[leading_spaces:]
-
-
-            # if content.startswith(commenting):
-            #     if content.startswith('//'):
-            #         content = content[2:].lstrip()
-
-
-            #     elif content.startswith('/*'):
-            #         content = content[2:].lstrip()
-            #         content = content[:-2]
-            #         new_line = indent + content
-
-            #     else:
-            #         content = content[1:].lstrip()
-            #     new_line = indent + content
-
-            # else:
-            #     if commenting == '/*':
-            #         content += '*/'
-                    
-            #     new_line = indent + f"{commenting} " + content
-
-            # cursor.insertText(new_line)
-
-            # cursor.endEditBlock()
-            # self.setUpdatesEnabled(True)
-            # self.blockSignals(False)
-            # return
 
         if key == Qt.Key.Key_C and event.modifiers() & Qt.KeyboardModifier.ControlModifier:
             cursor = self.textCursor()
@@ -963,6 +933,36 @@ class ShowOpenedFile(QTabBar):
                     self.editor.show_completer = False
                     self.editor.completer.setCompletionPrefix("")
                     commenting = ';'
+                    self.is_panel = True
+
+
+                elif file_name.lower().endswith('md') or file_name.lower().endswith('markdown'):
+                    self.highlighter = PythonSyntaxHighlighter(False, self.editor.document())
+                    self.highlighter.deleteLater()
+                    self.highlighter = MarkdownSyntaxHighlighter(True, self.editor.document())
+
+                    try:
+                        if self.show_error:
+                            self.show_error.error_label = None
+                            self.show_error = None
+                    except Exception as e:
+                        pass
+
+                    if self.error_label:
+                        self.error_label.hide()
+                    try:
+
+                        if self.doc_panelstring:
+                            self.parent_.removeDockWidget(self.doc_panelstring)
+                            self.doc_panelstring.deleteLater()
+
+                    except Exception:
+                        pass
+                    self.doc_panelstring = None
+                    self.editor.doc_panel = None
+                    self.editor.show_completer = False
+                    self.editor.completer.setCompletionPrefix("")
+                    commenting = '<!--'
                     self.is_panel = True
 
 

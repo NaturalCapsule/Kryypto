@@ -2,4 +2,4 @@
 
 ## License
 
-This project is licensed under a [License](LICENSE.txt).  
+This project is licensed under a [License](LICENSE.txt).
