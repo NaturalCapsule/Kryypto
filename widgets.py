@@ -5,7 +5,6 @@ import os
 from PyQt6.QtCore import QTimer, Qt, QRect, Qt, QDir, QFileInfo, pyqtSignal, QProcess
 from PyQt6.QtGui import QTextCursor, QKeyEvent, QPainter, QColor, QFont, QFontMetrics, QTextCursor, QColor, QFileSystemModel, QIcon, QStandardItemModel, QStandardItem
 from PyQt6.QtWidgets import QComboBox, QLabel, QPushButton, QHBoxLayout, QLineEdit, QPlainTextEdit, QVBoxLayout, QWidget, QCompleter, QDockWidget, QTextEdit, QTreeView, QFileIconProvider, QTabBar
-
 from lines import ShowLines
 
 from get_style import get_css_style
@@ -21,21 +20,21 @@ error_label.setStyleSheet(get_css_style())
 file_description = {}
 
 commenting = ''
+current_file_path = ''
 
 layout = QVBoxLayout(central_widget)
 
 class MainText(QPlainTextEdit):
+
     def __init__(self, parent, window):
         super().__init__()
         global commenting
         self.clipboard = window
 
-        self.setCursorWidth(0)
         self.selected_line = None
         self.selected_text = None
         self.setContextMenuPolicy(Qt.ContextMenuPolicy.NoContextMenu)
 
-        # self.doc_panel = doc_panel
         self.doc_panel = None
         self.cursorPositionChanged.connect(self.update_docstring)
 
@@ -46,7 +45,7 @@ class MainText(QPlainTextEdit):
 
         self.blink_timer = QTimer(self)
         self.blink_timer.timeout.connect(self.toggle_cursor)
-        self.blink_timer.start(10)  # Blink rate (ms)
+        self.blink_timer.start(100)  # Blink rate (ms)
 
         self.line_number_area = ShowLines(self)
         self.blockCountChanged.connect(self.update_line_number_area_width)
@@ -91,6 +90,7 @@ class MainText(QPlainTextEdit):
         cursor.insertText(completion)
         self.setTextCursor(cursor)
 
+
     def update_docstring(self):
         cursor = self.textCursor()
         line = cursor.blockNumber() + 1
@@ -104,12 +104,33 @@ class MainText(QPlainTextEdit):
 
                 self.doc_panel.hide()
             else:
-                self.doc_panel.setPlainText(doc or "")
+                self.doc_viewer = self.parse_docstring(doc)
+                self.doc_panel.setHtml(self.doc_viewer or "")
+
+
                 self.doc_panel.show()
 
+    def parse_docstring(self, doc: str):
+        lines = doc.strip().splitlines()
+        formatted = []
+        for line in lines:
+            line = line.strip()
+            if line in ('---', '***', '___'):
+                formatted.append('<hr>')
+            elif line.endswith(':') and not line.startswith(' '):
+                # formatted.append(f'<b>{line}</b> <span> font-size: 14px')
+                formatted.append(f'<b style="font-size:30px;">{line}</b>')
+
+            elif re.match(r'^\*{3,}$', line):
+                formatted.append('<hr>')
+            else:
+                formatted.append(line)
+        return "<br>".join(formatted)
+
     def get_definition_docstring(self, code, line, column):
+        global current_file_path
         try:
-            script = jedi.Script(code=code, path="example.py")
+            script = jedi.Script(code=code, path=fr"{current_file_path}")
             definitions = script.help(line, column)
 
             if definitions:
@@ -121,6 +142,7 @@ class MainText(QPlainTextEdit):
 
 
     def keyPressEvent(self, event: QKeyEvent):
+        global current_file_path
         key = event.key()
         text = event.text()
         pairs = {'"': '"', "'": "'", '(': ')', '[': ']', '{': '}'}
@@ -151,7 +173,6 @@ class MainText(QPlainTextEdit):
 
         if key == Qt.Key.Key_Slash and event.modifiers() & Qt.KeyboardModifier.ControlModifier:
             cursor = self.textCursor()
-            last_text = ''
 
             if not cursor.hasSelection():
                 cursor.select(QTextCursor.SelectionType.LineUnderCursor)
@@ -322,7 +343,7 @@ class MainText(QPlainTextEdit):
         if not (Qt.Key.Key_A <= key <= Qt.Key.Key_Z or 
                 Qt.Key.Key_0 <= key <= Qt.Key.Key_9 or 
                 key in (Qt.Key.Key_Period, Qt.Key.Key_Underscore)):
-            self.completer.popup().hide()
+            # self.completer.popup().hide()
             return
 
         code = self.toPlainText()
@@ -332,14 +353,26 @@ class MainText(QPlainTextEdit):
         try:
             if self.show_completer:
                 line, column = self.cursor_to_line_column(pos)
-                script = jedi.Script(code=code, path="example.py")
+
+                script = jedi.Script(code=code, path=fr"{current_file_path}")
                 completions = script.complete(line, column)
-                
-                
+
                 model = QStandardItemModel()
+
+
+                # signatures = script.get_signatures(line, column)
+                # if signatures:
+                #     for param in signatures[0].params:
+                #         # print(param.name)
+                #         item = QStandardItem()
+                #         item.setText(param.name)
+                #         item.setIcon(QIcon('icons/autocompleterIcons/variable.svg'))
+                #         model.appendRow(item)
+
 
                 words = []
                 for c in completions[:30]:
+                    # print(c.name)
                     words.append(c.name)
                     item = QStandardItem()
                     item.setText(c.name)
@@ -353,6 +386,7 @@ class MainText(QPlainTextEdit):
                         item.setIcon(QIcon('icons/autocompleterIcons/keyword.svg'))
 
                     model.appendRow(item)
+
 
                 if words:
                     cursor.select(cursor.SelectionType.WordUnderCursor)
@@ -368,6 +402,7 @@ class MainText(QPlainTextEdit):
         except Exception as e:
             print("Autocomplete error:", e)
             self.completer.popup().hide()
+
 
 
     def cursor_to_line_column(self, pos):
@@ -789,7 +824,7 @@ class ShowOpenedFile(QTabBar):
 
 
     def track_tabs(self, index):
-        global commenting
+        global commenting, current_file_path
 
         # current_index = self.currentIndex()
         # previous_index = current_index - 1 if current_index > 0 else -1
@@ -818,7 +853,7 @@ class ShowOpenedFile(QTabBar):
         for path, file_name in file_description.items():
             if file_name == tab_text:
                 if file_name.lower().endswith('.py') or file_name.lower().endswith('.pyi'):
-
+                    current_file_path = path
                     self.highlighter = PythonSyntaxHighlighter(use_highlighter = True, parent=self.editor.document())
                     self.show_error = ShowErrors(self.editor, self.highlighter)
                     self.editor.show_completer = True

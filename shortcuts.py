@@ -52,7 +52,7 @@ class MainTextShortcuts:
 
 
         hide_show_term = QShortcut(QKeySequence("Ctrl+T"), parent)
-        hide_show_term.activated.connect(lambda: self.hide_show_terminal(bawky_parent_))
+        hide_show_term.activated.connect(lambda: self.hide_show_terminal(bawky_parent_, parent))
 
         kill_term = QShortcut(QKeySequence("Ctrl+Shift+G"), parent)
         kill_term.activated.connect(self.kill_terminal)
@@ -60,18 +60,7 @@ class MainTextShortcuts:
 
     def goto_block_(self, parent, bawky_parent):
         from widgets import GotoBlock
-
-        # cursor = parent.textCursor()
-        # block_pos = parent.document().findBlockByLineNumber(5 - 1).position()
-        # cursor.setPosition(block_pos)
-        # parent.setTextCursor(cursor)
         self.goto_block = GotoBlock(main_text = parent)
-        # self.goto_block = GotoBlock(bawky_parent = bawky_parent, main_text = parent)
-
-        # self.goto_block.setFocus()
-
-
-
 
 
     def get_text(self, error_label, clipboard):
@@ -110,7 +99,7 @@ class MainTextShortcuts:
             cursor.setPosition(block.position())
             cursor.select(QTextCursor.SelectionType.BlockUnderCursor)
             cursor.removeSelectedText()
-            # cursor.deleteChar()
+            cursor.deleteChar()
 
         cursor.endEditBlock()
         text_edit.setTextCursor(cursor)
@@ -239,56 +228,19 @@ class MainTextShortcuts:
             current_index = tab.currentIndex() - 1
             tab.setCurrentIndex(current_index)
 
-    # def hide_show_terminal(self, term, bawky_parent):
-    #     try:
-    #         if term:
-    #             print("Triggerd11")
-
-    #             if term.isVisible():
-    #                 term.hide()
-    #             else:
-    #                 print("Triggerd22")
-
-    #                 term.show()
-    #     except RuntimeError:
-    #         from widgets import TerminalDock
-    #         term = TerminalDock(bawky_parent)
-    #         self.terminal = term
-
-    #         if term and self.terminal:
-    #             print("Triggerd")
-    #             if term.isVisible():
-    #                 term.hide()
-    #             else:
-    #                 term.show()
-
-    def hide_show_terminal(self, bawky_parent):
-        # try:
+    def hide_show_terminal(self, bawky_parent, main_text):
         if self.terminal:
-            print("Triggerd11")
-
             if self.terminal.isVisible():
                 self.terminal.hide()
+                main_text.setFocus()
             else:
-                print("Triggerd22")
-
                 self.terminal.show()
+                self.terminal.termEmulator.terminal.setFocus()
+
         else:
             from widgets import TerminalDock
 
             self.terminal = TerminalDock(bawky_parent)
-        # except RuntimeError:
-        #     print("dsad")
-        #     from widgets import TerminalDock
-        #     self.terminal = TerminalDock(bawky_parent)
-
-        #     if self.terminal:
-        #         print("Triggerd")
-        #         if self.terminal.isVisible():
-        #             self.terminal.hide()
-        #         else:
-        #             self.terminal.show()
-
 
     def kill_terminal(self):
         if self.terminal:
@@ -297,10 +249,6 @@ class MainTextShortcuts:
             self.terminal.custom_title.deleteLater()
             self.terminal = None
             self.terminal = None
-            print(self.terminal)
-        # else:
-            
-            # print(term)
 
 class FileDockShortcut:
     def __init__(self, parent, file_dock, file_view, main_text, file_description, opened_tabs):
