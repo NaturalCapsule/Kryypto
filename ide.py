@@ -21,6 +21,7 @@ class IDE(QMainWindow):
 
     def setupWidgets(self):
         import widgets
+        
         self.terminal = widgets.TerminalDock(self)
         main_text = widgets.MainText(widgets.layout, self.clipboard)
         self.tab_bar = widgets.ShowOpenedFile(main_text, widgets.layout, widgets.error_label, self)
