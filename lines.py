@@ -14,4 +14,3 @@ class ShowLines(QWidget):
 
     def paintEvent(self, event):
         self.editor.line_number_area_paint_event(event)
-

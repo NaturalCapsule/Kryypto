@@ -21,12 +21,12 @@ class IDE(QMainWindow):
 
     def setupWidgets(self):
         import widgets
-        
+
         self.terminal = widgets.TerminalDock(self)
         main_text = widgets.MainText(widgets.layout, self.clipboard)
         self.tab_bar = widgets.ShowOpenedFile(main_text, widgets.layout, widgets.error_label, self)
         widgets.layout.addWidget(main_text)
-        self.editor_shortcuts = MainTextShortcuts(main_text, main_text.completer, self.tab_bar, widgets.error_label, self.clipboard, widgets.layout, self.terminal, self)
+        self.editor_shortcuts = MainTextShortcuts(main_text, main_text.completer, self.tab_bar, widgets.error_label, self.clipboard, widgets.layout, self.terminal, self, self.tab_bar, widgets.file_description)
         main_text.setFont(QFont("Maple Mono", self.editor_shortcuts.font_size))
 
         self.show_files = widgets.ShowDirectory(self, main_text, self.tab_bar)

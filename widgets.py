@@ -1270,16 +1270,16 @@ class TerminalEmulator(QWidget):
         self.terminal.insertPlainText(f"{self.prompt}{command}\n")
         self.processes[self.current_process_index].write(command.encode() + b"\n")
 
-    def run_file(self, file_path):
-        file_name = os.path.basename(file_path)
-        self.run_command(file_name)
+    # def run_file(self, file_path):
+    #     file_name = os.path.basename(file_path)
+    #     self.run_command(file_name)
 
-    def change_directory(self, new_path):
-        self.run_command(f"cd '{new_path}'")
+    # def change_directory(self, new_path):
+    #     self.run_command(f"cd '{new_path}'")
 
-    def parse_ansi_codes(self, text):
-        ansi_escape = re.compile(r"\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])")
-        return ansi_escape.sub("", text)
+    # def parse_ansi_codes(self, text):
+    #     ansi_escape = re.compile(r"\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])")
+    #     return ansi_escape.sub("", text)
 
 class TerminalDock(QDockWidget):
     def __init__(self, parent):

@@ -1,11 +1,12 @@
 import re
+import sys
 from PyQt6.QtGui import QFont, QShortcut, QKeySequence, QTextCursor
 # from PyQt6.QtWidgets import QLineEdit
 # from widgets import TerminalDock
 
 class MainTextShortcuts:
     # def __init__(self, parent, completer, tab, error_label, clipboard):
-    def __init__(self, parent, completer, tab, error_label, clipboard, bawky_parent, term, bawky_parent_):
+    def __init__(self, parent, completer, tab, error_label, clipboard, bawky_parent, term, bawky_parent_, opened_tabs, file_desc):
         self.font_size = 19
         # self.num_lines = num_lines
 
@@ -56,6 +57,41 @@ class MainTextShortcuts:
 
         kill_term = QShortcut(QKeySequence("Ctrl+Shift+G"), parent)
         kill_term.activated.connect(self.kill_terminal)
+
+        run_file = QShortcut(QKeySequence("Ctrl+N"), parent)
+        run_file.activated.connect(lambda: self.run_current_file(opened_tabs, file_desc, bawky_parent_, parent))
+
+    def run_current_file(self, opened_tabs, file_desc, bawky_parent, main_text):
+        current_index = opened_tabs.currentIndex()
+        current_file = opened_tabs.tabText(current_index)
+        for path, file_name in file_desc.items():
+            if current_file == file_name:
+                with open(path, 'w', encoding = 'utf-8') as file:
+                    file.write(main_text.toPlainText())
+
+                if self.terminal:
+                    self.terminal.show()
+                    # self.terminal.termEmulator.terminal.insertPlainText(fr"{sys.prefix}\python {path}")
+                    self.terminal.termEmulator.run_command(fr"{sys.executable} {path}")
+
+                    self.terminal.termEmulator.terminal.setFocus()
+
+
+                else:
+                    from widgets import TerminalDock
+
+                    self.terminal = TerminalDock(bawky_parent)
+                    self.terminal.show()
+                    self.terminal.termEmulator.terminal.insertPlainText(f"{sys.executable} {path}")
+
+                    self.terminal.termEmulator.terminal.setFocus()
+
+
+
+                break
+        
+
+
 
 
     def goto_block_(self, parent, bawky_parent):
