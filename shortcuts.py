@@ -207,7 +207,7 @@ class MainTextShortcuts:
     def increase_font(self, text_edit):
         self.font_size += 1
         text_edit.setFont(QFont("Maple Mono", self.font_size))
-        # self.num_lines = QFont('Maple Mono'), self.font_size
+        self.terminal.termEmulator.terminal.setFont(QFont("Maple Mono", self.font_size))
 
 
     def reduce_font(self, text_edit):
@@ -216,6 +216,9 @@ class MainTextShortcuts:
         if self.font_size <= 1:
             self.font_size = 1
         text_edit.setFont(QFont("Maple Mono", self.font_size))
+        self.terminal.termEmulator.terminal.setFont(QFont("Maple Mono", self.font_size))
+
+
 
     def pressed(self, completer):
         completer.popup().show()

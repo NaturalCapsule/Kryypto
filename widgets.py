@@ -229,6 +229,38 @@ class MainText(QPlainTextEdit):
             self.blockSignals(False)
             return
 
+        if key == Qt.Key.Key_X and event.modifiers() & Qt.KeyboardModifier.ControlModifier:
+            cursor = self.textCursor()
+            self.setUpdatesEnabled(False)
+            self.blockSignals(True)
+            cursor.beginEditBlock()
+
+            if cursor.selectedText() == '':
+                cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock)
+                cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock, QTextCursor.MoveMode.KeepAnchor)
+                text = cursor.selectedText()
+                self.selected_line = text
+
+                self.selected_text = None
+
+                self.clipboard.setText(self.selected_line)
+                cursor.removeSelectedText()
+                cursor.deleteChar()
+
+            else:
+                self.selected_text = cursor.selectedText()
+                self.selected_line = None
+                self.clipboard.setText(self.selected_text)
+                cursor.removeSelectedText()
+                cursor.deleteChar()
+
+            cursor.endEditBlock()
+            self.setUpdatesEnabled(True)
+            self.blockSignals(False)
+            self.completer.popup().hide()
+
+            return
+
         if key == Qt.Key.Key_C and event.modifiers() & Qt.KeyboardModifier.ControlModifier:
             cursor = self.textCursor()
 
@@ -343,7 +375,6 @@ class MainText(QPlainTextEdit):
         if not (Qt.Key.Key_A <= key <= Qt.Key.Key_Z or 
                 Qt.Key.Key_0 <= key <= Qt.Key.Key_9 or 
                 key in (Qt.Key.Key_Period, Qt.Key.Key_Underscore)):
-            # self.completer.popup().hide()
             return
 
         code = self.toPlainText()
@@ -358,16 +389,6 @@ class MainText(QPlainTextEdit):
                 completions = script.complete(line, column)
 
                 model = QStandardItemModel()
-
-
-                # signatures = script.get_signatures(line, column)
-                # if signatures:
-                #     for param in signatures[0].params:
-                #         # print(param.name)
-                #         item = QStandardItem()
-                #         item.setText(param.name)
-                #         item.setIcon(QIcon('icons/autocompleterIcons/variable.svg'))
-                #         model.appendRow(item)
 
 
                 words = []
@@ -501,7 +522,6 @@ class ShowDirectory(QDockWidget):
         self.main_text = main_text
 
         custom_title = QLabel("Directory Viewer")
-        # custom_title.setStyleSheet("background-color: #2b2b2b; color: white; padding: 4px; border-radius: 10px;")
         custom_title.setStyleSheet("background-color: transparent; color: white; padding: 4px; border-radius: 10px; margin: 4px")
 
 
@@ -826,10 +846,6 @@ class ShowOpenedFile(QTabBar):
     def track_tabs(self, index):
         global commenting, current_file_path
 
-        # current_index = self.currentIndex()
-        # previous_index = current_index - 1 if current_index > 0 else -1
-
-
         previous_tabtext = ''
 
         if self.previous_index != -1:
@@ -1066,17 +1082,6 @@ class TerminalEmulator(QWidget):
         self.prompt = "> "
 
         self.startSession()
-
-    def set_terminal_font(self):
-        pass
-        # font_families = [
-        #     "Consolas",
-        #     "Courier New",
-        #     "Monospace",
-        # ]
-        # font = QFont(font_families[0], 10)
-        # font.setStyleHint(QFont.StyleHint.Monospace)
-        # self.terminal.setFont(font)
 
     def setup_selector(self):
         self.terminal_selector = QComboBox()
