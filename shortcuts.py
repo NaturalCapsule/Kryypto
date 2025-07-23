@@ -66,15 +66,16 @@ class MainTextShortcuts:
         current_file = opened_tabs.tabText(current_index)
         for path, file_name in file_desc.items():
             if current_file == file_name:
+                if not current_file.lower().endswith('.py'):
+                    break
                 with open(path, 'w', encoding = 'utf-8') as file:
                     file.write(main_text.toPlainText())
 
                 if self.terminal:
                     self.terminal.show()
-                    # self.terminal.termEmulator.terminal.insertPlainText(fr"{sys.prefix}\python {path}")
+                    self.terminal.termEmulator.terminal.setFocus()
                     self.terminal.termEmulator.run_command(fr"{sys.executable} {path}")
 
-                    self.terminal.termEmulator.terminal.setFocus()
 
 
                 else:
@@ -82,11 +83,9 @@ class MainTextShortcuts:
 
                     self.terminal = TerminalDock(bawky_parent)
                     self.terminal.show()
-                    self.terminal.termEmulator.terminal.insertPlainText(f"{sys.executable} {path}")
-
+                    # self.terminal.termEmulator.terminal.insertPlainText(f"{sys.executable} {path}")
                     self.terminal.termEmulator.terminal.setFocus()
-
-
+                    self.terminal.termEmulator.run_command(fr"{sys.executable} {path}")
 
                 break
         
