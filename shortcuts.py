@@ -35,7 +35,7 @@ class MainTextShortcuts:
         remove_indent.activated.connect(lambda: self.remove_indentation(parent))
 
         remove_current_tab = QShortcut(QKeySequence("Ctrl+Shift+R"), parent)
-        remove_current_tab.activated.connect(lambda: self.remove_tab_(tab))
+        remove_current_tab.activated.connect(lambda: self.remove_tab_(tab, file_desc))
 
         move_tab_right = QShortcut(QKeySequence("Ctrl+Shift+T"), parent)
         move_tab_right.activated.connect(lambda: self.move_tab_right(tab))
@@ -251,9 +251,37 @@ class MainTextShortcuts:
         text_edit.blockSignals(False)
 
 
-    def remove_tab_(self, tab):
+    def remove_tab_(self, tab, file_desc):
         current_index = tab.currentIndex()
-        tab.removeTab(current_index)
+        tab.remove_tab(current_index)
+
+
+
+        # if index < 0 or index >= self.count():
+        #     print(f"Invalid tab index: {index}")
+        #     return
+        #     # self.removeTab(index)
+
+        # try:
+        #     current_file = tab.tabText(index)
+
+        #     # Remove from file_description
+        #     for path, file in list(file_desc.items()):
+        #         if file == current_file:
+        #             file_desc.pop(path)
+        #             break
+
+        #     tab.blockSignals(True)
+        #     tab.removeTab(index)
+        #     tab.blockSignals(False)
+
+        #     if tab.count() > 0:
+        #         tab.track_tabs(tab.currentIndex())
+        #     # else:
+        #     #     self.editor.setPlainText('')
+
+        # except Exception as e:
+        #     print(f"Error removing tab: {e}")
 
     def move_tab_right(self, tab):
         current_index = tab.currentIndex() + 1

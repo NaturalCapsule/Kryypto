@@ -103,6 +103,9 @@ class MainText(QPlainTextEdit):
             if doc == "":
 
                 self.doc_panel.hide()
+                if self.doc_panel.custom_title:
+
+                    self.doc_panel.custom_title.hide()
             else:
                 self.doc_viewer = self.parse_docstring(doc)
                 self.doc_panel.setHtml(self.doc_viewer or "")
@@ -297,8 +300,6 @@ class MainText(QPlainTextEdit):
             return
 
         if key == Qt.Key.Key_V and event.modifiers() & Qt.KeyboardModifier.ControlModifier:
-            # print(self.clipboard.text())
-
             if self.clipboard.text() != '' and self.selected_line is None:
                 cursor = self.textCursor()
                 self.setUpdatesEnabled(False)
@@ -313,21 +314,6 @@ class MainText(QPlainTextEdit):
                 self.blockSignals(False)
 
                 self.selected_line = None
-
-            # if self.selected_text is not None:
-            #     cursor = self.textCursor()
-            #     self.setUpdatesEnabled(False)
-            #     self.blockSignals(True)
-            #     cursor.beginEditBlock()
-
-            #     self.setTextCursor(cursor)
-
-
-            #     cursor.insertText(self.selected_text)
-            #     cursor.endEditBlock()
-            #     self.setUpdatesEnabled(True)
-            #     self.blockSignals(False)
-            #     self.selected_line = None
 
             if self.selected_line is not None:
                 cursor = self.textCursor()
@@ -393,7 +379,6 @@ class MainText(QPlainTextEdit):
 
                 words = []
                 for c in completions[:30]:
-                    # print(c.name)
                     words.append(c.name)
                     item = QStandardItem()
                     item.setText(c.name)
@@ -487,21 +472,20 @@ class MainText(QPlainTextEdit):
 class DocStringDock(QDockWidget):
     def __init__(self, parent, use):
         super().__init__()
-        custom_title = QLabel("Doc String")
-        # custom_title.setStyleSheet("background-color: #2b2b2b; color: white; padding: 4px; border-radius: 10px;")
-        # custom_title.setStyleSheet("background-color: transparent; color: white; padding: 4px; border-radius: 10px;")
-        custom_title.setStyleSheet("background-color: transparent; color: white; padding: 4px; border-radius: 10px; margin: 4px")
+        self.custom_title = QLabel("Doc String")
+        self.custom_title.setStyleSheet("background-color: transparent; color: white; padding: 4px; border-radius: 10px; margin: 4px")
 
 
-        self.setTitleBarWidget(custom_title)
+        self.setTitleBarWidget(self.custom_title)
 
 
         if use:
             self.clearFocus()
 
             self.doc_panel = QTextEdit()
+            self.doc_panel.custom_title = self.custom_title
             self.doc_panel.setReadOnly(True)
-            self.doc_panel.setMinimumHeight(120)
+            # self.doc_panel.setMinimumHeight(120)
             self.doc_panel.clearFocus()
 
             self.doc_panel.setObjectName("DocStrings")
@@ -772,6 +756,7 @@ class ShowOpenedFile(QTabBar):
         global file_description
         global commenting
         self.is_panel = True
+        self.tab_paths = {}
         self.previous_index = -1
 
 
@@ -826,48 +811,100 @@ class ShowOpenedFile(QTabBar):
         elif self.tabText(index).lower().endswith('ini') or self.tabText(index).lower().endswith('settings') or self.tabText(index).lower().endswith('conf') or self.tabText(index).lower().endswith('config') or self.tabText(index).lower().endswith('cfg'):
             self.setTabIcon(index, QIcon('icons/fileIcons/settings.svg'))
 
+
+
+    # def remove_tab(self, index):
+    #     self.blockSignals(True)
+    #     global file_description
+    #     current_file = self.tabText(index)
+
+    #     for path, file in file_description.items():
+    #         if file == current_file:
+    #             file_description.pop(path)
+    #             break
+
+    #     self.removeTab(index)
+    #     self.track_tabs(self.currentIndex())
+    #     self.blockSignals(False)
+
+
     def remove_tab(self, index):
+        self.blockSignals(True)
+
+        current_file = self.tabText(index)
+
+        for path, file in list(file_description.items()):
+            if file == current_file:
+                file_description.pop(path)
+                break
+
         self.removeTab(index)
+
+        # Now switch to correct tab
+        if self.count() > 0:
+            self.track_tabs(self.currentIndex())
+        else:
+            self.editor.setPlainText("")
+            self.previous_path = None
+            file_description.clear()
+
+        self.blockSignals(False)
 
     def add_file(self, path, file_name):
         file_index = self.addTab(str(file_name))
         self.tabSizeHint(file_index)
+
         close_button = QPushButton('X')
         close_button.setFixedSize(16, 16)
         close_button.setObjectName("CloseTabButton")
         close_button.setStyleSheet(get_css_style())
 
-        close_button.clicked.connect(lambda _, index_=file_index: self.remove_tab(index_))
+        def handle_close():
+            for i in range(self.count()):
+                if self.tabButton(i, self.ButtonPosition.RightSide) == self.sender():
+                    self.remove_tab(i)
+                    break
+
+        close_button.clicked.connect(handle_close)
+
         self.put_tab_icons(file_index)
         self.setCurrentIndex(file_index)
         self.setTabButton(file_index, self.ButtonPosition.RightSide, close_button)
 
-
     def track_tabs(self, index):
+
         global commenting, current_file_path
 
-        previous_tabtext = ''
+        if hasattr(self, 'previous_path') and self.previous_path:
+            with open(self.previous_path, 'w', encoding='utf-8') as f:
+                f.write(self.editor.toPlainText())
 
-        if self.previous_index != -1:
-            previous_tabtext = self.tabText(self.previous_index)
-            for path, file_name in file_description.items():
-                if previous_tabtext == file_name:
-                    with open(path, 'w', encoding = 'utf-8') as previous_file:
-                        previous_file.write(self.editor.toPlainText())
-
-        self.previous_index = index
-
-
-
-        if self.currentIndex() == -1:
+        if self.count() == 0:
             self.editor.setPlainText("")
             file_description.clear()
+            self.previous_path = None
+            return
+
 
         current_index = self.currentIndex()
         tab_text = self.tabText(current_index)
+        self.previous_path = None
+
 
         for path, file_name in file_description.items():
             if file_name == tab_text:
+                self.previous_path = path
+                current_file_path = path
+
+                try:
+                    with open(path, 'r', encoding = 'utf-8') as file:
+                        self.editor.setPlainText(file.read())
+
+                except FileNotFoundError:
+                    self.remove_tab(self.currentIndex())
+                    return
+
+
                 if file_name.lower().endswith('.py') or file_name.lower().endswith('.pyi'):
                     current_file_path = path
                     self.highlighter = PythonSyntaxHighlighter(use_highlighter = True, parent=self.editor.document())
@@ -1045,11 +1082,11 @@ class ShowOpenedFile(QTabBar):
                     self.highlighter = PythonSyntaxHighlighter(False, self.editor.document())
                     self.highlighter.deleteLater()
 
-                try:
-                    with open(path, 'r', encoding = 'utf-8') as file:
-                        self.editor.setPlainText(file.read())
-                except FileNotFoundError:
-                    self.remove_tab(self.currentIndex())
+
+
+            else:
+                file_description[path] = file_name
+
 
 class TerminalEmulator(QWidget):
     command_input = pyqtSignal(str)
@@ -1065,7 +1102,7 @@ class TerminalEmulator(QWidget):
         self.setup_selector()
 
         self.terminal = QPlainTextEdit(self)
-        self.terminal.setObjectName('TermInput')
+        self.terminal.setObjectName('Terminal')
         self.terminal.setStyleSheet((get_css_style()))
 
         self.terminal.keyPressEvent = self.terminal_key_press_event
@@ -1085,7 +1122,7 @@ class TerminalEmulator(QWidget):
 
     def setup_selector(self):
         self.terminal_selector = QComboBox()
-        self.terminal_selector.setStyleSheet("QComboBox { min-width: 150px; }")
+        # self.terminal_selector.setStyleSheet("QComboBox { min-width: 150px; }")
 
     def startSession(self):
         process = QProcess(self)
@@ -1095,6 +1132,7 @@ class TerminalEmulator(QWidget):
         self.terminal_selector.setCurrentIndex(0)
 
         self.start_powershell(0, project_path='')
+        # self.run_command('cls')
 
     def start_powershell(self, index, project_path=None):
         powershell_path = self.find_powershell_core()
