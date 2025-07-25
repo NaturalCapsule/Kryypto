@@ -7,7 +7,7 @@ from PyQt6.QtGui import QFont, QShortcut, QKeySequence, QTextCursor
 
 class MainTextShortcuts:
     # def __init__(self, parent, completer, tab, error_label, clipboard):
-    def __init__(self, parent, completer, tab, error_label, clipboard, bawky_parent, term, bawky_parent_, opened_tabs, file_desc):
+    def __init__(self, parent, completer, tab, error_label, clipboard, bawky_parent, term, bawky_parent_, opened_tabs, file_desc, list_shortcuts):
         self.font_size = 19
         # self.num_lines = num_lines
 
@@ -65,6 +65,30 @@ class MainTextShortcuts:
         open_css_file = QShortcut(QKeySequence("Ctrl+Shift+S"), bawky_parent_)
         open_css_file.activated.connect(lambda: self.open_css(opened_tabs, file_desc, bawky_parent_, parent))
 
+        open_config_file = QShortcut(QKeySequence("Ctrl+Shift+O"), bawky_parent_)
+        open_config_file.activated.connect(lambda: self.open_config(opened_tabs, file_desc, bawky_parent_, parent))
+
+
+        hide_show_shortcuts = QShortcut(QKeySequence("Ctrl+L"), bawky_parent_)
+        hide_show_shortcuts.activated.connect(lambda: self.hide_show_shortcuts(bawky_parent_, list_shortcuts))
+
+    def hide_show_shortcuts(self, parent, list_shortcuts):
+        if list_shortcuts.isVisible():
+            list_shortcuts.hide()
+        else:
+            list_shortcuts.show()
+
+
+    def open_config(self, tab, file_desc, bawky_parent, parent):
+        path = "config/configuration.cfg"
+        with open(path, 'r', encoding = 'utf-8') as css_file:
+            if path not in file_desc.keys() and 'configuration.cfg' not in file_desc.values():
+                file_desc[path] = 'configuration.cfg'
+                tab.add_file(path, 'configuration.cfg')
+                parent.setPlainText(css_file.read())
+                parent.setFocus()
+
+
     def open_css(self, tab, file_desc, bawky_parent, parent):
         path = "config/style.css"
         with open(path, 'r', encoding = 'utf-8') as css_file:
@@ -72,6 +96,7 @@ class MainTextShortcuts:
                 file_desc[path] = 'style.css'
                 tab.add_file(path, 'style.css')
                 parent.setPlainText(css_file.read())
+                parent.setFocus()
                 # if not parent.isVisible():
                 #     parent.show()
 

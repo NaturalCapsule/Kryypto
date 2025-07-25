@@ -22,18 +22,20 @@ class IDE(QMainWindow):
     def setupWidgets(self):
         import widgets
 
-
         self.welcome_page = widgets.WelcomeWidget()
+        self.list_shortcuts = widgets.ListShortCuts()
         widgets.layout.addWidget(self.welcome_page)
         self.terminal = widgets.TerminalDock(self)
         main_text = widgets.MainText(widgets.layout, self.clipboard)
         self.tab_bar = widgets.ShowOpenedFile(main_text, widgets.layout, widgets.error_label, self, self.welcome_page)
         widgets.layout.addWidget(main_text)
-        self.editor_shortcuts = MainTextShortcuts(main_text, main_text.completer, self.tab_bar, widgets.error_label, self.clipboard, widgets.layout, self.terminal, self, self.tab_bar, widgets.file_description)
+        self.editor_shortcuts = MainTextShortcuts(main_text, main_text.completer, self.tab_bar, widgets.error_label, self.clipboard, widgets.layout, self.terminal, self, self.tab_bar, widgets.file_description, self.list_shortcuts)
         main_text.setFont(QFont("Maple Mono", self.editor_shortcuts.font_size))
 
         self.show_files = widgets.ShowDirectory(self, main_text, self.tab_bar)
         FileDockShortcut(self, self.show_files, self.show_files.file_viewer, main_text, widgets.file_description, self.tab_bar)
+        widgets.layout.addWidget(self.list_shortcuts)
+        self.welcome_page.setFocus()
 
 
 if __name__ == '__main__':

@@ -1468,6 +1468,14 @@ class WelcomeWidget(QWidget):
         # shortcut_2.setObjectName('ShortCutTexts')
         # shortcut_2.setStyleSheet(get_css_style())
 
+
+        shortcut_2 = QLabel('Press <span style="font-family: monospace; background-color: #2d2d2d; padding: 2px 4px; border: 1px; border-radius: 15px;">CTRL + L</span> to open Shorcut List')
+        shortcut_2.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+
+        shortcut_2.setObjectName('ShortCutTexts')
+        shortcut_2.setStyleSheet(get_css_style())
+
         shortcut_3 = QLabel('Press <span style="font-family: monospace; background-color: #2d2d2d; padding: 2px 4px; border: 1px; border-radius: 15px;">Ctrl + Shift + S</span> to open CSS file')
         shortcut_3.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignBottom)
 
@@ -1501,11 +1509,12 @@ class WelcomeWidget(QWidget):
         self._layout.addWidget(line, alignment = Qt.AlignmentFlag.AlignHCenter)
         self._layout.addWidget(shortcut_1, alignment = Qt.AlignmentFlag.AlignHCenter)
 
-        # self._layout.addWidget(shortcut_2, alignment = Qt.AlignmentFlag.AlignHCenter)
         self._layout.setSpacing(10)
         self._layout.addStretch(1)
+        self._layout.addWidget(shortcut_2, alignment = Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignBottom)
         self._layout.addWidget(shortcut_3, alignment=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignBottom)
         self._layout.addWidget(shortcut_4, alignment=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignBottom)
+        self.setFocus()
 
     def update_text(self):
         if self.current_index <= len(self.full_text):
@@ -1513,3 +1522,57 @@ class WelcomeWidget(QWidget):
             self.current_index += 1
         else:
             self.timer.stop()
+
+
+class ListShortCuts(QWidget):
+    def __init__(self):
+        super().__init__()
+
+        self.layout_ = QVBoxLayout()
+        self.layout_.setContentsMargins(0, 0, 0, 0)
+        self.setLayout(self.layout_)
+
+        shortcut_1 = QLabel('Save Current File: <span style="font-family: monospace; background-color: #2d2d2d; padding: 2px 4px; border: 1px; border-radius: 15px;">Ctrl + S</span>')
+        shortcut_2 = QLabel('Show/Hide Directory Viewer: <span style="font-family: monospace; background-color: #2d2d2d; padding: 2px 4px; border: 1px; border-radius: 15px;">Ctrl + B</span>')
+        shortcut_3 = QLabel('Run current python file: <span style="font-family: monospace; background-color: #2d2d2d; padding: 2px 4px; border: 1px; border-radius: 15px;">Ctrl + N</span>')
+        shortcut_4 = QLabel('Kill Terminal: <span style="font-family: monospace; background-color: #2d2d2d; padding: 2px 4px; border: 1px; border-radius: 15px;">Ctrl + Shift + G</span>')
+        shortcut_5 = QLabel('Show/Hide Terminal: <span style="font-family: monospace; background-color: #2d2d2d; padding: 2px 4px; border: 1px; border-radius: 15px;">Ctrl + T</span>')
+        shortcut_6 = QLabel('Go to line: <span style="font-family: monospace; background-color: #2d2d2d; padding: 2px 4px; border: 1px; border-radius: 15px;">Ctrl + Shift + H</span>')
+        shortcut_7 = QLabel('Find text: <span style="font-family: monospace; background-color: #2d2d2d; padding: 2px 4px; border: 1px; border-radius: 15px;">Ctrl + F</span>')
+        shortcut_8 = QLabel('Get Error: <span style="font-family: monospace; background-color: #2d2d2d; padding: 2px 4px; border: 1px; border-radius: 15px;">Ctrl + Shift + C</span>')
+        shortcut_9 = QLabel('Move Tab to left: <span style="font-family: monospace; background-color: #2d2d2d; padding: 2px 4px; border: 1px; border-radius: 15px;">Ctrl + Shift + E</span>')
+        shortcut_10 = QLabel('Move tab to right: <span style="font-family: monospace; background-color: #2d2d2d; padding: 2px 4px; border: 1px; border-radius: 15px;">Ctrl + Shift + T</span>')
+        shortcut_11 = QLabel('Remove current tab: <span style="font-family: monospace; background-color: #2d2d2d; padding: 2px 4px; border: 1px; border-radius: 15px;">Ctrl + Shift + R</span>')
+        shortcut_12 = QLabel('Remove line indent: <span style="font-family: monospace; background-color: #2d2d2d; padding: 2px 4px; border: 1px; border-radius: 15px;">Ctrl + [</span>')
+        shortcut_13 = QLabel('Indet line: <span style="font-family: monospace; background-color: #2d2d2d; padding: 2px 4px; border: 1px; border-radius: 15px;">Ctrl + ]</span>')
+        shortcut_14 = QLabel('Increase font size: <span style="font-family: monospace; background-color: #2d2d2d; padding: 2px 4px; border: 1px; border-radius: 15px;">Ctrl + =</span>')
+        shortcut_15 = QLabel('decrease font size: <span style="font-family: monospace; background-color: #2d2d2d; padding: 2px 4px; border: 1px; border-radius: 15px;">Ctrl + -</span>')
+        shortcut_16 = QLabel('Go to new line: <span style="font-family: monospace; background-color: #2d2d2d; padding: 2px 4px; border: 1px; border-radius: 15px;">Ctrl + Return</span>')
+        shortcut_17 = QLabel('Remove current line: <span style="font-family: monospace; background-color: #2d2d2d; padding: 2px 4px; border: 1px; border-radius: 15px;">Ctrl + Shift + K</span>')
+        shortcut_18 = QLabel('Open Configuration file: <span style="font-family: monospace; background-color: #2d2d2d; padding: 2px 4px; border: 1px; border-radius: 15px;">Ctrl + Shift + O</span>')
+
+
+        self.left_column = QVBoxLayout()
+        self.right_column = QVBoxLayout()
+        self.left_column.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self.right_column.setAlignment(Qt.AlignmentFlag.AlignTop)
+
+        for shortcut in [shortcut_1, shortcut_2, shortcut_3, shortcut_4, shortcut_5, shortcut_6, shortcut_7, shortcut_8, shortcut_9]:
+            shortcut.setObjectName('ShortCutTexts')
+            shortcut.setStyleSheet(get_css_style())
+            self.left_column.addWidget(shortcut)
+
+        for shortcut in [shortcut_10, shortcut_11, shortcut_12, shortcut_13, shortcut_14, shortcut_15, shortcut_16, shortcut_17, shortcut_18]:
+            shortcut.setObjectName('ShortCutTexts')
+            shortcut.setStyleSheet(get_css_style())
+            self.right_column.addWidget(shortcut)
+
+        self.h_layout = QHBoxLayout()
+        self.h_layout.addLayout(self.left_column)
+        self.h_layout.setSpacing(10)
+        self.h_layout.addStretch()
+        self.h_layout.addLayout(self.right_column)
+
+        self.layout_.addLayout(self.h_layout)
+
+        self.hide()
