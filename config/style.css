@@ -29,17 +29,6 @@
 
 }
 
-#TermInput {
-    background-color: #1e1e2e;
-    color: white;
-    selection-background-color: rgba(255, 255, 255, 0.5);
-    padding: 2px;
-    margin: 2px;
-    border-radius: 10px;
-    border: 2px solid #F38BA8;
-    font-size: 19px;
-
-}
 
 
 #Finder {
@@ -244,6 +233,35 @@
     background-color: #1e1e2e;
 }
 
+
+#Greeting {
+    font-size: 55px;
+    color: white;
+    text-align: center;
+    font-family: 'Maple Mono';
+    font-weight: bold;
+    font-style: italic;
+}
+
+
+#Date {
+    font-size: 22px;
+    color: white;
+    text-align: center;
+    font-family: 'Maple Mono';
+    font-weight: bold;
+    font-style: italic;
+}
+
+#ShortCutTexts {
+    font-size: 22px;
+    color: white;
+    text-align: center;
+    font-family: 'Maple Mono';
+    font-weight: bold;
+    /* font-style: italic; */
+}
+
 QScrollBar:vertical {
     background: #1e1e2e;
     color: white;
@@ -287,3 +305,4 @@ QTabBar::tab:hover {
 QTabWidget::pane {
     border: none;
 }
+

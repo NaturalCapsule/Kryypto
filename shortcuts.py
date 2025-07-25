@@ -4,6 +4,7 @@ from PyQt6.QtGui import QFont, QShortcut, QKeySequence, QTextCursor
 # from PyQt6.QtWidgets import QLineEdit
 # from widgets import TerminalDock
 
+
 class MainTextShortcuts:
     # def __init__(self, parent, completer, tab, error_label, clipboard):
     def __init__(self, parent, completer, tab, error_label, clipboard, bawky_parent, term, bawky_parent_, opened_tabs, file_desc):
@@ -60,6 +61,21 @@ class MainTextShortcuts:
 
         run_file = QShortcut(QKeySequence("Ctrl+N"), parent)
         run_file.activated.connect(lambda: self.run_current_file(opened_tabs, file_desc, bawky_parent_, parent))
+
+        open_css_file = QShortcut(QKeySequence("Ctrl+Shift+S"), bawky_parent_)
+        open_css_file.activated.connect(lambda: self.open_css(opened_tabs, file_desc, bawky_parent_, parent))
+
+    def open_css(self, tab, file_desc, bawky_parent, parent):
+        path = "config/style.css"
+        with open(path, 'r', encoding = 'utf-8') as css_file:
+            if path not in file_desc.keys() and 'style.css' not in file_desc.values():
+                file_desc[path] = 'style.css'
+                tab.add_file(path, 'style.css')
+                parent.setPlainText(css_file.read())
+                # if not parent.isVisible():
+                #     parent.show()
+
+
 
     def run_current_file(self, opened_tabs, file_desc, bawky_parent, main_text):
         current_index = opened_tabs.currentIndex()
@@ -301,6 +317,7 @@ class MainTextShortcuts:
                 main_text.setFocus()
             else:
                 self.terminal.show()
+                self.terminal.termEmulator.terminal.show()
                 self.terminal.termEmulator.terminal.setFocus()
 
         else:

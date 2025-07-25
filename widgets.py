@@ -1,10 +1,18 @@
+## TO-DO(s): 
+# 1: make a welcome widget for the user when lauching
+# 2: make a keyboard shortcut for opening config files (e.g style.css or config file (coming soon!))
+# 3: make it when there are no tab it shows some system info or something else, idk...
+# 4: implement a saving dialog when the user close the app
+
 import jedi
 import re
 import subprocess
 import os
+# import time
+from datetime import datetime
 from PyQt6.QtCore import QTimer, Qt, QRect, Qt, QDir, QFileInfo, pyqtSignal, QProcess
 from PyQt6.QtGui import QTextCursor, QKeyEvent, QPainter, QColor, QFont, QFontMetrics, QTextCursor, QColor, QFileSystemModel, QIcon, QStandardItemModel, QStandardItem
-from PyQt6.QtWidgets import QComboBox, QLabel, QPushButton, QHBoxLayout, QLineEdit, QPlainTextEdit, QVBoxLayout, QWidget, QCompleter, QDockWidget, QTextEdit, QTreeView, QFileIconProvider, QTabBar
+from PyQt6.QtWidgets import QFrame, QComboBox, QLabel, QPushButton, QHBoxLayout, QLineEdit, QPlainTextEdit, QVBoxLayout, QWidget, QCompleter, QDockWidget, QTextEdit, QTreeView, QFileIconProvider, QTabBar
 from lines import ShowLines
 
 from get_style import get_css_style
@@ -68,6 +76,8 @@ class MainText(QPlainTextEdit):
         self.completer.setCompletionMode(QCompleter.CompletionMode.PopupCompletion)
         self.completer.setCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
         self.completer.activated.connect(self.insert_completion)
+        self.hide()
+
 
     def toggle_cursor(self):
         self.cursor_visible = not self.cursor_visible
@@ -101,15 +111,16 @@ class MainText(QPlainTextEdit):
         doc = doc or ""
         if self.doc_panel:
             if doc == "":
-
                 self.doc_panel.hide()
                 if self.doc_panel.custom_title:
-
                     self.doc_panel.custom_title.hide()
+                    self.doc_panel.dock.hide()
             else:
                 self.doc_viewer = self.parse_docstring(doc)
                 self.doc_panel.setHtml(self.doc_viewer or "")
 
+                self.doc_panel.dock.show()
+                self.doc_panel.custom_title.show()
 
                 self.doc_panel.show()
 
@@ -472,7 +483,8 @@ class MainText(QPlainTextEdit):
 class DocStringDock(QDockWidget):
     def __init__(self, parent, use):
         super().__init__()
-        self.custom_title = QLabel("Doc String")
+        self.custom_title = QLabel("Doc")
+        # self.custom_title = QLabel("Doc")
         self.custom_title.setStyleSheet("background-color: transparent; color: white; padding: 4px; border-radius: 10px; margin: 4px")
 
 
@@ -483,6 +495,7 @@ class DocStringDock(QDockWidget):
             self.clearFocus()
 
             self.doc_panel = QTextEdit()
+            self.doc_panel.dock = self
             self.doc_panel.custom_title = self.custom_title
             self.doc_panel.setReadOnly(True)
             # self.doc_panel.setMinimumHeight(120)
@@ -540,6 +553,10 @@ class ShowDirectory(QDockWidget):
         self.file_viewer = QTreeView(self)
 
         self.file_viewer.setObjectName("DirectoryViewer")
+
+        # self.file_viewer.hide()
+        # self.file_viewer.clearFocus()
+        self.hide()
 
         self.hbox.addWidget(self.new_file_input)
         self.hbox.addWidget(self.new_folder_input)
@@ -751,13 +768,14 @@ class CustomIcons(QFileIconProvider):
 
 
 class ShowOpenedFile(QTabBar):
-    def __init__(self, editor, layout, error_label, parent):
+    def __init__(self, editor, layout, error_label, parent, welcome_page):
         super().__init__()
         global file_description
         global commenting
         self.is_panel = True
         self.tab_paths = {}
         self.previous_index = -1
+        self.welcome_page = welcome_page
 
 
         self.editor = editor
@@ -812,22 +830,6 @@ class ShowOpenedFile(QTabBar):
             self.setTabIcon(index, QIcon('icons/fileIcons/settings.svg'))
 
 
-
-    # def remove_tab(self, index):
-    #     self.blockSignals(True)
-    #     global file_description
-    #     current_file = self.tabText(index)
-
-    #     for path, file in file_description.items():
-    #         if file == current_file:
-    #             file_description.pop(path)
-    #             break
-
-    #     self.removeTab(index)
-    #     self.track_tabs(self.currentIndex())
-    #     self.blockSignals(False)
-
-
     def remove_tab(self, index):
         self.blockSignals(True)
 
@@ -840,7 +842,6 @@ class ShowOpenedFile(QTabBar):
 
         self.removeTab(index)
 
-        # Now switch to correct tab
         if self.count() > 0:
             self.track_tabs(self.currentIndex())
         else:
@@ -870,9 +871,11 @@ class ShowOpenedFile(QTabBar):
         self.put_tab_icons(file_index)
         self.setCurrentIndex(file_index)
         self.setTabButton(file_index, self.ButtonPosition.RightSide, close_button)
+        if not self.editor.isVisible():
+            self.welcome_page.hide()
+            self.editor.show()
 
     def track_tabs(self, index):
-
         global commenting, current_file_path
 
         if hasattr(self, 'previous_path') and self.previous_path:
@@ -890,7 +893,7 @@ class ShowOpenedFile(QTabBar):
         tab_text = self.tabText(current_index)
         self.previous_path = None
 
-
+        
         for path, file_name in file_description.items():
             if file_name == tab_text:
                 self.previous_path = path
@@ -899,6 +902,7 @@ class ShowOpenedFile(QTabBar):
                 try:
                     with open(path, 'r', encoding = 'utf-8') as file:
                         self.editor.setPlainText(file.read())
+                        # self.editor.show()
 
                 except FileNotFoundError:
                     self.remove_tab(self.currentIndex())
@@ -915,6 +919,7 @@ class ShowOpenedFile(QTabBar):
                     self.error_label.show()
                     if self.is_panel:
                         self.doc_panelstring = DocStringDock(self.parent_, True)
+                        # self.editor.doc_panel.dock
                         self.editor.doc_panel = self.doc_panelstring.doc_panel
                     self.is_panel = False
 
@@ -1104,6 +1109,10 @@ class TerminalEmulator(QWidget):
         self.terminal = QPlainTextEdit(self)
         self.terminal.setObjectName('Terminal')
         self.terminal.setStyleSheet((get_css_style()))
+
+        self.terminal.clearFocus()
+        self.terminal.hide()
+
 
         self.terminal.keyPressEvent = self.terminal_key_press_event
 
@@ -1329,12 +1338,13 @@ class TerminalDock(QDockWidget):
         super().__init__()
         self.setObjectName('Docks')
         self.setStyleSheet(get_css_style())
+        self.clearFocus()
+        self.hide()
 
         self.termEmulator = TerminalEmulator(self)
         self.setWidget(self.termEmulator)
         self.termEmulator.show()
         self.custom_title = QLabel("Terminal")
-        # custom_title.setStyleSheet("background-color: #2b2b2b; color: white; padding: 4px; border-radius: 10px;")
         self.custom_title.setStyleSheet("background-color: transparent; color: white; padding: 4px; border-radius: 10px; margin: 4px")
         self.setTitleBarWidget(self.custom_title)
 
@@ -1417,3 +1427,89 @@ class GotoBlock(QLineEdit):
             if block.isValid():
                 self.cursor_.setPosition(block.position())
                 main_text.setTextCursor(self.cursor_)
+
+
+class WelcomeWidget(QWidget):
+    def __init__(self):
+        super().__init__()
+        self._layout = QVBoxLayout(self)
+
+        self.full_text = f"Welcome, {os.getlogin()}!"
+        self.current_index = 0
+
+        self.welcome_user = QLabel("", self)
+        self.welcome_user.setObjectName('Greeting')
+        self.welcome_user.setStyleSheet(get_css_style())
+
+        self.timer = QTimer(self)
+        self.timer.timeout.connect(self.update_text)
+        self.timer.start(120)
+
+        self.setStyleSheet(get_css_style())
+        now = datetime.now()
+        date = now.strftime('%A, %B %d')
+        current_date = QLabel(date)
+        current_date.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        current_date.setObjectName('Date')
+        current_date.setStyleSheet(get_css_style())
+
+        shortcut_1 = QLabel('Press <span style="font-family: monospace; background-color: #2d2d2d; padding: 2px 4px; border: 1px; border-radius: 15px;">Ctrl + B</span> to open Directory Viewer and start working!')
+        shortcut_1.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+
+        shortcut_1.setObjectName('ShortCutTexts')
+        shortcut_1.setStyleSheet(get_css_style())
+
+        # shortcut_2 = QLabel('Press <span style="font-family: monospace; background-color: #2d2d2d; padding: 2px 4px; border: 1px; border-radius: 15px;">CTRL + T</span> to open Terminal')
+        # shortcut_2.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+
+        # shortcut_2.setObjectName('ShortCutTexts')
+        # shortcut_2.setStyleSheet(get_css_style())
+
+        shortcut_3 = QLabel('Press <span style="font-family: monospace; background-color: #2d2d2d; padding: 2px 4px; border: 1px; border-radius: 15px;">Ctrl + Shift + S</span> to open CSS file')
+        shortcut_3.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignBottom)
+
+
+        shortcut_3.setObjectName('ShortCutTexts')
+        shortcut_3.setStyleSheet(get_css_style())
+
+
+        shortcut_4 = QLabel('Press <span style="font-family: monospace; background-color: #2d2d2d; padding: 2px 4px; border: 1px; border-radius: 15px;">Ctrl + Shift + O</span> to open Configuration file')
+        shortcut_4.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignBottom)
+
+
+        shortcut_4.setObjectName('ShortCutTexts')
+        shortcut_4.setStyleSheet(get_css_style())
+
+
+        line = QFrame()
+        line.setFrameShape(QFrame.Shape.HLine)
+        line.setFrameShadow(QFrame.Shadow.Sunken)
+        line.setStyleSheet("color: gray;")
+
+
+        self.setLayout(self._layout)
+        self._layout.setContentsMargins(0, 0, 0, 0)
+        self._layout.addStretch(1)
+        self._layout.addWidget(self.welcome_user, alignment = Qt.AlignmentFlag.AlignHCenter)
+        self._layout.addWidget(current_date, alignment = Qt.AlignmentFlag.AlignHCenter)
+        line.setStyleSheet("background-color: #888;")
+        line.setFixedHeight(2)
+        line.setFixedWidth(500)
+        self._layout.addWidget(line, alignment = Qt.AlignmentFlag.AlignHCenter)
+        self._layout.addWidget(shortcut_1, alignment = Qt.AlignmentFlag.AlignHCenter)
+
+        # self._layout.addWidget(shortcut_2, alignment = Qt.AlignmentFlag.AlignHCenter)
+        self._layout.setSpacing(10)
+        self._layout.addStretch(1)
+        self._layout.addWidget(shortcut_3, alignment=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignBottom)
+        self._layout.addWidget(shortcut_4, alignment=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignBottom)
+
+    def update_text(self):
+        if self.current_index <= len(self.full_text):
+            self.welcome_user.setText(self.full_text[:self.current_index])
+            self.current_index += 1
+        else:
+            self.timer.stop()
