@@ -1371,7 +1371,7 @@ class TerminalEmulator(QWidget):
 
             if i < len(codes):
                 code = codes[i]
-                if code == "\x1B[0m":  # Reset
+                if code == "\x1B[0m":
                     current_color = default_color
                 elif code.startswith("\x1B[38;2;"):
                     rgb = code[7:-1].split(";")

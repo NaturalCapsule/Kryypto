@@ -28,9 +28,84 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
         # string_format.setForeground(QColor(0, 128, 0))  # Green
         string_format.setForeground(QColor(166, 227, 161))  # Green
 
-        self.highlighting_rules.append((QRegularExpression('"[^"\\\\]*(\\\\.[^"\\\\]*)*"'), string_format, 'string'))
-        self.highlighting_rules.append((QRegularExpression("'[^'\\\\]*(\\\\.[^'\\\\]*)*'"), string_format, 'string'))
+        # self.highlighting_rules.append((QRegularExpression('"[^"\\\\]*(\\\\.[^"\\\\]*)*"'), string_format, 'string'))
+        # self.highlighting_rules.append((QRegularExpression('f"[^"\\\\]*(\\\\.[^"\\\\]*)*"'), string_format, 'string'))
+        # self.highlighting_rules.append((QRegularExpression("'[^'\\\\]*(\\\\.[^'\\\\]*)*'"), string_format, 'string'))
+        # self.highlighting_rules.append((QRegularExpression("f'[^'\\\\]*(\\\\.[^'\\\\]*)*'"), string_format, 'string'))
         
+        self.highlighting_rules.append((
+            QRegularExpression(r'''(?<=\W|^)f"[^"\\]*(\\.[^"\\]*)*"'''),
+            string_format,
+            'f-string'
+        ))
+
+        self.highlighting_rules.append((
+            QRegularExpression(r'''(?<=\W|^)f'[^'\\]*(\\.[^'\\]*)*' '''),
+            string_format,
+            'f-string'
+        ))
+
+
+
+        # self.highlighting_rules.append((
+        #     QRegularExpression(r"""f'[^'\\]*(\\.[^'\\]*)*""" + r"'"),
+        #     string_format,
+        #     'f-string'
+        # ))
+
+        # self.highlighting_rules.append((
+        #     QRegularExpression(r'''(?<=\W|^)fr'[^'\\]*(\\.[^'\\]*)*' '''),
+        #     string_format,
+        #     'f-string'
+        # ))
+
+        self.highlighting_rules.append((
+            QRegularExpression(r'''(?<=\W|^)fr"[^"\\]*(\\.[^"\\]*)*"'''),
+            string_format,
+            'fr-string'
+        ))
+
+        self.highlighting_rules.append((
+            QRegularExpression(r"""fr'[^'\\]*(\\.[^'\\]*)*""" + r"'"),
+            string_format,
+            'fr-string'
+        ))
+
+
+        self.highlighting_rules.append((
+            QRegularExpression(r'''(?<=\W|^)b"[^"\\]*(\\.[^"\\]*)*"'''),
+            string_format,
+            'b-string'
+        ))
+
+        self.highlighting_rules.append((
+            QRegularExpression(r"""b'[^'\\]*(\\.[^'\\]*)*""" + r"'"),
+            string_format,
+            'b-string'
+        ))
+
+        self.highlighting_rules.append((
+            QRegularExpression(r'''(?<=\W|^)br"[^"\\]*(\\.[^"\\]*)*"'''),
+            string_format,
+            'br-string'
+        ))
+
+        self.highlighting_rules.append((
+            QRegularExpression(r"""br'[^'\\]*(\\.[^'\\]*)*""" + r"'"),
+            string_format,
+            'br-string'
+        ))
+
+        self.highlighting_rules.append((
+            QRegularExpression(r'"[^"\\]*(\\.[^"\\]*)*"'),
+            string_format,
+            'string'
+        ))
+        self.highlighting_rules.append((
+            QRegularExpression(r"'[^'\\]*(\\.[^'\\]*)*'"),
+            string_format,
+            'string'
+        ))
 
         keywords = [
             'and', 'as', 'assert', 'break', 'class', 'continue', 'def',
