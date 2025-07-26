@@ -108,13 +108,13 @@
 #FileMaker {
     background-color: #1e1e2e;
     border: 1px solid #3c3c3c;
-    color: #ffffff;                             
+    color: #ffffff;
 }
 
 #FolderMaker {
     background-color: #1e1e2e;
     border: 1px solid #3c3c3c;
-    color: #ffffff;                             
+    color: #ffffff;
 }
 
 
@@ -137,7 +137,6 @@
     border: 2px solid #F38BA8;
     /* outline: none; */
 }
-
 
 
 #DirectoryViewer:hover::item,
@@ -259,7 +258,55 @@
     text-align: center;
     font-family: 'Maple Mono';
     font-weight: bold;
-    /* font-style: italic; */
+}
+
+#MessageBox QLabel {
+    color: white;
+
+}
+
+#MessageBox {
+    background-color: #1e1e2e;
+    color: white;
+    font-family: 'Maple Mono';
+    font-style: italic;
+    font-size: 14px;
+    border: 2px solid #89b4fa;
+    border-radius: 10px;
+}
+
+#MessageBoxSave {
+    background-color: #89b4fa;
+    color: white;
+    /* color: #1e1e2e; */
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-weight: bold;
+}
+#MessageBoxSave:hover {
+    background-color: #74c7ec;
+}
+
+#MessageBoxSaveNot {
+    background-color: #f38ba8;
+    color: #1e1e2e;
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-weight: bold;
+}
+#MessageBoxSaveNot:hover {
+    background-color: #f7768e;
+}
+
+#MessageBoxCancel {
+    background-color: #313244;
+    color: #cdd6f4;
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-weight: bold;
+}
+#MessageBoxCancel:hover {
+    background-color: #45475a;
 }
 
 QScrollBar:vertical {

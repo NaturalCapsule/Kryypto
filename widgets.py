@@ -1,14 +1,10 @@
-## TO-DO(s): 
-# 1: make a welcome widget for the user when lauching
-# 2: make a keyboard shortcut for opening config files (e.g style.css or config file (coming soon!))
-# 3: make it when there are no tab it shows some system info or something else, idk...
-# 4: implement a saving dialog when the user close the app
+## TO-DO: 
+# 1: make it when there are no tab it shows some system info or something else, idk...
 
 import jedi
 import re
 import subprocess
 import os
-# import time
 from datetime import datetime
 from PyQt6.QtCore import QTimer, Qt, QRect, Qt, QDir, QFileInfo, pyqtSignal, QProcess
 from PyQt6.QtGui import QTextCursor, QKeyEvent, QPainter, QColor, QFont, QFontMetrics, QTextCursor, QColor, QFileSystemModel, QIcon, QStandardItemModel, QStandardItem
@@ -38,6 +34,7 @@ class MainText(QPlainTextEdit):
         super().__init__()
         global commenting
         self.clipboard = window
+        self.setCursorWidth(0)
 
         self.selected_line = None
         self.selected_text = None
@@ -49,11 +46,11 @@ class MainText(QPlainTextEdit):
         self.finder = findingText(parent, self)
 
         self.cursor_visible = True
-        self.cursor_color = QColor("#f38ba8")  # Custom cursor color
+        self.cursor_color = QColor("#f38ba8")
 
         self.blink_timer = QTimer(self)
         self.blink_timer.timeout.connect(self.toggle_cursor)
-        self.blink_timer.start(100)  # Blink rate (ms)
+        self.blink_timer.start(200)
 
         self.line_number_area = ShowLines(self)
         self.blockCountChanged.connect(self.update_line_number_area_width)
@@ -95,14 +92,25 @@ class MainText(QPlainTextEdit):
 
     def insert_completion(self, completion):
         cursor = self.textCursor()
+        cursor.beginEditBlock()
+        self.setUpdatesEnabled(False)
+        self.blockSignals(True)
+
         cursor.select(cursor.SelectionType.WordUnderCursor)
         cursor.removeSelectedText()
         cursor.insertText(completion)
         self.setTextCursor(cursor)
+        cursor.endEditBlock()
+        self.setUpdatesEnabled(True)
+        self.blockSignals(False)
 
 
     def update_docstring(self):
         cursor = self.textCursor()
+        cursor.beginEditBlock()
+        self.setUpdatesEnabled(False)
+        self.blockSignals(True)
+
         line = cursor.blockNumber() + 1
         column = cursor.positionInBlock()
         code = self.toPlainText()
@@ -123,6 +131,10 @@ class MainText(QPlainTextEdit):
                 self.doc_panel.custom_title.show()
 
                 self.doc_panel.show()
+
+        cursor.endEditBlock()
+        self.setUpdatesEnabled(True)
+        self.blockSignals(False)
 
     def parse_docstring(self, doc: str):
         lines = doc.strip().splitlines()
@@ -157,9 +169,12 @@ class MainText(QPlainTextEdit):
 
     def keyPressEvent(self, event: QKeyEvent):
         global current_file_path
+        # self.
         key = event.key()
         text = event.text()
         pairs = {'"': '"', "'": "'", '(': ')', '[': ']', '{': '}'}
+
+
 
         if self.completer.popup().isVisible():
             if key in (Qt.Key.Key_Enter, Qt.Key.Key_Return, Qt.Key.Key_Tab):
@@ -170,23 +185,44 @@ class MainText(QPlainTextEdit):
             elif key == Qt.Key.Key_Escape:
                 self.completer.popup().hide()
                 return
-            
+
         if text in pairs:
             cursor = self.textCursor()
+            cursor.beginEditBlock()
+            self.setUpdatesEnabled(False)
+            self.blockSignals(True)
+
             closing_char = pairs[text]
             cursor.insertText(text + closing_char)
             cursor.movePosition(QTextCursor.MoveOperation.Left)
             self.setTextCursor(cursor)
+
+            cursor.endEditBlock()
+            self.setUpdatesEnabled(True)
+            self.blockSignals(False)
             return
 
         if key == Qt.Key.Key_Tab:
             cursor = self.textCursor()
+            cursor.beginEditBlock()
+            self.setUpdatesEnabled(False)
+            self.blockSignals(True)
+
             cursor.insertText(" " * 4)
+
+            cursor.endEditBlock()
+            self.setUpdatesEnabled(True)
+            self.blockSignals(False)
+
             return
 
 
         if key == Qt.Key.Key_Slash and event.modifiers() & Qt.KeyboardModifier.ControlModifier:
             cursor = self.textCursor()
+            cursor.beginEditBlock()
+            self.setUpdatesEnabled(False)
+            self.blockSignals(True)
+
 
             if not cursor.hasSelection():
                 cursor.select(QTextCursor.SelectionType.LineUnderCursor)
@@ -201,10 +237,6 @@ class MainText(QPlainTextEdit):
             cursor.setPosition(end)
             cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock)
             end_block = cursor.blockNumber()
-
-            cursor.beginEditBlock()
-            self.setUpdatesEnabled(False)
-            self.blockSignals(True)
 
             for block_num in range(start_block, end_block + 1):
                 block = self.document().findBlockByNumber(block_num)
@@ -245,9 +277,9 @@ class MainText(QPlainTextEdit):
 
         if key == Qt.Key.Key_X and event.modifiers() & Qt.KeyboardModifier.ControlModifier:
             cursor = self.textCursor()
+            cursor.beginEditBlock()
             self.setUpdatesEnabled(False)
             self.blockSignals(True)
-            cursor.beginEditBlock()
 
             if cursor.selectedText() == '':
                 cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock)
@@ -268,54 +300,59 @@ class MainText(QPlainTextEdit):
                 cursor.removeSelectedText()
                 cursor.deleteChar()
 
+            self.completer.popup().hide()
             cursor.endEditBlock()
             self.setUpdatesEnabled(True)
             self.blockSignals(False)
-            self.completer.popup().hide()
 
             return
 
         if key == Qt.Key.Key_C and event.modifiers() & Qt.KeyboardModifier.ControlModifier:
             cursor = self.textCursor()
+            self.setUpdatesEnabled(False)
+            self.blockSignals(True)
+            cursor.beginEditBlock()
 
             if cursor.selectedText() == '':
-                self.setUpdatesEnabled(False)
-                self.blockSignals(True)
-                cursor.beginEditBlock()
+
 
                 cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock)
                 cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock, QTextCursor.MoveMode.KeepAnchor)
                 text = cursor.selectedText()
                 self.selected_line = text
 
-                cursor.endEditBlock()
-                self.setUpdatesEnabled(True)
-                self.blockSignals(False)
                 self.clipboard.setText(self.selected_line)
-
                 self.selected_text = None
+                # cursor.endEditBlock()
+                # self.setUpdatesEnabled(True)
+                # self.blockSignals(False)
+
 
             else:
-                self.setUpdatesEnabled(False)
-                self.blockSignals(True)
-                cursor.beginEditBlock()
+                # self.setUpdatesEnabled(False)
+                # self.blockSignals(True)
+                # cursor.beginEditBlock()
 
                 self.selected_text = cursor.selectedText()
                 self.selected_line = None
                 self.clipboard.setText(self.selected_text)
 
-                cursor.endEditBlock()
-                self.setUpdatesEnabled(True)
-                self.blockSignals(False)
+                # cursor.endEditBlock()
+                # self.setUpdatesEnabled(True)
+                # self.blockSignals(False)
+
+            cursor.endEditBlock()
+            self.setUpdatesEnabled(True)
+            self.blockSignals(False)
 
             return
 
         if key == Qt.Key.Key_V and event.modifiers() & Qt.KeyboardModifier.ControlModifier:
             if self.clipboard.text() != '' and self.selected_line is None:
                 cursor = self.textCursor()
+                cursor.beginEditBlock()
                 self.setUpdatesEnabled(False)
                 self.blockSignals(True)
-                cursor.beginEditBlock()
 
                 self.setTextCursor(cursor)
 
@@ -328,19 +365,19 @@ class MainText(QPlainTextEdit):
 
             if self.selected_line is not None:
                 cursor = self.textCursor()
+                cursor.beginEditBlock()
                 self.setUpdatesEnabled(False)
                 self.blockSignals(True)
-                cursor.beginEditBlock()
 
                 cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock)
                 self.setTextCursor(cursor)
 
                 cursor.insertText("\n" + self.selected_line)
 
+                self.selected_text = None
                 cursor.endEditBlock()
                 self.setUpdatesEnabled(True)
                 self.blockSignals(False)
-                self.selected_text = None
             return
 
         if key == Qt.Key.Key_F and event.modifiers() & Qt.KeyboardModifier.ControlModifier:
@@ -354,6 +391,10 @@ class MainText(QPlainTextEdit):
 
         if key in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
             cursor = self.textCursor()
+            cursor.beginEditBlock()
+            self.setUpdatesEnabled(False)
+            self.blockSignals(True)
+
             block_text = cursor.block().text()
 
             indent_match = re.match(r'^(\s*)', block_text)
@@ -365,6 +406,10 @@ class MainText(QPlainTextEdit):
                 new_indent = current_indent
 
             cursor.insertText("\n" + new_indent)
+            cursor.endEditBlock()
+            self.setUpdatesEnabled(True)
+            self.blockSignals(False)
+
             return
 
         super().keyPressEvent(event)
@@ -374,12 +419,21 @@ class MainText(QPlainTextEdit):
                 key in (Qt.Key.Key_Period, Qt.Key.Key_Underscore)):
             return
 
-        code = self.toPlainText()
-        cursor = self.textCursor()
-        pos = cursor.position()
+        # code = self.toPlainText()
+        # cursor = self.textCursor()
+
+        # pos = cursor.position()
 
         try:
             if self.show_completer:
+                code = self.toPlainText()
+                cursor = self.textCursor()
+                cursor.beginEditBlock()
+                self.setUpdatesEnabled(False)
+                self.blockSignals(True)
+
+                pos = cursor.position()
+
                 line, column = self.cursor_to_line_column(pos)
 
                 script = jedi.Script(code=code, path=fr"{current_file_path}")
@@ -415,6 +469,12 @@ class MainText(QPlainTextEdit):
                     self.completer.complete(cr)
                 else:
                     self.completer.popup().hide()
+
+                cursor.endEditBlock()
+                self.setUpdatesEnabled(True)
+                self.blockSignals(False)
+
+
 
         except Exception as e:
             print("Autocomplete error:", e)
@@ -606,7 +666,16 @@ class ShowDirectory(QDockWidget):
                             break
 
             with open (path, 'r', encoding = 'utf-8') as file:
+                cursor = self.main_text.textCursor()
+                cursor.beginEditBlock()
+                self.main_text.setUpdatesEnabled(False)
+                self.main_text.blockSignals(True)
                 self.main_text.setPlainText(file.read())
+                cursor.endEditBlock()
+                self.main_text.setUpdatesEnabled(True)
+                self.main_text.blockSignals(False)
+
+
         except Exception as e:
             pass
 
@@ -634,7 +703,17 @@ class ShowDirectory(QDockWidget):
 
             try:
                 with open (path, 'r', encoding = 'utf-8') as file:
+                    # self.main_text.setPlainText(file.read())
+
+                    cursor = self.main_text.textCursor()
+                    cursor.beginEditBlock()
+                    self.main_text.setUpdatesEnabled(False)
+                    self.main_text.blockSignals(True)
                     self.main_text.setPlainText(file.read())
+                    cursor.endEditBlock()
+                    self.main_text.setUpdatesEnabled(True)
+                    self.main_text.blockSignals(False)
+
             except Exception as e:
                 pass
 
@@ -845,7 +924,18 @@ class ShowOpenedFile(QTabBar):
         if self.count() > 0:
             self.track_tabs(self.currentIndex())
         else:
+            # self.editor.setPlainText("")
+
+            cursor = self.editor.textCursor()
+            cursor.beginEditBlock()
+            self.editor.setUpdatesEnabled(False)
+            self.editor.blockSignals(True)
             self.editor.setPlainText("")
+            cursor.endEditBlock()
+            self.editor.setUpdatesEnabled(True)
+            self.editor.blockSignals(False)
+
+
             self.previous_path = None
             file_description.clear()
 
@@ -883,7 +973,20 @@ class ShowOpenedFile(QTabBar):
                 f.write(self.editor.toPlainText())
 
         if self.count() == 0:
+            # self.editor.setPlainText("")
+
+            cursor = self.editor.textCursor()
+            cursor.beginEditBlock()
+            self.editor.setUpdatesEnabled(False)
+            self.editor.blockSignals(True)
+
             self.editor.setPlainText("")
+
+            cursor.endEditBlock()
+            self.editor.setUpdatesEnabled(True)
+            self.editor.blockSignals(False)
+
+
             file_description.clear()
             self.previous_path = None
             return
@@ -893,7 +996,7 @@ class ShowOpenedFile(QTabBar):
         tab_text = self.tabText(current_index)
         self.previous_path = None
 
-        
+
         for path, file_name in file_description.items():
             if file_name == tab_text:
                 self.previous_path = path
@@ -901,8 +1004,16 @@ class ShowOpenedFile(QTabBar):
 
                 try:
                     with open(path, 'r', encoding = 'utf-8') as file:
+                        cursor = self.editor.textCursor()
+                        cursor.beginEditBlock()
+                        self.editor.setUpdatesEnabled(False)
+                        self.editor.blockSignals(True)
+
                         self.editor.setPlainText(file.read())
-                        # self.editor.show()
+
+                        cursor.endEditBlock()
+                        self.editor.setUpdatesEnabled(True)
+                        self.editor.blockSignals(False)
 
                 except FileNotFoundError:
                     self.remove_tab(self.currentIndex())
@@ -1087,10 +1198,36 @@ class ShowOpenedFile(QTabBar):
                     self.highlighter = PythonSyntaxHighlighter(False, self.editor.document())
                     self.highlighter.deleteLater()
 
-
-
             else:
                 file_description[path] = file_name
+
+    def is_save_file_needed(self):
+        current_index = self.currentIndex()
+        current_file = self.tabText(current_index)
+
+        for path, file in file_description.items():
+            if file == current_file:
+                with open(path, 'r', encoding = 'utf-8') as file:
+                    if self.editor.toPlainText() != file.read():
+                        # print('NOT EQUAL')
+                        return True
+                        # file.write(self.editor.toPlainText())
+                    else:
+                        # print("EQUAL")
+                        return False
+
+    def save_current_file(self):
+        current_index = self.currentIndex()
+        current_file = self.tabText(current_index)
+
+        for path, file in file_description.items():
+            if file == current_file:
+                with open(path, 'w', encoding = 'utf-8') as file:
+                    # if self.editor.toPlainText() != file.read():
+                    file.write(self.editor.toPlainText())
+
+
+
 
 
 class TerminalEmulator(QWidget):

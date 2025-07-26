@@ -12,8 +12,6 @@ from func_classes import list_classes_functions
 from lark.exceptions import UnexpectedCharacters, UnexpectedToken
 from threading import Thread
 
-
-
 class ShowErrors:
     def __init__(self, parent, highlighter):
         parent.textChanged.connect(self.schedule_check)
@@ -37,7 +35,6 @@ class ShowErrors:
             if self.error_label:
                 self.error_label.setText("✔️ No syntax errors")
 
-            # self.analyze_code(self.parent)
             Thread(target = lambda: self.analyze_code(self.parent), daemon = False).start()
 
 
@@ -50,13 +47,25 @@ class ShowErrors:
     def clear_error_highlighting(self):
         cursor = self.parent.textCursor()
 
+        cursor.beginEditBlock()
+        self.parent.setUpdatesEnabled(False)
+        self.parent.blockSignals(True)
+
         cursor.select(QTextCursor.SelectionType.Document)
         fmt = QTextCharFormat()
         fmt.setUnderlineStyle(QTextCharFormat.UnderlineStyle.NoUnderline)
         cursor.setCharFormat(fmt)
 
+        cursor.endEditBlock()
+        self.parent.setUpdatesEnabled(True)
+        self.parent.blockSignals(False)
+
     def underline_error(self, line, column):
         cursor = self.parent.textCursor()
+
+        cursor.beginEditBlock()
+        self.parent.setUpdatesEnabled(False)
+        self.parent.blockSignals(True)
 
         cursor.movePosition(QTextCursor.MoveOperation.Start)
         for _ in range(line - 1):
@@ -69,6 +78,10 @@ class ShowErrors:
         fmt.setUnderlineStyle(QTextCharFormat.UnderlineStyle.SpellCheckUnderline)
         fmt.setUnderlineColor(QColor("red"))
         cursor.setCharFormat(fmt)
+
+        cursor.endEditBlock()
+        self.parent.setUpdatesEnabled(True)
+        self.parent.blockSignals(False)
 
     def analyze_code(self, main_text):
         code = main_text.toPlainText()
@@ -141,14 +154,26 @@ class ShowJsonErrors:
     def clear_error_highlighting(self):
         cursor = self.parent.textCursor()
 
+        cursor.beginEditBlock()
+        self.parent.setUpdatesEnabled(False)
+        self.parent.blockSignals(True)
+
         cursor.select(QTextCursor.SelectionType.Document)
         fmt = QTextCharFormat()
         fmt.setUnderlineStyle(QTextCharFormat.UnderlineStyle.NoUnderline)
         cursor.setCharFormat(fmt)
 
+        cursor.endEditBlock()
+        self.parent.setUpdatesEnabled(True)
+        self.parent.blockSignals(False)
+
     def underline_error(self, line, column):
 
         cursor = self.parent.textCursor()
+
+        cursor.beginEditBlock()
+        self.parent.setUpdatesEnabled(False)
+        self.parent.blockSignals(True)
 
         cursor.movePosition(QTextCursor.MoveOperation.Start)
         if line <=3:
@@ -173,6 +198,11 @@ class ShowJsonErrors:
         fmt.setUnderlineStyle(QTextCharFormat.UnderlineStyle.SpellCheckUnderline)
         fmt.setUnderlineColor(QColor("red"))
         cursor.setCharFormat(fmt)
+
+        cursor.endEditBlock()
+        self.parent.setUpdatesEnabled(True)
+        self.parent.blockSignals(False)
+
 
     def analyze_code(self, main_text):
         self.highlighter.rehighlight()
@@ -208,8 +238,6 @@ class ShowCssErrors:
 
 
         self.clear_error_highlighting()
-        # pattern = r"\[(\d+):(\d+):"
-        # pattern = r"\[(\d+):(\d+):[^\]]+\]"
         pattern = r"\[(\d+):(\d+):.*?\]"
 
 
@@ -219,7 +247,6 @@ class ShowCssErrors:
         if matches:
 
             for line, col in matches:
-                # print(f"  ➤ Line {int(line) - 1}, Column {col}")
 
                 self.underline_error(line, col)
                 if self.error_label:
@@ -236,21 +263,32 @@ class ShowCssErrors:
     def clear_error_highlighting(self):
         cursor = self.parent.textCursor()
 
+        cursor.beginEditBlock()
+        self.parent.setUpdatesEnabled(False)
+        self.parent.blockSignals(True)
+
         cursor.select(QTextCursor.SelectionType.Document)
         fmt = QTextCharFormat()
         fmt.setUnderlineStyle(QTextCharFormat.UnderlineStyle.NoUnderline)
         cursor.setCharFormat(fmt)
 
+        cursor.endEditBlock()
+        self.parent.setUpdatesEnabled(True)
+        self.parent.blockSignals(False)
+
     def underline_error(self, line, column):
 
         cursor = self.parent.textCursor()
+
+        cursor.beginEditBlock()
+        self.parent.setUpdatesEnabled(False)
+        self.parent.blockSignals(True)
 
         cursor.movePosition(QTextCursor.MoveOperation.Start)
 
         for _ in range(int(line) - 1):
             cursor.movePosition(QTextCursor.MoveOperation.Down)
 
-        # cursor.movePosition(QTextCursor.MoveOperation.Down)
 
         cursor.movePosition(QTextCursor.MoveOperation.Right, n=int(column) - 1)
 
@@ -260,6 +298,10 @@ class ShowCssErrors:
         fmt.setUnderlineStyle(QTextCharFormat.UnderlineStyle.SpellCheckUnderline)
         fmt.setUnderlineColor(QColor("red"))
         cursor.setCharFormat(fmt)
+
+        cursor.endEditBlock()
+        self.parent.setUpdatesEnabled(True)
+        self.parent.blockSignals(False)
 
     def analyze_code(self):
         self.highlighter.rehighlight()

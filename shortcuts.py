@@ -97,9 +97,6 @@ class MainTextShortcuts:
                 tab.add_file(path, 'style.css')
                 parent.setPlainText(css_file.read())
                 parent.setFocus()
-                # if not parent.isVisible():
-                #     parent.show()
-
 
 
     def run_current_file(self, opened_tabs, file_desc, bawky_parent, main_text):
@@ -124,14 +121,10 @@ class MainTextShortcuts:
 
                     self.terminal = TerminalDock(bawky_parent)
                     self.terminal.show()
-                    # self.terminal.termEmulator.terminal.insertPlainText(f"{sys.executable} {path}")
                     self.terminal.termEmulator.terminal.setFocus()
                     self.terminal.termEmulator.run_command(fr"{sys.executable} {path}")
 
                 break
-        
-
-
 
 
     def goto_block_(self, parent, bawky_parent):
@@ -151,6 +144,9 @@ class MainTextShortcuts:
 
     def remove_current_line(self, text_edit):
         cursor = text_edit.textCursor()
+        cursor.beginEditBlock()
+        text_edit.setUpdatesEnabled(False)
+        text_edit.blockSignals(True)
 
         if not cursor.hasSelection():
             cursor.select(QTextCursor.SelectionType.LineUnderCursor)
@@ -166,9 +162,7 @@ class MainTextShortcuts:
         cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock)
         end_block = cursor.blockNumber()
 
-        text_edit.setUpdatesEnabled(False)
-        text_edit.blockSignals(True)
-        cursor.beginEditBlock()
+
 
         for block_num in reversed(range(start_block, end_block + 1)):
             block = text_edit.document().findBlockByNumber(block_num)
@@ -177,17 +171,17 @@ class MainTextShortcuts:
             cursor.removeSelectedText()
             cursor.deleteChar()
 
-        cursor.endEditBlock()
         text_edit.setTextCursor(cursor)
+        cursor.endEditBlock()
         text_edit.setUpdatesEnabled(True)
         text_edit.blockSignals(False)
 
 
     def goto_next_block(self, text_edit):
         cursor = text_edit.textCursor()
+        cursor.beginEditBlock()
         text_edit.setUpdatesEnabled(False)
         text_edit.blockSignals(True)
-        cursor.beginEditBlock()
         
         cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock)
         text_edit.setTextCursor(cursor)
@@ -207,9 +201,9 @@ class MainTextShortcuts:
 
     def add_indentation(self, text_edit):
         cursor = text_edit.textCursor()
+        cursor.beginEditBlock()
         text_edit.setUpdatesEnabled(False)
         text_edit.blockSignals(True)
-        cursor.beginEditBlock()
 
         cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock)
         cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock, QTextCursor.MoveMode.KeepAnchor)
@@ -226,10 +220,10 @@ class MainTextShortcuts:
 
     def remove_indentation(self, text_edit):
         cursor = text_edit.textCursor()
+        cursor.beginEditBlock()
         text_edit.setUpdatesEnabled(False)
         text_edit.blockSignals(True)
 
-        cursor.beginEditBlock()
 
         cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock)
         cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock, QTextCursor.MoveMode.KeepAnchor)
@@ -240,7 +234,6 @@ class MainTextShortcuts:
 
         cursor.insertText(stripped_line)
         cursor.endEditBlock()
-
         text_edit.setUpdatesEnabled(True)
         text_edit.blockSignals(False)
 
@@ -266,9 +259,9 @@ class MainTextShortcuts:
 
     def comment(self, text_edit):
         cursor = text_edit.textCursor()
+        cursor.beginEditBlock()
         text_edit.setUpdatesEnabled(False)
         text_edit.blockSignals(True)
-        cursor.beginEditBlock()
 
 
         cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock)
@@ -295,34 +288,6 @@ class MainTextShortcuts:
     def remove_tab_(self, tab, file_desc):
         current_index = tab.currentIndex()
         tab.remove_tab(current_index)
-
-
-
-        # if index < 0 or index >= self.count():
-        #     print(f"Invalid tab index: {index}")
-        #     return
-        #     # self.removeTab(index)
-
-        # try:
-        #     current_file = tab.tabText(index)
-
-        #     # Remove from file_description
-        #     for path, file in list(file_desc.items()):
-        #         if file == current_file:
-        #             file_desc.pop(path)
-        #             break
-
-        #     tab.blockSignals(True)
-        #     tab.removeTab(index)
-        #     tab.blockSignals(False)
-
-        #     if tab.count() > 0:
-        #         tab.track_tabs(tab.currentIndex())
-        #     # else:
-        #     #     self.editor.setPlainText('')
-
-        # except Exception as e:
-        #     print(f"Error removing tab: {e}")
 
     def move_tab_right(self, tab):
         current_index = tab.currentIndex() + 1

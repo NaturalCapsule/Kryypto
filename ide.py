@@ -1,6 +1,7 @@
 import sys
-from PyQt6.QtWidgets import QApplication, QMainWindow
-from PyQt6.QtGui import  QFont, QSurfaceFormat
+from PyQt6.QtWidgets import QApplication, QMainWindow, QMessageBox, QPushButton
+from PyQt6.QtGui import  QFont, QSurfaceFormat, QCloseEvent, QPixmap
+from PyQt6.QtCore import Qt
 from shortcuts import *
 from get_style import get_css_style
 
@@ -10,6 +11,7 @@ class IDE(QMainWindow):
         self.clipboard = clipboard
         self.setupUI()
         self.setupWidgets()
+        # self.
 
     def setupUI(self):
         import widgets
@@ -37,7 +39,59 @@ class IDE(QMainWindow):
         widgets.layout.addWidget(self.list_shortcuts)
         self.welcome_page.setFocus()
 
+    def closeEvent(self, event: QCloseEvent):
+        def pop_messagebox():
+                box = QMessageBox(self)
 
+                box.setWindowFlag(Qt.WindowType.FramelessWindowHint)
+
+                box.setText('Hey!\nIt looks like you are trying to close IDE without saving your progress\nDo you really your work go in vain?')
+
+                box.setObjectName('MessageBox')
+                box.setStyleSheet(get_css_style())
+
+                save_file = QPushButton(box)
+                save_file.setText('Save File')
+
+                save_file.setObjectName('MessageBoxSave')
+                save_file.setStyleSheet(get_css_style())
+
+                dont_save = QPushButton(box)
+                dont_save.setText("Don't Save")
+
+                dont_save.setObjectName('MessageBoxSaveNot')
+                dont_save.setStyleSheet(get_css_style())
+
+                cancel = QPushButton(box)
+                cancel.setText('Cancel')
+
+                cancel.setObjectName('MessageBoxCancel')
+                cancel.setStyleSheet(get_css_style())
+
+                pixmap = QPixmap('icons/messagebox/warning.png')
+                pixmap.size()
+
+                scaled_pixmap = pixmap.scaled(98, 98, aspectRatioMode=Qt.AspectRatioMode.KeepAspectRatio, transformMode=Qt.TransformationMode.SmoothTransformation)
+                box.setIconPixmap(scaled_pixmap)
+
+
+                box.addButton(save_file, QMessageBox.ButtonRole.YesRole)
+                box.addButton(dont_save, QMessageBox.ButtonRole.NoRole)
+                box.addButton(cancel, QMessageBox.ButtonRole.RejectRole)
+
+                box.exec()
+
+                if box.clickedButton() == save_file:
+                    self.tab_bar.save_current_file()
+                    event.accept()
+                elif box.clickedButton() == dont_save:
+                    event.accept()
+                else:
+                    event.ignore()
+
+        if self.tab_bar.is_save_file_needed():
+            pop_messagebox()
+            
 if __name__ == '__main__':
     format = QSurfaceFormat()
     format.setRenderableType(QSurfaceFormat.RenderableType.OpenGL)
