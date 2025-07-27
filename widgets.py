@@ -1,4 +1,4 @@
-## TO-DO: 
+## TO-DO:
 # 1: make it when there are no tab it shows some system info or something else, idk...
 
 import jedi
@@ -10,7 +10,6 @@ from PyQt6.QtCore import QTimer, Qt, QRect, Qt, QDir, QFileInfo, pyqtSignal, QPr
 from PyQt6.QtGui import QTextCursor, QKeyEvent, QPainter, QColor, QFont, QFontMetrics, QTextCursor, QColor, QFileSystemModel, QIcon, QStandardItemModel, QStandardItem
 from PyQt6.QtWidgets import QFrame, QComboBox, QLabel, QPushButton, QHBoxLayout, QLineEdit, QPlainTextEdit, QVBoxLayout, QWidget, QCompleter, QDockWidget, QTextEdit, QTreeView, QFileIconProvider, QTabBar
 from lines import ShowLines
-
 from get_style import get_css_style
 
 from highlighter import *
@@ -93,23 +92,17 @@ class MainText(QPlainTextEdit):
     def insert_completion(self, completion):
         cursor = self.textCursor()
         cursor.beginEditBlock()
-        self.setUpdatesEnabled(False)
-        self.blockSignals(True)
 
         cursor.select(cursor.SelectionType.WordUnderCursor)
         cursor.removeSelectedText()
         cursor.insertText(completion)
         self.setTextCursor(cursor)
         cursor.endEditBlock()
-        self.setUpdatesEnabled(True)
-        self.blockSignals(False)
 
 
     def update_docstring(self):
         cursor = self.textCursor()
         cursor.beginEditBlock()
-        self.setUpdatesEnabled(False)
-        self.blockSignals(True)
 
         line = cursor.blockNumber() + 1
         column = cursor.positionInBlock()
@@ -133,8 +126,6 @@ class MainText(QPlainTextEdit):
                 self.doc_panel.show()
 
         cursor.endEditBlock()
-        self.setUpdatesEnabled(True)
-        self.blockSignals(False)
 
     def parse_docstring(self, doc: str):
         lines = doc.strip().splitlines()
@@ -144,7 +135,6 @@ class MainText(QPlainTextEdit):
             if line in ('---', '***', '___'):
                 formatted.append('<hr>')
             elif line.endswith(':') and not line.startswith(' '):
-                # formatted.append(f'<b>{line}</b> <span> font-size: 14px')
                 formatted.append(f'<b style="font-size:30px;">{line}</b>')
 
             elif re.match(r'^\*{3,}$', line):
@@ -175,7 +165,6 @@ class MainText(QPlainTextEdit):
         pairs = {'"': '"', "'": "'", '(': ')', '[': ']', '{': '}'}
 
 
-
         if self.completer.popup().isVisible():
             if key in (Qt.Key.Key_Enter, Qt.Key.Key_Return, Qt.Key.Key_Tab):
                 event.ignore()
@@ -189,8 +178,6 @@ class MainText(QPlainTextEdit):
         if text in pairs:
             cursor = self.textCursor()
             cursor.beginEditBlock()
-            self.setUpdatesEnabled(False)
-            self.blockSignals(True)
 
             closing_char = pairs[text]
             cursor.insertText(text + closing_char)
@@ -198,30 +185,21 @@ class MainText(QPlainTextEdit):
             self.setTextCursor(cursor)
 
             cursor.endEditBlock()
-            self.setUpdatesEnabled(True)
-            self.blockSignals(False)
             return
 
         if key == Qt.Key.Key_Tab:
             cursor = self.textCursor()
             cursor.beginEditBlock()
-            self.setUpdatesEnabled(False)
-            self.blockSignals(True)
 
             cursor.insertText(" " * 4)
 
             cursor.endEditBlock()
-            self.setUpdatesEnabled(True)
-            self.blockSignals(False)
-
             return
 
 
         if key == Qt.Key.Key_Slash and event.modifiers() & Qt.KeyboardModifier.ControlModifier:
             cursor = self.textCursor()
             cursor.beginEditBlock()
-            self.setUpdatesEnabled(False)
-            self.blockSignals(True)
 
 
             if not cursor.hasSelection():
@@ -271,15 +249,11 @@ class MainText(QPlainTextEdit):
                 cursor.insertText(indent + content)
 
             cursor.endEditBlock()
-            self.setUpdatesEnabled(True)
-            self.blockSignals(False)
             return
 
         if key == Qt.Key.Key_X and event.modifiers() & Qt.KeyboardModifier.ControlModifier:
             cursor = self.textCursor()
             cursor.beginEditBlock()
-            self.setUpdatesEnabled(False)
-            self.blockSignals(True)
 
             if cursor.selectedText() == '':
                 cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock)
@@ -302,15 +276,11 @@ class MainText(QPlainTextEdit):
 
             self.completer.popup().hide()
             cursor.endEditBlock()
-            self.setUpdatesEnabled(True)
-            self.blockSignals(False)
 
             return
 
         if key == Qt.Key.Key_C and event.modifiers() & Qt.KeyboardModifier.ControlModifier:
             cursor = self.textCursor()
-            self.setUpdatesEnabled(False)
-            self.blockSignals(True)
             cursor.beginEditBlock()
 
             if cursor.selectedText() == '':
@@ -323,27 +293,16 @@ class MainText(QPlainTextEdit):
 
                 self.clipboard.setText(self.selected_line)
                 self.selected_text = None
-                # cursor.endEditBlock()
-                # self.setUpdatesEnabled(True)
-                # self.blockSignals(False)
 
 
             else:
-                # self.setUpdatesEnabled(False)
-                # self.blockSignals(True)
-                # cursor.beginEditBlock()
 
                 self.selected_text = cursor.selectedText()
                 self.selected_line = None
                 self.clipboard.setText(self.selected_text)
 
-                # cursor.endEditBlock()
-                # self.setUpdatesEnabled(True)
-                # self.blockSignals(False)
 
             cursor.endEditBlock()
-            self.setUpdatesEnabled(True)
-            self.blockSignals(False)
 
             return
 
@@ -351,23 +310,17 @@ class MainText(QPlainTextEdit):
             if self.clipboard.text() != '' and self.selected_line is None:
                 cursor = self.textCursor()
                 cursor.beginEditBlock()
-                self.setUpdatesEnabled(False)
-                self.blockSignals(True)
 
                 self.setTextCursor(cursor)
 
                 cursor.insertText(self.clipboard.text())
                 cursor.endEditBlock()
-                self.setUpdatesEnabled(True)
-                self.blockSignals(False)
 
                 self.selected_line = None
 
             if self.selected_line is not None:
                 cursor = self.textCursor()
                 cursor.beginEditBlock()
-                self.setUpdatesEnabled(False)
-                self.blockSignals(True)
 
                 cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock)
                 self.setTextCursor(cursor)
@@ -376,8 +329,6 @@ class MainText(QPlainTextEdit):
 
                 self.selected_text = None
                 cursor.endEditBlock()
-                self.setUpdatesEnabled(True)
-                self.blockSignals(False)
             return
 
         if key == Qt.Key.Key_F and event.modifiers() & Qt.KeyboardModifier.ControlModifier:
@@ -392,8 +343,6 @@ class MainText(QPlainTextEdit):
         if key in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
             cursor = self.textCursor()
             cursor.beginEditBlock()
-            self.setUpdatesEnabled(False)
-            self.blockSignals(True)
 
             block_text = cursor.block().text()
 
@@ -407,8 +356,6 @@ class MainText(QPlainTextEdit):
 
             cursor.insertText("\n" + new_indent)
             cursor.endEditBlock()
-            self.setUpdatesEnabled(True)
-            self.blockSignals(False)
 
             return
 
@@ -419,18 +366,12 @@ class MainText(QPlainTextEdit):
                 key in (Qt.Key.Key_Period, Qt.Key.Key_Underscore)):
             return
 
-        # code = self.toPlainText()
-        # cursor = self.textCursor()
-
-        # pos = cursor.position()
 
         try:
             if self.show_completer:
                 code = self.toPlainText()
                 cursor = self.textCursor()
                 cursor.beginEditBlock()
-                self.setUpdatesEnabled(False)
-                self.blockSignals(True)
 
                 pos = cursor.position()
 
@@ -471,8 +412,6 @@ class MainText(QPlainTextEdit):
                     self.completer.popup().hide()
 
                 cursor.endEditBlock()
-                self.setUpdatesEnabled(True)
-                self.blockSignals(False)
 
 
 
@@ -910,8 +849,6 @@ class ShowOpenedFile(QTabBar):
 
 
     def remove_tab(self, index):
-        self.blockSignals(True)
-
         current_file = self.tabText(index)
 
         for path, file in list(file_description.items()):
@@ -924,7 +861,6 @@ class ShowOpenedFile(QTabBar):
         if self.count() > 0:
             self.track_tabs(self.currentIndex())
         else:
-            # self.editor.setPlainText("")
 
             cursor = self.editor.textCursor()
             cursor.beginEditBlock()
@@ -932,14 +868,11 @@ class ShowOpenedFile(QTabBar):
             self.editor.blockSignals(True)
             self.editor.setPlainText("")
             cursor.endEditBlock()
-            self.editor.setUpdatesEnabled(True)
-            self.editor.blockSignals(False)
 
 
             self.previous_path = None
             file_description.clear()
 
-        self.blockSignals(False)
 
     def add_file(self, path, file_name):
         file_index = self.addTab(str(file_name))
@@ -977,14 +910,14 @@ class ShowOpenedFile(QTabBar):
 
             cursor = self.editor.textCursor()
             cursor.beginEditBlock()
-            self.editor.setUpdatesEnabled(False)
-            self.editor.blockSignals(True)
+            # self.editor.setUpdatesEnabled(False)
+            # self.editor.blockSignals(True)
 
             self.editor.setPlainText("")
 
             cursor.endEditBlock()
-            self.editor.setUpdatesEnabled(True)
-            self.editor.blockSignals(False)
+            # self.editor.setUpdatesEnabled(True)
+            # self.editor.blockSignals(False)
 
 
             file_description.clear()
@@ -1006,14 +939,14 @@ class ShowOpenedFile(QTabBar):
                     with open(path, 'r', encoding = 'utf-8') as file:
                         cursor = self.editor.textCursor()
                         cursor.beginEditBlock()
-                        self.editor.setUpdatesEnabled(False)
-                        self.editor.blockSignals(True)
+                        # self.editor.setUpdatesEnabled(False)
+                        # self.editor.blockSignals(True)
 
                         self.editor.setPlainText(file.read())
 
                         cursor.endEditBlock()
-                        self.editor.setUpdatesEnabled(True)
-                        self.editor.blockSignals(False)
+                        # self.editor.setUpdatesEnabled(True)
+                        # self.editor.blockSignals(False)
 
                 except FileNotFoundError:
                     self.remove_tab(self.currentIndex())
@@ -1669,24 +1602,24 @@ class ListShortCuts(QWidget):
         self.layout_.setContentsMargins(0, 0, 0, 0)
         self.setLayout(self.layout_)
 
-        shortcut_1 = QLabel('Save Current File: <span style="font-family: monospace; background-color: #2d2d2d; padding: 2px 4px; border: 1px; border-radius: 15px;">Ctrl + S</span>')
-        shortcut_2 = QLabel('Show/Hide Directory Viewer: <span style="font-family: monospace; background-color: #2d2d2d; padding: 2px 4px; border: 1px; border-radius: 15px;">Ctrl + B</span>')
-        shortcut_3 = QLabel('Run current python file: <span style="font-family: monospace; background-color: #2d2d2d; padding: 2px 4px; border: 1px; border-radius: 15px;">Ctrl + N</span>')
-        shortcut_4 = QLabel('Kill Terminal: <span style="font-family: monospace; background-color: #2d2d2d; padding: 2px 4px; border: 1px; border-radius: 15px;">Ctrl + Shift + G</span>')
-        shortcut_5 = QLabel('Show/Hide Terminal: <span style="font-family: monospace; background-color: #2d2d2d; padding: 2px 4px; border: 1px; border-radius: 15px;">Ctrl + T</span>')
-        shortcut_6 = QLabel('Go to line: <span style="font-family: monospace; background-color: #2d2d2d; padding: 2px 4px; border: 1px; border-radius: 15px;">Ctrl + Shift + H</span>')
-        shortcut_7 = QLabel('Find text: <span style="font-family: monospace; background-color: #2d2d2d; padding: 2px 4px; border: 1px; border-radius: 15px;">Ctrl + F</span>')
-        shortcut_8 = QLabel('Get Error: <span style="font-family: monospace; background-color: #2d2d2d; padding: 2px 4px; border: 1px; border-radius: 15px;">Ctrl + Shift + C</span>')
-        shortcut_9 = QLabel('Move Tab to left: <span style="font-family: monospace; background-color: #2d2d2d; padding: 2px 4px; border: 1px; border-radius: 15px;">Ctrl + Shift + E</span>')
-        shortcut_10 = QLabel('Move tab to right: <span style="font-family: monospace; background-color: #2d2d2d; padding: 2px 4px; border: 1px; border-radius: 15px;">Ctrl + Shift + T</span>')
-        shortcut_11 = QLabel('Remove current tab: <span style="font-family: monospace; background-color: #2d2d2d; padding: 2px 4px; border: 1px; border-radius: 15px;">Ctrl + Shift + R</span>')
-        shortcut_12 = QLabel('Remove line indent: <span style="font-family: monospace; background-color: #2d2d2d; padding: 2px 4px; border: 1px; border-radius: 15px;">Ctrl + [</span>')
-        shortcut_13 = QLabel('Indet line: <span style="font-family: monospace; background-color: #2d2d2d; padding: 2px 4px; border: 1px; border-radius: 15px;">Ctrl + ]</span>')
-        shortcut_14 = QLabel('Increase font size: <span style="font-family: monospace; background-color: #2d2d2d; padding: 2px 4px; border: 1px; border-radius: 15px;">Ctrl + =</span>')
-        shortcut_15 = QLabel('decrease font size: <span style="font-family: monospace; background-color: #2d2d2d; padding: 2px 4px; border: 1px; border-radius: 15px;">Ctrl + -</span>')
-        shortcut_16 = QLabel('Go to new line: <span style="font-family: monospace; background-color: #2d2d2d; padding: 2px 4px; border: 1px; border-radius: 15px;">Ctrl + Return</span>')
-        shortcut_17 = QLabel('Remove current line: <span style="font-family: monospace; background-color: #2d2d2d; padding: 2px 4px; border: 1px; border-radius: 15px;">Ctrl + Shift + K</span>')
-        shortcut_18 = QLabel('Open Configuration file: <span style="font-family: monospace; background-color: #2d2d2d; padding: 2px 4px; border: 1px; border-radius: 15px;">Ctrl + Shift + O</span>')
+        shortcut_1 = QLabel('Save Current File: <span style="background-color: #2d2d2d">Ctrl + S</span>')
+        shortcut_2 = QLabel('Show/Hide Directory Viewer: <span style="background-color: #2d2d2d">Ctrl + B</span>')
+        shortcut_3 = QLabel('Run current python file: <span style="background-color: #2d2d2d">Ctrl + N</span>')
+        shortcut_4 = QLabel('Kill Terminal: <span style="background-color: #2d2d2d">Ctrl + Shift + G</span>')
+        shortcut_5 = QLabel('Show/Hide Terminal: <span style="background-color: #2d2d2d">Ctrl + T</span>')
+        shortcut_6 = QLabel('Go to line: <span style="background-color: #2d2d2d">Ctrl + Shift + H</span>')
+        shortcut_7 = QLabel('Find text: <span style="background-color: #2d2d2d">Ctrl + F</span>')
+        shortcut_8 = QLabel('Get Error: <span style="background-color: #2d2d2d">Ctrl + Shift + C</span>')
+        shortcut_9 = QLabel('Move Tab to left: <span style="background-color: #2d2d2d">Ctrl + Shift + E</span>')
+        shortcut_10 = QLabel('Move tab to right: <span style="background-color: #2d2d2d">Ctrl + Shift + T</span>')
+        shortcut_11 = QLabel('Remove current tab: <span style="background-color: #2d2d2d">Ctrl + Shift + R</span>')
+        shortcut_12 = QLabel('Remove line indent: <span style="background-color: #2d2d2d">Ctrl + [</span>')
+        shortcut_13 = QLabel('Indet line: <span style="background-color: #2d2d2d">Ctrl + ]</span>')
+        shortcut_14 = QLabel('Increase font size: <span style="background-color: #2d2d2d">Ctrl + =</span>')
+        shortcut_15 = QLabel('decrease font size: <span style="background-color: #2d2d2d">Ctrl + -</span>')
+        shortcut_16 = QLabel('Go to new line: <span style="background-color: #2d2d2d">Ctrl + Return</span>')
+        shortcut_17 = QLabel('Remove current line: <span style="background-color: #2d2d2d">Ctrl + Shift + K</span>')
+        shortcut_18 = QLabel('Open Configuration file: <span style="background-color: #2d2d2d">Ctrl + Shift + O</span>')
 
 
         self.left_column = QVBoxLayout()

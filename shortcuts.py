@@ -111,6 +111,7 @@ class MainTextShortcuts:
 
                 if self.terminal:
                     self.terminal.show()
+                    self.terminal.termEmulator.terminal.show()
                     self.terminal.termEmulator.terminal.setFocus()
                     self.terminal.termEmulator.run_command(fr"{sys.executable} {path}")
 
@@ -145,8 +146,6 @@ class MainTextShortcuts:
     def remove_current_line(self, text_edit):
         cursor = text_edit.textCursor()
         cursor.beginEditBlock()
-        text_edit.setUpdatesEnabled(False)
-        text_edit.blockSignals(True)
 
         if not cursor.hasSelection():
             cursor.select(QTextCursor.SelectionType.LineUnderCursor)
@@ -173,15 +172,11 @@ class MainTextShortcuts:
 
         text_edit.setTextCursor(cursor)
         cursor.endEditBlock()
-        text_edit.setUpdatesEnabled(True)
-        text_edit.blockSignals(False)
 
 
     def goto_next_block(self, text_edit):
         cursor = text_edit.textCursor()
         cursor.beginEditBlock()
-        text_edit.setUpdatesEnabled(False)
-        text_edit.blockSignals(True)
         
         cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock)
         text_edit.setTextCursor(cursor)
@@ -196,14 +191,10 @@ class MainTextShortcuts:
         cursor.insertText("\n" + new_indent)
 
         cursor.endEditBlock()
-        text_edit.setUpdatesEnabled(True)
-        text_edit.blockSignals(False)
 
     def add_indentation(self, text_edit):
         cursor = text_edit.textCursor()
         cursor.beginEditBlock()
-        text_edit.setUpdatesEnabled(False)
-        text_edit.blockSignals(True)
 
         cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock)
         cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock, QTextCursor.MoveMode.KeepAnchor)
@@ -215,14 +206,10 @@ class MainTextShortcuts:
         cursor.insertText(new_line)
 
         cursor.endEditBlock()
-        text_edit.setUpdatesEnabled(True)
-        text_edit.blockSignals(False)
 
     def remove_indentation(self, text_edit):
         cursor = text_edit.textCursor()
         cursor.beginEditBlock()
-        text_edit.setUpdatesEnabled(False)
-        text_edit.blockSignals(True)
 
 
         cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock)
@@ -234,8 +221,6 @@ class MainTextShortcuts:
 
         cursor.insertText(stripped_line)
         cursor.endEditBlock()
-        text_edit.setUpdatesEnabled(True)
-        text_edit.blockSignals(False)
 
 
     def increase_font(self, text_edit):
@@ -260,8 +245,6 @@ class MainTextShortcuts:
     def comment(self, text_edit):
         cursor = text_edit.textCursor()
         cursor.beginEditBlock()
-        text_edit.setUpdatesEnabled(False)
-        text_edit.blockSignals(True)
 
 
         cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock)
@@ -281,9 +264,6 @@ class MainTextShortcuts:
         cursor.insertText(new_line)
 
         cursor.endEditBlock()
-        text_edit.setUpdatesEnabled(True)
-        text_edit.blockSignals(False)
-
 
     def remove_tab_(self, tab, file_desc):
         current_index = tab.currentIndex()
