@@ -1690,6 +1690,9 @@ class GitDock(QDockWidget):
         self.layout_.addWidget(self.commit)
         self.layout_.addWidget(self.last_commit)
         self.layout_.setSpacing(10)
+        self.layout_.addWidget(self.untracked_header)
+        self.layout_.setSpacing(10)
+        self.layout_.addWidget(self.untracked_files)
         self.layout_.addWidget(self.header_changes)
         self.layout_.addWidget(self.show_changes)
         self.layout_.addStretch()
@@ -1768,6 +1771,15 @@ class GitDock(QDockWidget):
         self.repo_info.setStyleSheet(get_css_style())
 
 
+        self.untracked_files = QLabel()
+        self.untracked_files.setObjectName('UntrackedFiles')
+        self.untracked_files.setStyleSheet(get_css_style())
+
+        self.untracked_header = QLabel("Untracked Files:")
+        self.untracked_header.setObjectName('UntrackedFiles')
+        self.untracked_header.setStyleSheet(get_css_style())
+
+
         self.repo_name = QLabel(f"Repository name {get_reopName()}")
         self.repo_name.setObjectName('RepoName')
         self.repo_name.setStyleSheet(get_css_style())
@@ -1826,7 +1838,7 @@ class GitDock(QDockWidget):
         text = ""
         for file, info in file_changes.items():
             if info['insertions'] != 0 or info['deletions'] != 0:
-                text += f"""    &nbsp;&nbsp;&nbsp;&nbsp;<b>{file}</b>: 
+                text += f"""    &nbsp;&nbsp;&nbsp;&nbsp;<b>{file}({info['change_type']})</b>: 
                 <span style="color: green;">+{info['insertions']} insertions</span> 
                 <span style="color: red;">-{info['deletions']} deletions</span><br><br>"""
 
@@ -1839,7 +1851,7 @@ class GitDock(QDockWidget):
         worker.signals.dataReady.connect(self.update_ui)
         self.thread_pool.start(worker)
 
-    def update_ui(self, commit_msg, branch, total, get_latest_commit_time, file_changes):
+    def update_ui(self, commit_msg, branch, total, get_latest_commit_time, file_changes, untracked_files):
         if is_init() and self.isVisible():
             if not is_init():
             # if is_init():
@@ -1856,6 +1868,10 @@ class GitDock(QDockWidget):
                     self.last_commit.hide()
                     self.commit_info.hide()
                     self.active_branch_name.hide()
+                    self.untracked_files.hide()
+                    self.untracked_header.hide()
+                    self.header_changes.hide()
+                    self.show_changes.hide()
                     self.users_profile.hide()
 
 
@@ -1873,10 +1889,18 @@ class GitDock(QDockWidget):
                     self.last_commit.show()
                     self.commit_info.show()
                     self.active_branch_name.show()
+                    self.untracked_files.show()
+                    self.untracked_header.show()
+                    self.header_changes.show()
+                    self.show_changes.show()
                     self.users_profile.show()
 
             self.changes(file_changes)
 
+            # print(untracked)
+
+            self.untracked_files.setText(f"   {untracked_files}")
+            
             self.latest_commit.setText(f"↳ Message: {commit_msg}")
             self.active_branch_name.setText(f"Branch: <code>{branch}</code>")
             self.commit.setText(f"↳ Total Commits: {str(total)}")

@@ -7,7 +7,7 @@ from datetime import datetime
 from PyQt6.QtCore import QRunnable, pyqtSignal, QObject
 
 class GitWorkerSignals(QObject):
-    dataReady = pyqtSignal(str, str, int, str, dict)
+    dataReady = pyqtSignal(str, str, int, str, dict, str)
 
 class GitWorker(QRunnable):
     # def __init__(self, repo):
@@ -31,7 +31,9 @@ class GitWorker(QRunnable):
 
             file_changes_ = file_changes()
 
-            self.signals.dataReady.emit(commit_msg, branch, total, commit_time, file_changes_)
+            untracked_ = untracked()
+
+            self.signals.dataReady.emit(commit_msg, branch, total, commit_time, file_changes_, untracked_)
         except Exception as e:
             print("GitWorker error:", e)
 
@@ -183,6 +185,9 @@ def get_latest_commit():
         if repo:
             commit = str(repo.head.commit.message)
             commit = commit[:-1]
+            if len(commit) > 43:
+                commit = f"{commit[:43]}..."
+
             # return repo.head.commit.message
             return commit
 
@@ -207,8 +212,20 @@ def file_changes():
     except Exception as e:
         return f"An error occurred: {e}"
 
-# for file, insertion in file_changes().items():
-# for file, insertion, delettion, lines, chaneges in file_changes().items():
-    # print(file)
-    # print(insertion[])
-# print(str(file_changes()))
+def untracked():
+    try:
+        repo = git.Repo(os.getcwd(), search_parent_directories = True)
+        if repo:
+            # for file in repo.untracked_files:
+                # print(file)
+            untracked_files = "\n   ".join(repo.untracked_files)
+            # return repo.untracked_files
+            return untracked_files
+
+
+
+    except git.InvalidGitRepositoryError:
+        return f"Error: something went wrong!"
+
+    except Exception as e:
+        return f"An error occurred: {e}"

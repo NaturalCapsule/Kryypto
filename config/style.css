@@ -254,7 +254,7 @@
 
 #TotalCommits, #ActiveBranch, #RemoteURL, 
 #Username, #CommitInfo, #CommitTime, 
-#CommitMessage, #RepoName, #RepoNotFound, #fileChanges {
+#CommitMessage, #RepoName, #RepoNotFound, #fileChanges, #UntrackedFiles {
     color: #cdd6f4;
     font-size: 13px;
     font-family: 'Maple Mono';
@@ -263,7 +263,7 @@
     /* font-family: 'JetBrains Mono', monospace; */
 }
 
-#CommitMessage, #CommitTime, #TotalCommits, #fileChanges {
+#CommitMessage, #CommitTime, #TotalCommits, #fileChanges, #UntrackedFiles {
     padding-left: 15px;
 }
 
@@ -306,7 +306,6 @@
     margin-top: 8px;
     margin-bottom: 4px;
 }
-
 
 
 #ShortCutTexts {
