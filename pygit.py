@@ -1,0 +1,191 @@
+import git
+import os
+import requests
+from datetime import datetime
+
+
+from PyQt6.QtCore import QRunnable, pyqtSignal, QObject
+
+class GitWorkerSignals(QObject):
+    dataReady = pyqtSignal(str, str, int, str)
+
+class GitWorker(QRunnable):
+    # def __init__(self, repo):
+    def __init__(self):
+
+        super().__init__()
+        # self.repo = repo
+        self.signals = GitWorkerSignals()
+
+    def run(self):
+        try:
+            commit_msg = get_latest_commit()
+            # commit_msg = self.repo.head.commit.message
+            # branch = self.repo.active_branch.name
+            branch = get_active_branch_name()
+
+            # total = len(list(self.repo.iter_commits('HEAD')))
+            total = get_TotalCommits()
+
+            commit_time = get_latest_commit_time()
+
+            self.signals.dataReady.emit(commit_msg, branch, total, commit_time)
+        except Exception as e:
+            print("GitWorker error:", e)
+
+
+def is_init():
+    try:
+        repo = git.Repo(os.getcwd(), search_parent_directories=True)
+        if repo:
+            return True
+        else:
+            return False
+        # return "Initialized!"
+
+        # else:
+        #     # return "Initialize in current or a parent directory!"
+        #     return "Initialized"
+
+    except Exception:
+        pass
+    except git.InvalidGitRepositoryError:
+        return "Not initialized"
+    except git.NoSuchPathError:
+        return "Path Error!"
+
+def get_TotalCommits():
+    repo_path = os.getcwd() 
+
+    repo = git.Repo(repo_path)
+
+    commits = list(repo.iter_commits('HEAD'))
+
+    total_commits = len(commits)
+    return total_commits
+
+def get_latest_commit_time():
+    try:
+        repo_path = os.getcwd()
+        repo = git.Repo(repo_path, search_parent_directories=True)
+
+        latest_commit = repo.head.commit
+        commit_timestamp = latest_commit.committed_date
+        commit_datetime = datetime.fromtimestamp(commit_timestamp)
+
+        return f"{commit_datetime}"
+
+    except git.InvalidGitRepositoryError:
+        return f"Error: '{repo_path}' is not a valid Git repository."
+
+    except Exception as e:
+        return f"An error occurred: {e}"
+
+
+def get_reopName():
+    try:
+        repo_path = os.getcwd()
+        repo = git.Repo(repo_path, search_parent_directories = True)
+
+        repo_name = os.path.basename(repo.working_dir)
+        return repo_name
+    except git.InvalidGitRepositoryError:
+        return f"Error: '{repo_name}' is not a valid Git repository."
+
+    except Exception as e:
+        return f"An error occurred: {e}"
+
+def get_active_branch_name():
+    try:
+        repo = git.Repo(os.getcwd(), search_parent_directories = True)
+        if repo:
+            return repo.active_branch.name
+        else:
+            return "No Active branch name"
+
+    except git.InvalidGitRepositoryError:
+        return f"Error: something went wrong!"
+
+    except Exception as e:
+        return f"An error occurred: {e}"
+
+def get_github_remote_url():
+    try:
+        repo = git.Repo(os.getcwd(), search_parent_directories = True)
+        if repo:
+            return repo.remotes.origin.url
+        else:
+            return "No URL"
+
+    except git.InvalidGitRepositoryError:
+        return f"Error: something went wrong!"
+
+    except Exception as e:
+        return f"An error occurred: {e}"
+
+
+def get_github_profile():
+    try:
+        repo = git.Repo(os.getcwd(), search_parent_directories = True)
+        if repo:
+            config_reader = repo.config_reader()
+            username = config_reader.get_value('user', 'name')
+
+        r = requests.get(f'https://api.github.com/users/{username}')
+        if r.status_code == 200:
+            data = r.json()
+            avatar_url = data.get("avatar_url")
+            avatar_response = requests.get(avatar_url)
+
+            if avatar_response.status_code == 200:
+                with open("icons/github/user_profile/users_profile.png", "wb") as f:
+                    f.write(avatar_response.content)
+
+            else:
+                print("Could not download pfp")
+
+        else:
+            print("User not found")
+
+    except git.InvalidGitRepositoryError:
+        return f"Error: something went wrong!"
+
+    except Exception as e:
+        return f"An error occurred: {e}"
+
+def get_github_username():
+    try:
+        repo = git.Repo(os.getcwd(), search_parent_directories = True)
+        if repo:
+            config_reader = repo.config_reader()
+            username = config_reader.get_value('user', 'name')
+            return username
+
+    except git.InvalidGitRepositoryError:
+        return f"Error: something went wrong!"
+
+    except Exception as e:
+        return f"An error occurred: {e}"
+
+
+def is_downloaded():
+    if not os.path.exists('icons/github/user_profile/users_profile.png'):
+        get_github_profile()
+
+
+
+def get_latest_commit():
+    try:
+        repo = git.Repo(os.getcwd(), search_parent_directories = True)
+        if repo:
+            return repo.head.commit.message
+
+    except git.InvalidGitRepositoryError:
+        return f"Error: something went wrong!"
+
+    except Exception as e:
+        return f"An error occurred: {e}"
+
+# repo = git.Repo(os.getcwd(), search_parent_directories = True)
+# print(repo.head.commit.message)
+# print(repo.head.commit.stats.files)

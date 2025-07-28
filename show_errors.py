@@ -9,7 +9,7 @@ from PyQt6.QtGui import QTextCursor, QColor, QTextCharFormat, QTextCursor, QColo
 from PyQt6.QtCore import QTimer
 
 from func_classes import list_classes_functions
-from lark.exceptions import UnexpectedCharacters, UnexpectedToken
+from lark.exceptions import UnexpectedToken
 from threading import Thread
 
 class ShowErrors:
@@ -28,7 +28,6 @@ class ShowErrors:
     def check_syntax(self):
         code = self.parent.toPlainText()
 
-
         self.clear_error_highlighting()
         try:
             ast.parse(code)
@@ -40,6 +39,7 @@ class ShowErrors:
 
         except (SyntaxError, NameError) as e:
             if self.error_label:
+                # self.error_label.setText(f"❌ Line {e.lineno}: {e}")
                 self.error_label.setText(f"❌ Line {e.lineno}: {e.msg}")
 
             self.underline_error(e.lineno, e.offset)
@@ -48,8 +48,6 @@ class ShowErrors:
         cursor = self.parent.textCursor()
 
         cursor.beginEditBlock()
-        self.parent.setUpdatesEnabled(False)
-        self.parent.blockSignals(True)
 
         cursor.select(QTextCursor.SelectionType.Document)
         fmt = QTextCharFormat()
@@ -57,15 +55,11 @@ class ShowErrors:
         cursor.setCharFormat(fmt)
 
         cursor.endEditBlock()
-        self.parent.setUpdatesEnabled(True)
-        self.parent.blockSignals(False)
 
     def underline_error(self, line, column):
         cursor = self.parent.textCursor()
 
         cursor.beginEditBlock()
-        self.parent.setUpdatesEnabled(False)
-        self.parent.blockSignals(True)
 
         cursor.movePosition(QTextCursor.MoveOperation.Start)
         for _ in range(line - 1):
@@ -80,8 +74,6 @@ class ShowErrors:
         cursor.setCharFormat(fmt)
 
         cursor.endEditBlock()
-        self.parent.setUpdatesEnabled(True)
-        self.parent.blockSignals(False)
 
     def analyze_code(self, main_text):
         code = main_text.toPlainText()
@@ -155,8 +147,6 @@ class ShowJsonErrors:
         cursor = self.parent.textCursor()
 
         cursor.beginEditBlock()
-        self.parent.setUpdatesEnabled(False)
-        self.parent.blockSignals(True)
 
         cursor.select(QTextCursor.SelectionType.Document)
         fmt = QTextCharFormat()
@@ -164,16 +154,12 @@ class ShowJsonErrors:
         cursor.setCharFormat(fmt)
 
         cursor.endEditBlock()
-        self.parent.setUpdatesEnabled(True)
-        self.parent.blockSignals(False)
 
     def underline_error(self, line, column):
 
         cursor = self.parent.textCursor()
 
         cursor.beginEditBlock()
-        self.parent.setUpdatesEnabled(False)
-        self.parent.blockSignals(True)
 
         cursor.movePosition(QTextCursor.MoveOperation.Start)
         if line <=3:
@@ -200,8 +186,6 @@ class ShowJsonErrors:
         cursor.setCharFormat(fmt)
 
         cursor.endEditBlock()
-        self.parent.setUpdatesEnabled(True)
-        self.parent.blockSignals(False)
 
 
     def analyze_code(self, main_text):
@@ -235,12 +219,8 @@ class ShowCssErrors:
         cssutils.log.setLevel(logging.FATAL) 
 
 
-
-
         self.clear_error_highlighting()
         pattern = r"\[(\d+):(\d+):.*?\]"
-
-
 
         matches = re.findall(pattern, log_text)
 
@@ -264,8 +244,6 @@ class ShowCssErrors:
         cursor = self.parent.textCursor()
 
         cursor.beginEditBlock()
-        self.parent.setUpdatesEnabled(False)
-        self.parent.blockSignals(True)
 
         cursor.select(QTextCursor.SelectionType.Document)
         fmt = QTextCharFormat()
@@ -273,16 +251,12 @@ class ShowCssErrors:
         cursor.setCharFormat(fmt)
 
         cursor.endEditBlock()
-        self.parent.setUpdatesEnabled(True)
-        self.parent.blockSignals(False)
 
     def underline_error(self, line, column):
 
         cursor = self.parent.textCursor()
 
         cursor.beginEditBlock()
-        self.parent.setUpdatesEnabled(False)
-        self.parent.blockSignals(True)
 
         cursor.movePosition(QTextCursor.MoveOperation.Start)
 
@@ -300,8 +274,6 @@ class ShowCssErrors:
         cursor.setCharFormat(fmt)
 
         cursor.endEditBlock()
-        self.parent.setUpdatesEnabled(True)
-        self.parent.blockSignals(False)
 
     def analyze_code(self):
         self.highlighter.rehighlight()

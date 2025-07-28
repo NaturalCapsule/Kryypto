@@ -1,0 +1,3 @@
+gitpython
+PyQt6
+commentjson

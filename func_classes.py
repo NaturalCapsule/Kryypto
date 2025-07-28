@@ -1,5 +1,6 @@
 import ast, jedi
 
+
 def list_classes_functions(code):
     try:
         func_class_instances = {}
@@ -19,6 +20,9 @@ def list_classes_functions(code):
                     class_name = node.value.func.id
                     if class_name not in ('int', 'len', 'str'):
                         func_class_instances[class_name] = 'class'
+            elif isinstance(node, ast.ImportFrom):
+                class_name = node.module
+                func_class_instances[class_name] = 'class'
             elif isinstance(node, ast.Call):
                 func = node.func
                 if isinstance(func, ast.Attribute):

@@ -5,15 +5,18 @@ import jedi
 import re
 import subprocess
 import os
+import git
 from datetime import datetime
-from PyQt6.QtCore import QTimer, Qt, QRect, Qt, QDir, QFileInfo, pyqtSignal, QProcess
-from PyQt6.QtGui import QTextCursor, QKeyEvent, QPainter, QColor, QFont, QFontMetrics, QTextCursor, QColor, QFileSystemModel, QIcon, QStandardItemModel, QStandardItem
+from PyQt6.QtCore import QThreadPool, QRectF, QTimer, Qt, QRect, Qt, QDir, QFileInfo, pyqtSignal, QProcess
+from PyQt6.QtGui import QCursor, QPainter, QPainterPath, QPixmap, QTextCursor, QKeyEvent, QPainter, QColor, QFont, QFontMetrics, QTextCursor, QColor, QFileSystemModel, QIcon, QStandardItemModel, QStandardItem
 from PyQt6.QtWidgets import QFrame, QComboBox, QLabel, QPushButton, QHBoxLayout, QLineEdit, QPlainTextEdit, QVBoxLayout, QWidget, QCompleter, QDockWidget, QTextEdit, QTreeView, QFileIconProvider, QTabBar
+
 from lines import ShowLines
 from get_style import get_css_style
 
 from highlighter import *
 from show_errors import *
+from pygit import *
 
 central_widget = QWidget()
 
@@ -1646,3 +1649,259 @@ class ListShortCuts(QWidget):
         self.layout_.addLayout(self.h_layout)
 
         self.hide()
+
+class GitDock(QDockWidget):
+    def __init__(self, parent):
+        super().__init__()
+        is_downloaded()
+        self.thread_pool = QThreadPool()
+        # self.repo = git.Repo(os.getcwd(), search_parent_directories = True)
+
+
+
+        self.setObjectName('Docks')
+        self.setStyleSheet(get_css_style())
+        self.clearFocus()
+        self.setWindowTitle('Git Panel')
+
+        content_widget = QWidget()
+        self.layout_ = QVBoxLayout()
+
+        self.gitTimers()
+
+        self.labels()
+
+        self._layout()
+
+        # self.layout_.addWidget(self.users_profile)
+        # self.layout_.addWidget(self.user_username)
+        # self.layout_.addWidget(self.commit)
+        # self.layout_.addWidget(self.repo_name)
+        # self.layout_.addWidget(self.active_branch_name)
+        # self.layout_.addWidget(self.remote_url)
+
+        self.setWidget(content_widget)
+        content_widget.setLayout(self.layout_)
+
+        self.setTitleBarWidget(self.custom_title)
+
+        self.setFeatures(QDockWidget.DockWidgetFeature.DockWidgetMovable)
+        parent.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self)
+
+    def _layout(self):
+        self.layout_.addWidget(self.users_profile)
+        self.layout_.addWidget(self.user_username)
+        self.layout_.addWidget(self.repo_name)
+        self.layout_.addWidget(self.commit_info)
+        self.layout_.addWidget(self.latest_commit)
+        self.layout_.addWidget(self.commit)
+        self.layout_.addWidget(self.last_commit)
+        self.layout_.addWidget(self.remote_url)
+        self.layout_.addWidget(self.active_branch_name)
+
+
+    def labels(self):
+            #         self.no_repo_img.hide()
+            #         self.no_repo_text.hide()
+            #         self.repo_name.show()
+            #         self.commit.show()
+            #         self.active_branch_name.show()
+            #         self.remote_url.show()
+            #         self.latest_commit.show()
+            #         self.user_username.show()
+            #         self.users_profile.show()
+
+
+            # self.latest_commit.setText(commit_msg)
+            # self.active_branch_name.setText(branch)
+            # self.commit.setText(str(total))
+
+        # self.commit = QLabel()
+        # self.active_branch_name = QLabel()
+        # self.remote_url = QLabel(get_github_remote_url())
+
+        # self.users_profile = QLabel()
+        # avatar_pixmap = QPixmap("icons/github/user_profile/users_profile.png").scaled(128, 128, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
+        # circle = self.rounded_pixmap(avatar_pixmap, 64)
+        # self.users_profile.setPixmap(circle)
+        # self.users_profile.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        # self.layout_.addWidget(self.users_profile)
+
+        # self.active_branch_name = QLabel()
+
+        # user_repo_layout = QVBoxLayout()
+        # self.user_username = QLabel(f"Username: <b>{get_github_username()}</b>")
+        # self.repo_name = QLabel(f"Repo: <code>{get_reopName()}</code>")
+
+        # self.branch_label = QLabel()
+
+        # for lbl in (self.user_username, self.repo_name, self.branch_label):
+        #     lbl.setAlignment(Qt.AlignmentFlag.AlignLeft)
+        #     user_repo_layout.addWidget(lbl)
+
+        # self.layout_.addLayout(user_repo_layout)
+
+        # self.latest_commit = QLabel()
+        # commit_group = QVBoxLayout()
+        # self.latest_commit = QLabel()
+        # self.commit = QLabel()
+        # self.last_commit = QLabel()
+
+        # commit_group.addWidget(QLabel("Latest Commit:"))
+        # commit_group.addWidget(self.latest_commit)
+        # commit_group.addWidget(self.last_commit)
+        # commit_group.addWidget(QLabel("↳ Message: Fixed layout issue"))
+        # commit_group.addWidget(QLabel("↳ Time: 2025-07-28 12:34 PM"))
+        # commit_group.addWidget(QLabel("↳ Length: 2 files changed, 14 insertions"))
+
+        # self.layout_.addLayout(commit_group)
+
+        # self.remote_url = QLabel(f'<a href="{get_github_remote_url()}">Remote URL</a>')
+        # self.remote_url.setOpenExternalLinks(True)
+        # self.remote_url.setAlignment(Qt.AlignmentFlag.AlignLeft)
+        # self.remote_url.setTextInteractionFlags(Qt.TextInteractionFlag.TextBrowserInteraction)
+        # self.layout_.addWidget(self.remote_url)
+
+
+        self.commit = QLabel()
+        self.active_branch_name = QLabel()
+        self.remote_url = QLabel(get_github_remote_url())
+
+        pixmap = QPixmap('icons/github/user_profile/users_profile.png')
+        circular_profile = self.rounded_pixmap(pixmap, 64)
+
+        self.users_profile = QLabel()
+        self.users_profile.setPixmap(circular_profile)
+        self.user_username = QLabel(get_github_username())
+        self.commit_info = QLabel("Commit Info:")
+        self.latest_commit = QLabel()
+        self.last_commit = QLabel()
+
+        self.repo_name = QLabel(f"Repository name {get_reopName()}")
+
+        self.no_repo_img = QLabel()
+        self.no_repo_text = QLabel("No repository in current directory")
+
+
+        pixmap = QPixmap('icons/github/github.png')
+        scaled = pixmap.scaled(256, 256, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
+        self.no_repo_img.setPixmap(scaled)
+
+        self.image_container = QWidget()
+        image_layout = QVBoxLayout(self.image_container)
+
+        image_layout.addStretch()
+        image_layout.addWidget(self.no_repo_img, alignment=Qt.AlignmentFlag.AlignHCenter)
+        image_layout.addWidget(self.no_repo_text, alignment=Qt.AlignmentFlag.AlignHCenter)
+        image_layout.addStretch()
+
+        image_layout.setContentsMargins(0, 0, 0, 0)
+        self.image_container.setLayout(image_layout)
+
+        self.custom_title = QLabel("Git Panel")
+        self.custom_title.setStyleSheet("background-color: transparent; color: white; padding: 4px; border-radius: 10px; margin: 4px")
+        self.custom_title.setObjectName('DockTitles')
+
+
+
+    def rounded_pixmap(self, pixmap: QPixmap, radius: int = 128) -> QPixmap:
+        size = min(pixmap.width(), pixmap.height())
+        rounded = QPixmap(radius * 2, radius * 2)
+        rounded.fill(Qt.GlobalColor.transparent)
+
+        painter = QPainter(rounded)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+        path = QPainterPath()
+        path.addEllipse(0, 0, radius * 2, radius * 2)
+        painter.setClipPath(path)
+
+        scaled = pixmap.scaled(radius * 2, radius * 2, Qt.AspectRatioMode.KeepAspectRatioByExpanding, Qt.TransformationMode.SmoothTransformation)
+
+        source_rect = QRectF((scaled.width() - radius * 2) / 2, (scaled.height() - radius * 2) / 2, radius * 2, radius * 2)
+        painter.drawPixmap(QRectF(0, 0, radius * 2, radius * 2), scaled, source_rect)
+        painter.end()
+
+        return rounded
+
+
+    def update_git_info(self):
+        worker = GitWorker()
+        worker.signals.dataReady.connect(self.update_ui)
+        self.thread_pool.start(worker)
+
+    def update_ui(self, commit_msg, branch, total, get_latest_commit_time):
+        if is_init() and self.isVisible():
+            if not is_init():
+                if self.users_profile.isVisible():
+                    self.layout_.addWidget(self.image_container, alignment = Qt.AlignmentFlag.AlignHCenter)
+                    self.no_repo_img.show()
+                    self.no_repo_text.show()
+                    self.repo_name.hide()
+                    self.commit.hide()
+                    self.remote_url.hide()
+                    self.user_username.hide()
+                    self.latest_commit.hide()
+                    self.last_commit.hide()
+                    self.commit_info.hide()
+                    self.users_profile.hide()
+
+
+            else:
+                if not self.users_profile.isVisible():
+                    self.layout_.removeWidget(self.image_container)
+                    self.no_repo_img.hide()
+                    self.no_repo_text.hide()
+                    self.repo_name.show()
+                    self.commit.show()
+                    self.active_branch_name.show()
+                    self.remote_url.show()
+                    self.latest_commit.show()
+                    self.user_username.show()
+                    self.last_commit.show()
+                    self.commit_info.show()
+                    self.users_profile.show()
+
+
+
+            self.latest_commit.setText(f"    ↳ Message: {commit_msg}")
+            self.active_branch_name.setText(f"Branch: <code>{branch}</code>")
+            self.commit.setText(f"    ↳ Total Commits: {str(total)}")
+            self.last_commit.setText(f"    ↳ Time: {get_latest_commit_time}")
+
+    def gitTimers(self):
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.update_git_info)
+        # self.timer.timeout.connect(self.update_commits_widgets)
+        self.timer.start(1500)
+
+
+    # def update_commits_widgets(self):
+    #     if is_init() and self.isVisible():
+    #         if not is_init():
+    #             if self.users_profile.isVisible():
+    #                 self.layout_.addWidget(self.image_container, alignment = Qt.AlignmentFlag.AlignHCenter)
+    #                 self.no_repo_img.show()
+    #                 self.no_repo_text.show()
+    #                 self.repo_name.hide()
+    #                 self.commit.hide()
+    #                 self.remote_url.hide()
+    #                 self.user_username.hide()
+    #                 self.latest_commit.hide()
+    #                 self.users_profile.hide()
+
+    #         else:
+    #             if not self.users_profile.isVisible():
+    #                 self.layout_.removeWidget(self.image_container)
+    #                 self.no_repo_img.hide()
+    #                 self.no_repo_text.hide()
+    #                 self.repo_name.show()
+    #                 self.commit.show()
+    #                 self.active_branch_name.show()
+    #                 self.remote_url.show()
+    #                 self.latest_commit.show()
+    #                 self.user_username.show()
+    #                 self.users_profile.show()
+
+                # self.latest_commit.setText(get_latest_commit())
+                # self.active_branch_name.setText(get_active_branch_name())
+                # self.commit.setText(str(get_TotalCommits()))

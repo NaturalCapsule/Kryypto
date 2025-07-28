@@ -26,14 +26,10 @@
     border-radius: 10px;
     border: 2px solid #F38BA8;
     font-size: 19px;
-
 }
-
-
 
 #Finder {
     border: 2px solid #F38BA8;
-
     font-size: 22px;
     background-color: #1e1e2e;
     color: white;
@@ -353,4 +349,3 @@ QTabBar::tab:hover {
 QTabWidget::pane {
     border: none;
 }
-
