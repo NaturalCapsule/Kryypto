@@ -248,6 +248,64 @@
     font-style: italic;
 }
 
+
+#TotalCommits, #ActiveBranch, #RemoteURL, 
+#Username, #CommitInfo, #CommitTime, 
+#CommitMessage, #RepoName, #RepoNotFound, #fileChanges {
+    color: #cdd6f4;
+    font-size: 13px;
+    font-family: 'Maple Mono';
+    font-weight: bold;
+    font-style: italic;
+    /* font-family: 'JetBrains Mono', monospace; */
+}
+
+#CommitMessage, #CommitTime, #TotalCommits, #fileChanges {
+    padding-left: 15px;
+}
+
+/* #fileChanges {
+    padding-left: 30px;
+} */
+
+#ActiveBranch, #RemoteURL, #RepoName {
+    padding-left: 15px;
+}
+
+#CommitInfo {
+    color: #f38ba8;
+    font-weight: bold;
+    font-size: 19px;
+}
+
+#Username {
+    font-size: 16px;
+    font-weight: bold;
+    color: #89b4fa;
+}
+
+#RepoInfo {
+    color: #a6e3a1;
+    font-family: 'Maple Mono';
+    font-weight: bold;
+    font-style: italic;
+
+    font-size: 19px;
+}
+
+#RepoNotFound {
+    color: #f38ba8;
+    font-size: 13px;
+    font-style: italic;
+}
+
+#UserProfile {
+    margin-top: 8px;
+    margin-bottom: 4px;
+}
+
+
+
 #ShortCutTexts {
     font-size: 22px;
     color: white;

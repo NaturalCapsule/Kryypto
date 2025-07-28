@@ -7,7 +7,7 @@ from datetime import datetime
 from PyQt6.QtCore import QRunnable, pyqtSignal, QObject
 
 class GitWorkerSignals(QObject):
-    dataReady = pyqtSignal(str, str, int, str)
+    dataReady = pyqtSignal(str, str, int, str, dict)
 
 class GitWorker(QRunnable):
     # def __init__(self, repo):
@@ -29,7 +29,9 @@ class GitWorker(QRunnable):
 
             commit_time = get_latest_commit_time()
 
-            self.signals.dataReady.emit(commit_msg, branch, total, commit_time)
+            file_changes_ = file_changes()
+
+            self.signals.dataReady.emit(commit_msg, branch, total, commit_time, file_changes_)
         except Exception as e:
             print("GitWorker error:", e)
 
@@ -73,7 +75,8 @@ def get_latest_commit_time():
         commit_timestamp = latest_commit.committed_date
         commit_datetime = datetime.fromtimestamp(commit_timestamp)
 
-        return f"{commit_datetime}"
+        # return f"{commit_datetime}"
+        return commit_datetime.strftime("%Y-%m-%d %I:%M %p")
 
     except git.InvalidGitRepositoryError:
         return f"Error: '{repo_path}' is not a valid Git repository."
@@ -178,7 +181,11 @@ def get_latest_commit():
     try:
         repo = git.Repo(os.getcwd(), search_parent_directories = True)
         if repo:
-            return repo.head.commit.message
+            commit = str(repo.head.commit.message)
+            commit = commit[:-1]
+            # return repo.head.commit.message
+            return commit
+
 
     except git.InvalidGitRepositoryError:
         return f"Error: something went wrong!"
@@ -186,6 +193,22 @@ def get_latest_commit():
     except Exception as e:
         return f"An error occurred: {e}"
 
-# repo = git.Repo(os.getcwd(), search_parent_directories = True)
-# print(repo.head.commit.message)
-# print(repo.head.commit.stats.files)
+
+def file_changes():
+    try:
+        repo = git.Repo(os.getcwd(), search_parent_directories = True)
+        if repo:
+            return repo.head.commit.stats.files
+
+
+    except git.InvalidGitRepositoryError:
+        return f"Error: something went wrong!"
+
+    except Exception as e:
+        return f"An error occurred: {e}"
+
+# for file, insertion in file_changes().items():
+# for file, insertion, delettion, lines, chaneges in file_changes().items():
+    # print(file)
+    # print(insertion[])
+# print(str(file_changes()))
