@@ -1655,10 +1655,6 @@ class GitDock(QDockWidget):
         super().__init__()
         is_downloaded()
         self.thread_pool = QThreadPool()
-        # self.repo = git.Repo(os.getcwd(), search_parent_directories = True)
-
-
-
         self.setObjectName('Docks')
         self.setStyleSheet(get_css_style())
         self.clearFocus()
@@ -1666,19 +1662,13 @@ class GitDock(QDockWidget):
 
         content_widget = QWidget()
         self.layout_ = QVBoxLayout()
-
+        content_widget.setObjectName('GitPanel')
+        content_widget.setStyleSheet(get_css_style())
         self.gitTimers()
 
         self.labels()
-
         self._layout()
 
-        # self.layout_.addWidget(self.users_profile)
-        # self.layout_.addWidget(self.user_username)
-        # self.layout_.addWidget(self.commit)
-        # self.layout_.addWidget(self.repo_name)
-        # self.layout_.addWidget(self.active_branch_name)
-        # self.layout_.addWidget(self.remote_url)
 
         self.setWidget(content_widget)
         content_widget.setLayout(self.layout_)
@@ -1829,14 +1819,19 @@ class GitDock(QDockWidget):
         source_rect = QRectF((scaled.width() - radius * 2) / 2, (scaled.height() - radius * 2) / 2, radius * 2, radius * 2)
         painter.drawPixmap(QRectF(0, 0, radius * 2, radius * 2), scaled, source_rect)
         painter.end()
-    
+
         return rounded
 
     def changes(self, file_changes):
         text = ""
         for file, info in file_changes.items():
             if info['insertions'] != 0 or info['deletions'] != 0:
-                text += f"     {file}: insertions +{info['insertions']} deletions -{info['deletions']}\n\n"
+                text += f"""    &nbsp;&nbsp;&nbsp;&nbsp;<b>{file}</b>: 
+                <span style="color: green;">+{info['insertions']} insertions</span> 
+                <span style="color: red;">-{info['deletions']} deletions</span><br><br>"""
+
+
+        self.show_changes.setTextFormat(Qt.TextFormat.RichText)
         self.show_changes.setText(text)
 
     def update_git_info(self):

@@ -63,7 +63,6 @@
     border: none;
     outline: none;
     padding: 6px;
-
 }
 
 #AutoCompleter::item:hover,
@@ -75,6 +74,10 @@
     outline: none;
 }
 
+#GitPanel {
+    border: 2px solid #89b4fa;
+    border-radius: 15px;
+}
 
 #Docks {
     background-color: #1e1e2e;
