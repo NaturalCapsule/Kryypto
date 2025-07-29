@@ -79,6 +79,16 @@
     border-radius: 15px;
 }
 
+#DockTitles{
+    background-color: transparent;
+    color: white;
+    padding: 4px;
+    border-radius: 10px;
+    margin: 4px
+}
+
+    
+
 #Docks {
     background-color: #1e1e2e;
     border: 2px solid #F9E2AF;

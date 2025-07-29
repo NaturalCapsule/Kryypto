@@ -7,7 +7,7 @@ from PyQt6.QtGui import QFont, QShortcut, QKeySequence, QTextCursor
 
 class MainTextShortcuts:
     # def __init__(self, parent, completer, tab, error_label, clipboard):
-    def __init__(self, parent, completer, tab, error_label, clipboard, bawky_parent, term, bawky_parent_, opened_tabs, file_desc, list_shortcuts):
+    def __init__(self, parent, completer, tab, error_label, clipboard, bawky_parent, term, bawky_parent_, opened_tabs, file_desc, list_shortcuts, git_panel):
         self.font_size = 19
         # self.num_lines = num_lines
 
@@ -53,7 +53,9 @@ class MainTextShortcuts:
         goto_block.activated.connect(lambda: self.goto_block_(parent, bawky_parent))
 
 
-        hide_show_term = QShortcut(QKeySequence("Ctrl+T"), parent)
+        # hide_show_term = QShortcut(QKeySequence("Ctrl+T"), parent)
+        hide_show_term = QShortcut(QKeySequence("Ctrl+T"), bawky_parent_)
+
         hide_show_term.activated.connect(lambda: self.hide_show_terminal(bawky_parent_, parent))
 
         kill_term = QShortcut(QKeySequence("Ctrl+Shift+G"), parent)
@@ -71,6 +73,9 @@ class MainTextShortcuts:
 
         hide_show_shortcuts = QShortcut(QKeySequence("Ctrl+L"), bawky_parent_)
         hide_show_shortcuts.activated.connect(lambda: self.hide_show_shortcuts(bawky_parent_, list_shortcuts))
+
+        hide_show_gitpanel = QShortcut(QKeySequence("Ctrl+G"), bawky_parent_)
+        hide_show_gitpanel.activated.connect(lambda: self.hide_show_gitpanel(git_panel, parent))
 
     def hide_show_shortcuts(self, parent, list_shortcuts):
         if list_shortcuts.isVisible():
@@ -279,6 +284,13 @@ class MainTextShortcuts:
         else:
             current_index = tab.currentIndex() - 1
             tab.setCurrentIndex(current_index)
+
+    def hide_show_gitpanel(self, git_panel, parent):
+        if git_panel.isVisible():
+            git_panel.hide()
+            parent.setFocus()
+        else:
+            git_panel.show()
 
     def hide_show_terminal(self, bawky_parent, main_text):
         if self.terminal:

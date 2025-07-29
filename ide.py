@@ -1,31 +1,34 @@
 import sys
-from PyQt6.QtWidgets import QApplication, QMainWindow, QMessageBox, QPushButton
+from PyQt6.QtWidgets import QApplication, QMainWindow, QMessageBox, QPushButton, QFileDialog
 from PyQt6.QtGui import  QFont, QSurfaceFormat, QCloseEvent, QPixmap
 from PyQt6.QtCore import Qt
 from shortcuts import *
 from get_style import get_css_style
+from pygit import open_file_dialog
 
 class IDE(QMainWindow):
     def __init__(self, clipboard):
         super().__init__()
         self.clipboard = clipboard
+        self.opened_directory = open_file_dialog(self)
+
         self.setupUI()
         self.setupWidgets()
-        # self.
 
     def setupUI(self):
         import widgets
+        # widgets.FileDialog(self)
         self.setWindowTitle("IDE")
         self.setGeometry(100, 100, 800, 600)
         self.setCentralWidget(widgets.central_widget)
         self.setObjectName("MainWindow")
         self.setStyleSheet(get_css_style())
+        # print(self.geometry()) get current geometry
 
     def setupWidgets(self):
         import widgets
 
         self.git_panel = widgets.GitDock(self)
-        # widgets.layout.addWidget(self.git_panel)
 
         self.welcome_page = widgets.WelcomeWidget()
         self.list_shortcuts = widgets.ListShortCuts()
@@ -38,7 +41,7 @@ class IDE(QMainWindow):
 
         widgets.layout.addWidget(main_text)
 
-        self.editor_shortcuts = MainTextShortcuts(main_text, main_text.completer, self.tab_bar, widgets.error_label, self.clipboard, widgets.layout, self.terminal, self, self.tab_bar, widgets.file_description, self.list_shortcuts)
+        self.editor_shortcuts = MainTextShortcuts(main_text, main_text.completer, self.tab_bar, widgets.error_label, self.clipboard, widgets.layout, self.terminal, self, self.tab_bar, widgets.file_description, self.list_shortcuts, self.git_panel)
         main_text.setFont(QFont("Maple Mono", self.editor_shortcuts.font_size))
 
         self.show_files = widgets.ShowDirectory(self, main_text, self.tab_bar)
@@ -54,7 +57,7 @@ class IDE(QMainWindow):
 
                 box.setWindowFlag(Qt.WindowType.FramelessWindowHint)
 
-                box.setText('Hey!\nIt looks like you are trying to close IDE without saving your progress\nDo you really your work go in vain?')
+                box.setText('Hey!\nIt looks like you are trying to close IDE without saving your progress\nDo you really want your work go in vain?')
 
                 box.setObjectName('MessageBox')
                 box.setStyleSheet(get_css_style())

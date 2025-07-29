@@ -8,8 +8,8 @@ import os
 import git
 from datetime import datetime
 from PyQt6.QtCore import QThreadPool, QRectF, QTimer, Qt, QRect, Qt, QDir, QFileInfo, pyqtSignal, QProcess
-from PyQt6.QtGui import QCursor, QPainter, QPainterPath, QPixmap, QTextCursor, QKeyEvent, QPainter, QColor, QFont, QFontMetrics, QTextCursor, QColor, QFileSystemModel, QIcon, QStandardItemModel, QStandardItem
-from PyQt6.QtWidgets import QFrame, QComboBox, QLabel, QPushButton, QHBoxLayout, QLineEdit, QPlainTextEdit, QVBoxLayout, QWidget, QCompleter, QDockWidget, QTextEdit, QTreeView, QFileIconProvider, QTabBar
+from PyQt6.QtGui import QPainter, QPainterPath, QPixmap, QTextCursor, QKeyEvent, QPainter, QColor, QFont, QFontMetrics, QTextCursor, QColor, QFileSystemModel, QIcon, QStandardItemModel, QStandardItem
+from PyQt6.QtWidgets import QMessageBox, QFrame, QComboBox, QLabel, QPushButton, QHBoxLayout, QLineEdit, QPlainTextEdit, QVBoxLayout, QWidget, QCompleter, QDockWidget, QTextEdit, QTreeView, QFileIconProvider, QTabBar
 
 from lines import ShowLines
 from get_style import get_css_style
@@ -487,7 +487,10 @@ class DocStringDock(QDockWidget):
         super().__init__()
         self.custom_title = QLabel("Doc")
         # self.custom_title = QLabel("Doc")
-        self.custom_title.setStyleSheet("background-color: transparent; color: white; padding: 4px; border-radius: 10px; margin: 4px")
+        self.custom_title.setObjectName('DockTitles')
+        # self.custom_title.setStyleSheet("background-color: transparent; color: white; padding: 4px; border-radius: 10px; margin: 4px")
+        self.custom_title.setStyleSheet(get_css_style())
+
 
 
         self.setTitleBarWidget(self.custom_title)
@@ -521,7 +524,10 @@ class ShowDirectory(QDockWidget):
         self.main_text = main_text
 
         custom_title = QLabel("Directory Viewer")
-        custom_title.setStyleSheet("background-color: transparent; color: white; padding: 4px; border-radius: 10px; margin: 4px")
+        custom_title.setObjectName('DockTitles')
+        # custom_title.setStyleSheet("background-color: transparent; color: white; padding: 4px; border-radius: 10px; margin: 4px")
+        custom_title.setStyleSheet(get_css_style())
+
 
 
         self.setTitleBarWidget(custom_title)
@@ -565,11 +571,15 @@ class ShowDirectory(QDockWidget):
         self.hbox.addWidget(self.file_viewer)
 
         self.dir_model = QFileSystemModel(parent)
-        self.dir_model.setRootPath(QDir.currentPath())
+        # self.dir_model.setRootPath(QDir.currentPath())
+        self.dir_model.setRootPath(folder_path_)
+
         self.dir_model.setIconProvider(CustomIcons())
 
         self.file_viewer.setModel(self.dir_model)
-        self.file_viewer.setRootIndex(self.dir_model.index(QDir.currentPath()))
+        # self.file_viewer.setRootIndex(self.dir_model.index(QDir.currentPath()))
+        self.file_viewer.setRootIndex(self.dir_model.index(folder_path_))
+
 
         self.file_viewer.setHeaderHidden(True)
         self.file_viewer.setAnimated(True)
@@ -724,7 +734,9 @@ class ShowDirectory(QDockWidget):
                     file.write('')
                     file.close()
             except Exception:
-                with open (f"{QDir.currentPath()}/{self.new_file_input.text()}", 'w') as file:
+                # with open (f"{QDir.currentPath()}/{self.new_file_input.text()}", 'w') as file:
+                with open (f"{folder_path_}/{self.new_file_input.text()}", 'w') as file:
+
                     file.write('')
                     file.close()
 
@@ -1653,7 +1665,7 @@ class ListShortCuts(QWidget):
 class GitDock(QDockWidget):
     def __init__(self, parent):
         super().__init__()
-        is_downloaded()
+        is_downloaded(MessageBox)
         self.thread_pool = QThreadPool()
         self.setObjectName('Docks')
         self.setStyleSheet(get_css_style())
@@ -1667,7 +1679,7 @@ class GitDock(QDockWidget):
         self.gitTimers()
 
         self.labels()
-        self._layout()
+        # self._layout()
 
 
         self.setWidget(content_widget)
@@ -1678,12 +1690,14 @@ class GitDock(QDockWidget):
         self.setFeatures(QDockWidget.DockWidgetFeature.DockWidgetMovable)
         parent.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self)
 
+        self.hide()
+
+        self.checking()
+
     def _layout(self):
         self.layout_.addWidget(self.users_profile)
         self.layout_.addWidget(self.user_username)
         self.layout_.addStretch()
-        # self.layout_.addStretch()
-        # self.layout_.addWidget(self.repo_name)
 
         self.layout_.addWidget(self.commit_info)
         self.layout_.addWidget(self.latest_commit)
@@ -1697,7 +1711,6 @@ class GitDock(QDockWidget):
         self.layout_.addWidget(self.show_changes)
         self.layout_.addStretch()
         self.layout_.addStretch()
-        # self.layout_.addStretch()
         self.layout_.addStretch()
 
         self.layout_.addWidget(self.repo_info)
@@ -1705,9 +1718,6 @@ class GitDock(QDockWidget):
         self.layout_.addWidget(self.remote_url)
         self.layout_.addWidget(self.active_branch_name)
         self.layout_.addStretch()
-        # self.layout_.addStretch()
-        # self.layout_.addStretch()
-
 
 
     def labels(self):
@@ -1722,7 +1732,7 @@ class GitDock(QDockWidget):
         self.active_branch_name.setObjectName('ActiveBranch')
         self.active_branch_name.setStyleSheet(get_css_style())
 
-        self.remote_url = QLabel(get_github_remote_url())
+        self.remote_url = QLabel(get_github_remote_url(MessageBox))
         # self.remote_url.setOpenExternalLinks(True)
         # self.remote_url.setTextInteractionFlags(Qt.TextInteractionFlag.TextBrowserInteraction)
         self.remote_url.setObjectName('RemoteURL')
@@ -1731,7 +1741,6 @@ class GitDock(QDockWidget):
         pixmap = QPixmap('icons/github/user_profile/users_profile.png')
         circular_profile = self.rounded_pixmap(pixmap, 96)
 
-        # user_info = QVBoxLayout()
 
         self.users_profile = QLabel()
         self.users_profile.setPixmap(circular_profile)
@@ -1760,7 +1769,7 @@ class GitDock(QDockWidget):
         self.latest_commit = QLabel()
         self.latest_commit.setObjectName('CommitTime')
         self.latest_commit.setStyleSheet(get_css_style())
-        
+
         self.last_commit = QLabel()
         self.last_commit.setObjectName('CommitMessage')
         self.last_commit.setStyleSheet(get_css_style())
@@ -1769,7 +1778,6 @@ class GitDock(QDockWidget):
         self.repo_info = QLabel("Repository Info:")
         self.repo_info.setObjectName('RepoInfo')
         self.repo_info.setStyleSheet(get_css_style())
-
 
         self.untracked_files = QLabel()
         self.untracked_files.setObjectName('UntrackedFiles')
@@ -1809,11 +1817,26 @@ class GitDock(QDockWidget):
         image_layout.setContentsMargins(0, 0, 0, 0)
         self.image_container.setLayout(image_layout)
 
+        self.layout_.addWidget(self.image_container)
+
         self.custom_title = QLabel("Git Panel")
-        self.custom_title.setStyleSheet("background-color: transparent; color: white; padding: 4px; border-radius: 10px; margin: 4px")
         self.custom_title.setObjectName('DockTitles')
-
-
+        self.custom_title.setStyleSheet(get_css_style())
+        # self.custom_title.setStyleSheet("background-color: transparent; color: white; padding: 4px; border-radius: 10px; margin: 4px")
+        self.remote_url.hide()
+        self.active_branch_name.hide()
+        self.user_username.hide()
+        self.users_profile.hide()
+        self.repo_info.hide()
+        self.repo_name.hide()
+        self.commit.hide()
+        self.commit_info.hide()
+        self.last_commit.hide()
+        self.latest_commit.hide()
+        self.untracked_files.hide()
+        self.untracked_header.hide()
+        self.show_changes.hide()
+        self.header_changes.hide()
 
     def rounded_pixmap(self, pixmap: QPixmap, radius: int = 128) -> QPixmap:
         size = min(pixmap.width(), pixmap.height())
@@ -1852,12 +1875,21 @@ class GitDock(QDockWidget):
         self.thread_pool.start(worker)
 
     def update_ui(self, commit_msg, branch, total, get_latest_commit_time, file_changes, untracked_files):
-        if is_init() and self.isVisible():
+        # print("test")
+        # print('updating')
+        # print(is_init())
+        # if is_init() and self.isVisible():
+        # if self.isVisible():
+        if self.isVisible() and is_init():
+
+            # print(self.users_profile.isVisible())
             if not is_init():
-            # if is_init():
+
 
                 if self.users_profile.isVisible():
                     self.layout_.addWidget(self.image_container, alignment = Qt.AlignmentFlag.AlignHCenter)
+                    self.layout_.removeWidget(self.image_container)
+
                     self.no_repo_img.show()
                     self.no_repo_text.show()
                     self.repo_name.hide()
@@ -1884,6 +1916,7 @@ class GitDock(QDockWidget):
                     self.commit.show()
                     self.active_branch_name.show()
                     self.remote_url.show()
+                    self.repo_info.show()
                     self.latest_commit.show()
                     self.user_username.show()
                     self.last_commit.show()
@@ -1894,19 +1927,124 @@ class GitDock(QDockWidget):
                     self.header_changes.show()
                     self.show_changes.show()
                     self.users_profile.show()
+                    self._layout()
+        # self.commit_info.hide()
+
+
+                    # self.changes(file_changes)
+
+                    # self.untracked_files.setText(f"   {untracked_files}")
+
+                    # self.latest_commit.setText(f"↳ Message: {commit_msg}")
+                    # self.active_branch_name.setText(f"Branch: <code>{branch}</code>")
+                    # self.commit.setText(f"↳ Total Commits: {str(total)}")
+                    # self.last_commit.setText(f"↳ Last Committed: {get_latest_commit_time}")
 
             self.changes(file_changes)
 
-            # print(untracked)
-
             self.untracked_files.setText(f"   {untracked_files}")
-            
+
             self.latest_commit.setText(f"↳ Message: {commit_msg}")
             self.active_branch_name.setText(f"Branch: <code>{branch}</code>")
             self.commit.setText(f"↳ Total Commits: {str(total)}")
             self.last_commit.setText(f"↳ Last Committed: {get_latest_commit_time}")
 
+        # else:
+        #     self.checking()
+
+    def checking(self):
+        if not is_init():
+            if self.users_profile.isVisible():
+                # self.layout_.addWidget(self.image_container, alignment = Qt.AlignmentFlag.AlignHCenter)
+                # self.layout_.removeWidget(self.image_container)
+                self.layout_.addWidget(self.image_container, alignment = Qt.AlignmentFlag.AlignHCenter)
+
+
+                self.no_repo_img.show()
+                self.no_repo_text.show()
+                self.repo_name.hide()
+                self.commit.hide()
+                self.remote_url.hide()
+                self.user_username.hide()
+                self.latest_commit.hide()
+                self.last_commit.hide()
+                self.commit_info.hide()
+                self.active_branch_name.hide()
+                self.untracked_files.hide()
+                self.untracked_header.hide()
+                self.header_changes.hide()
+                self.show_changes.hide()
+                self.users_profile.hide()
+
+
+        else:
+            if not self.users_profile.isVisible():
+                self.layout_.removeWidget(self.image_container)
+                self.no_repo_img.hide()
+                self.no_repo_text.hide()
+                self.repo_name.show()
+                self.commit.show()
+                self.active_branch_name.show()
+                self.remote_url.show()
+                self.repo_info.show()
+                self.latest_commit.show()
+                self.user_username.show()
+                self.last_commit.show()
+                self.commit_info.show()
+                self.active_branch_name.show()
+                self.untracked_files.show()
+                self.untracked_header.show()
+                self.header_changes.show()
+                self.show_changes.show()
+                self.users_profile.show()
+                self._layout()
+
     def gitTimers(self):
         self.timer = QTimer()
         self.timer.timeout.connect(self.update_git_info)
         self.timer.start(1500)
+
+
+class MessageBox(QMessageBox):
+    def __init__(self, text):
+        super().__init__()
+
+        self.setWindowFlag(Qt.WindowType.FramelessWindowHint)
+        self.setText(text)
+
+
+        self.setObjectName('MessageBox')
+        self.setStyleSheet(get_css_style())
+
+        save_file = QPushButton(self)
+        save_file.setText('Ok')
+
+        save_file.setObjectName('MessageBoxSave')
+        save_file.setStyleSheet(get_css_style())
+
+        cancel = QPushButton(self)
+        cancel.setText('Cancel')
+
+        cancel.setObjectName('MessageBoxCancel')
+        cancel.setStyleSheet(get_css_style())
+
+        pixmap = QPixmap('icons/messagebox/warning.png')
+        pixmap.size()
+        # file
+        scaled_pixmap = pixmap.scaled(98, 98, aspectRatioMode=Qt.AspectRatioMode.KeepAspectRatio, transformMode=Qt.TransformationMode.SmoothTransformation)
+        self.setIconPixmap(scaled_pixmap)
+
+
+        self.addButton(save_file, QMessageBox.ButtonRole.YesRole)
+        self.addButton(cancel, QMessageBox.ButtonRole.RejectRole)
+
+        self.exec()
+
+
+# class FileDialog(QFileDialog):
+#     def __init__(self, parent):
+#         super().__init__()
+#         folder_path = self.getExistingDirectory(parent, "Select a folder")
+
+#         if folder_path:
+#             print("Selected folder:", folder_path)
