@@ -4,7 +4,7 @@ import sys
 import requests
 from datetime import datetime
 # from widgets import MessageBox_someshit
-from PyQt6.QtWidgets import QApplication, QMainWindow, QFileDialog
+from PyQt6.QtWidgets import QFileDialog
 from PyQt6.QtCore import QRunnable, pyqtSignal, QObject
 
 folder_path_ = None
@@ -265,6 +265,7 @@ def file_changes():
         repo = git.Repo(fr'{folder_path_}', search_parent_directories=True)
 
         if repo:
+            # print(repo.head.commit.stats.total)
             return repo.head.commit.stats.files
 
 

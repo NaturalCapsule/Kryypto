@@ -1,16 +1,11 @@
 import re
 import sys
 from PyQt6.QtGui import QFont, QShortcut, QKeySequence, QTextCursor
-# from PyQt6.QtWidgets import QLineEdit
-# from widgets import TerminalDock
 
 
 class MainTextShortcuts:
-    # def __init__(self, parent, completer, tab, error_label, clipboard):
     def __init__(self, parent, completer, tab, error_label, clipboard, bawky_parent, term, bawky_parent_, opened_tabs, file_desc, list_shortcuts, git_panel):
         self.font_size = 19
-        # self.num_lines = num_lines
-
         self.terminal = term
 
 
@@ -359,3 +354,21 @@ class FileDockShortcut:
     def changed(self, main_text):
         main_text.moveCursor(QTextCursor.MoveOperation.Start)
         main_text.find(self.text())
+
+
+
+# not necessary
+# class GitPanelShortcuts:
+#     def __init__(self, parent):
+#         init_git = QShortcut(QKeySequence('Ctrl+I'), parent)
+#         init_git.activated.connect(self.init_git_dir)
+
+#     def init_git_dir(self):
+#         try:
+#             from pygit import folder_path_
+
+#             repo = git.Repo(folder_path_, search_parent_directories = True)
+        
+#         except git.InvalidGitRepositoryError:
+#             repo = git.Repo.init(folder_path_)
+#             print(repo)

@@ -87,13 +87,18 @@
     margin: 4px
 }
 
-    
+
 
 #Docks {
     background-color: #1e1e2e;
     border: 2px solid #F9E2AF;
     border-radius: 10px;
     color: #ffffff;
+}
+
+#TitleBarBG {
+    background-color: rgba(30, 30, 30, 150);
+    border-radius: 0px;
 }
 
 #DocStrings {

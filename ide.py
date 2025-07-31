@@ -1,6 +1,7 @@
 import sys
-from PyQt6.QtWidgets import QApplication, QMainWindow, QMessageBox, QPushButton, QFileDialog
+from PyQt6.QtWidgets import QLabel, QWidget, QVBoxLayout, QApplication, QMainWindow, QMessageBox, QPushButton, QFileDialog
 from PyQt6.QtGui import  QFont, QSurfaceFormat, QCloseEvent, QPixmap
+from titlebar import CustomTitleBar
 from PyQt6.QtCore import Qt
 from shortcuts import *
 from get_style import get_css_style
@@ -12,97 +13,90 @@ class IDE(QMainWindow):
         self.clipboard = clipboard
         self.opened_directory = open_file_dialog(self)
 
+
         self.setupUI()
         self.setupWidgets()
+        self.addDocks()
+
+
+    def addDocks(self):
+        self.inner_window.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self.git_panel)
+        self.inner_window.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, self.terminal)
+        self.inner_window.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self.show_files)
+        self.setDockOptions(QMainWindow.DockOption.AnimatedDocks|
+    QMainWindow.DockOption.AllowTabbedDocks |
+    QMainWindow.DockOption.AllowNestedDocks)
 
     def setupUI(self):
-        import widgets
-        # widgets.FileDialog(self)
         self.setWindowTitle("IDE")
-        self.setGeometry(100, 100, 800, 600)
-        self.setCentralWidget(widgets.central_widget)
+        self.setGeometry(100, 100, 2000, 1400)
         self.setObjectName("MainWindow")
         self.setStyleSheet(get_css_style())
         # print(self.geometry()) get current geometry
 
+
     def setupWidgets(self):
+        self.setWindowFlags(Qt.WindowType.FramelessWindowHint)
+        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
         import widgets
 
-        self.git_panel = widgets.GitDock(self)
+        self.editor_containter = QWidget()
+        self.editor_layout = QVBoxLayout(self.editor_containter)
+
+
+        self.central_layout = QVBoxLayout(widgets.central_widget)
+        self.central_layout.setContentsMargins(0, 0, 0, 0)
+        self.central_layout.setSpacing(0)
+
+        # self.main_text = widgets.MainText(self.central_layout, self.clipboard)
+        self.main_text = widgets.MainText(self.editor_layout, self.clipboard)
+
+
+
+        self.title_bar = CustomTitleBar(self)
+        self.central_layout.addWidget(self.title_bar)
+        self.setCentralWidget(widgets.central_widget)
 
         self.welcome_page = widgets.WelcomeWidget()
+        self.inner_window = QMainWindow()
+        self.tab_bar = widgets.ShowOpenedFile(self.main_text, self.central_layout, widgets.error_label, self.inner_window, self.welcome_page, self.editor_containter, self.editor_layout)
+        self.central_layout.addWidget(self.tab_bar)
+        self.central_layout.addWidget(self.inner_window)
+
+
+
+        self.editor_layout.addWidget(self.tab_bar)
+        self.editor_layout.addWidget(self.main_text)
+
+        self.inner_window.setCentralWidget(self.welcome_page)
+        self.inner_window.setWindowFlags(Qt.WindowType.FramelessWindowHint)
+
+        self.inner_window.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
+
+
+        self.git_panel = widgets.GitDock(self.inner_window)
+
         self.list_shortcuts = widgets.ListShortCuts()
 
-        widgets.layout.addWidget(self.welcome_page)
-
         self.terminal = widgets.TerminalDock(self)
-        main_text = widgets.MainText(widgets.layout, self.clipboard)
-        self.tab_bar = widgets.ShowOpenedFile(main_text, widgets.layout, widgets.error_label, self, self.welcome_page)
 
-        widgets.layout.addWidget(main_text)
+        self.editor_shortcuts = MainTextShortcuts(self.main_text, self.main_text.completer, self.tab_bar, widgets.error_label, self.clipboard, self.editor_layout, self.terminal, self, self.tab_bar, widgets.file_description, self.list_shortcuts, self.git_panel)
 
-        self.editor_shortcuts = MainTextShortcuts(main_text, main_text.completer, self.tab_bar, widgets.error_label, self.clipboard, widgets.layout, self.terminal, self, self.tab_bar, widgets.file_description, self.list_shortcuts, self.git_panel)
-        main_text.setFont(QFont("Maple Mono", self.editor_shortcuts.font_size))
 
-        self.show_files = widgets.ShowDirectory(self, main_text, self.tab_bar)
-        FileDockShortcut(self, self.show_files, self.show_files.file_viewer, main_text, widgets.file_description, self.tab_bar)
+        self.main_text.setFont(QFont("Maple Mono", self.editor_shortcuts.font_size))
 
-        widgets.layout.addWidget(self.list_shortcuts)
+        self.show_files = widgets.ShowDirectory(self.main_text, self.tab_bar)
+
+        FileDockShortcut(self.inner_window, self.show_files, self.show_files.file_viewer, self.main_text, widgets.file_description, self.tab_bar)
+
 
         self.welcome_page.setFocus()
 
     def closeEvent(self, event: QCloseEvent):
-        def pop_messagebox():
-                box = QMessageBox(self)
-
-                box.setWindowFlag(Qt.WindowType.FramelessWindowHint)
-
-                box.setText('Hey!\nIt looks like you are trying to close IDE without saving your progress\nDo you really want your work go in vain?')
-
-                box.setObjectName('MessageBox')
-                box.setStyleSheet(get_css_style())
-
-                save_file = QPushButton(box)
-                save_file.setText('Save File')
-
-                save_file.setObjectName('MessageBoxSave')
-                save_file.setStyleSheet(get_css_style())
-
-                dont_save = QPushButton(box)
-                dont_save.setText("Don't Save")
-
-                dont_save.setObjectName('MessageBoxSaveNot')
-                dont_save.setStyleSheet(get_css_style())
-
-                cancel = QPushButton(box)
-                cancel.setText('Cancel')
-
-                cancel.setObjectName('MessageBoxCancel')
-                cancel.setStyleSheet(get_css_style())
-
-                pixmap = QPixmap('icons/messagebox/warning.png')
-                pixmap.size()
-
-                scaled_pixmap = pixmap.scaled(98, 98, aspectRatioMode=Qt.AspectRatioMode.KeepAspectRatio, transformMode=Qt.TransformationMode.SmoothTransformation)
-                box.setIconPixmap(scaled_pixmap)
-
-
-                box.addButton(save_file, QMessageBox.ButtonRole.YesRole)
-                box.addButton(dont_save, QMessageBox.ButtonRole.NoRole)
-                box.addButton(cancel, QMessageBox.ButtonRole.RejectRole)
-
-                box.exec()
-
-                if box.clickedButton() == save_file:
-                    self.tab_bar.save_current_file()
-                    event.accept()
-                elif box.clickedButton() == dont_save:
-                    event.accept()
-                else:
-                    event.ignore()
+        from widgets import pop_messagebox
 
         if self.tab_bar.is_save_file_needed():
-            pop_messagebox()
+            pop_messagebox(self, event, self.tab_bar)
 
 
 

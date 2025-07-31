@@ -1,11 +1,7 @@
-## TO-DO:
-# 1: make it when there are no tab it shows some system info or something else, idk...
-
 import jedi
 import re
 import subprocess
 import os
-import git
 from datetime import datetime
 from PyQt6.QtCore import QThreadPool, QRectF, QTimer, Qt, QRect, Qt, QDir, QFileInfo, pyqtSignal, QProcess
 from PyQt6.QtGui import QPainter, QPainterPath, QPixmap, QTextCursor, QKeyEvent, QPainter, QColor, QFont, QFontMetrics, QTextCursor, QColor, QFileSystemModel, QIcon, QStandardItemModel, QStandardItem
@@ -19,6 +15,9 @@ from show_errors import *
 from pygit import *
 
 central_widget = QWidget()
+central_widget.setObjectName('MainWindow')
+central_widget.setStyleSheet(get_css_style())
+
 
 error_label = QLabel("Ready")
 error_label.setObjectName("SyntaxChecker")
@@ -28,7 +27,7 @@ file_description = {}
 commenting = ''
 current_file_path = ''
 
-layout = QVBoxLayout(central_widget)
+# layout = QVBoxLayout(central_widget)
 
 class MainText(QPlainTextEdit):
 
@@ -484,6 +483,8 @@ class MainText(QPlainTextEdit):
 
 class DocStringDock(QDockWidget):
     def __init__(self, parent, use):
+    # def __init__(self, use):
+
         super().__init__()
         self.custom_title = QLabel("Doc")
         # self.custom_title = QLabel("Doc")
@@ -519,8 +520,12 @@ class DocStringDock(QDockWidget):
             self.setStyleSheet(get_css_style())
 
 class ShowDirectory(QDockWidget):
-    def __init__(self, parent, main_text, opened_tabs):
-        super().__init__(parent)
+    # def __init__(self, parent, main_text, opened_tabs):
+    def __init__(self, main_text, opened_tabs):
+
+        # super().__init__(parent)
+        super().__init__()
+
         self.main_text = main_text
 
         custom_title = QLabel("Directory Viewer")
@@ -570,8 +575,8 @@ class ShowDirectory(QDockWidget):
         self.hbox.addWidget(self.new_folder_input)
         self.hbox.addWidget(self.file_viewer)
 
-        self.dir_model = QFileSystemModel(parent)
-        # self.dir_model.setRootPath(QDir.currentPath())
+        self.dir_model = QFileSystemModel()
+        # self.dir_model = QFileSystemModel(parent)
         self.dir_model.setRootPath(folder_path_)
 
         self.dir_model.setIconProvider(CustomIcons())
@@ -594,7 +599,9 @@ class ShowDirectory(QDockWidget):
 
         self.setWidget(self.file_viewer)
         self.setFeatures(QDockWidget.DockWidgetFeature.DockWidgetMovable)
-        parent.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self)
+        # parent.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self)
+        # parent.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self)
+
         self.setStyleSheet(get_css_style())
         self.file_viewer.clicked.connect(self.set_file)
 
@@ -801,7 +808,9 @@ class CustomIcons(QFileIconProvider):
 
 
 class ShowOpenedFile(QTabBar):
-    def __init__(self, editor, layout, error_label, parent, welcome_page):
+    def __init__(self, editor, layout, error_label, parent, welcome_page, editor_containter, editor_layout):
+    # def __init__(self, editor, layout, error_label, parent):
+
         super().__init__()
         global file_description
         global commenting
@@ -809,6 +818,8 @@ class ShowOpenedFile(QTabBar):
         self.tab_paths = {}
         self.previous_index = -1
         self.welcome_page = welcome_page
+        self.editor_layout = editor_layout
+        self.editor_containter = editor_containter
 
 
         self.editor = editor
@@ -879,8 +890,6 @@ class ShowOpenedFile(QTabBar):
 
             cursor = self.editor.textCursor()
             cursor.beginEditBlock()
-            self.editor.setUpdatesEnabled(False)
-            self.editor.blockSignals(True)
             self.editor.setPlainText("")
             cursor.endEditBlock()
 
@@ -911,6 +920,8 @@ class ShowOpenedFile(QTabBar):
         self.setTabButton(file_index, self.ButtonPosition.RightSide, close_button)
         if not self.editor.isVisible():
             self.welcome_page.hide()
+            # self.parent_.setCentralWidget(self.editor)
+            self.parent_.setCentralWidget(self.editor_containter)
             self.editor.show()
 
     def track_tabs(self, index):
@@ -921,18 +932,12 @@ class ShowOpenedFile(QTabBar):
                 f.write(self.editor.toPlainText())
 
         if self.count() == 0:
-            # self.editor.setPlainText("")
-
             cursor = self.editor.textCursor()
             cursor.beginEditBlock()
-            # self.editor.setUpdatesEnabled(False)
-            # self.editor.blockSignals(True)
 
             self.editor.setPlainText("")
 
             cursor.endEditBlock()
-            # self.editor.setUpdatesEnabled(True)
-            # self.editor.blockSignals(False)
 
 
             file_description.clear()
@@ -954,14 +959,10 @@ class ShowOpenedFile(QTabBar):
                     with open(path, 'r', encoding = 'utf-8') as file:
                         cursor = self.editor.textCursor()
                         cursor.beginEditBlock()
-                        # self.editor.setUpdatesEnabled(False)
-                        # self.editor.blockSignals(True)
 
                         self.editor.setPlainText(file.read())
 
                         cursor.endEditBlock()
-                        # self.editor.setUpdatesEnabled(True)
-                        # self.editor.blockSignals(False)
 
                 except FileNotFoundError:
                     self.remove_tab(self.currentIndex())
@@ -974,7 +975,9 @@ class ShowOpenedFile(QTabBar):
                     self.show_error = ShowErrors(self.editor, self.highlighter)
                     self.editor.show_completer = True
                     self.show_error.error_label = self.error_label
-                    self.layout_.addWidget(self.error_label)
+                    # self.layout_.addWidget(self.error_label)
+                    self.editor_layout.addWidget(self.error_label)
+
                     self.error_label.show()
                     if self.is_panel:
                         self.doc_panelstring = DocStringDock(self.parent_, True)
@@ -1020,7 +1023,9 @@ class ShowOpenedFile(QTabBar):
                     elif file_name.lower().endswith('.json'):
                         self.show_error = ShowJsonErrors(self.editor, self.highlighter, path, False)
                     self.show_error.error_label = self.error_label
-                    self.layout_.addWidget(self.error_label)
+                    # self.layout_.addWidget(self.error_label)
+                    self.editor_layout.addWidget(self.error_label)
+
                     self.error_label.show()
 
                 elif file_name.lower().endswith('.css'):
@@ -1055,7 +1060,8 @@ class ShowOpenedFile(QTabBar):
                     self.show_error = ShowCssErrors(self.editor, self.highlighter)
 
                     self.show_error.error_label = self.error_label
-                    self.layout_.addWidget(self.error_label)
+                    # self.layout_.addWidget(self.error_label)
+                    self.editor_layout.addWidget(self.error_label)
                     self.error_label.show()
 
 
@@ -1157,11 +1163,8 @@ class ShowOpenedFile(QTabBar):
             if file == current_file:
                 with open(path, 'r', encoding = 'utf-8') as file:
                     if self.editor.toPlainText() != file.read():
-                        # print('NOT EQUAL')
                         return True
-                        # file.write(self.editor.toPlainText())
                     else:
-                        # print("EQUAL")
                         return False
 
     def save_current_file(self):
@@ -1171,7 +1174,6 @@ class ShowOpenedFile(QTabBar):
         for path, file in file_description.items():
             if file == current_file:
                 with open(path, 'w', encoding = 'utf-8') as file:
-                    # if self.editor.toPlainText() != file.read():
                     file.write(self.editor.toPlainText())
 
 
@@ -1419,7 +1421,9 @@ class TerminalEmulator(QWidget):
     #     return ansi_escape.sub("", text)
 
 class TerminalDock(QDockWidget):
+    # def __init__(self, parent):
     def __init__(self, parent):
+
         super().__init__()
         self.setObjectName('Docks')
         self.setStyleSheet(get_css_style())
@@ -1434,7 +1438,7 @@ class TerminalDock(QDockWidget):
         self.setTitleBarWidget(self.custom_title)
 
         self.setFeatures(QDockWidget.DockWidgetFeature.DockWidgetMovable)
-        parent.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, self)
+        # parent.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, self)
 
 
 class findingText(QLineEdit):
@@ -1600,6 +1604,7 @@ class WelcomeWidget(QWidget):
         self._layout.addWidget(shortcut_3, alignment=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignBottom)
         self._layout.addWidget(shortcut_4, alignment=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignBottom)
         self.setFocus()
+        # self.show()
 
     def update_text(self):
         if self.current_index <= len(self.full_text):
@@ -1635,14 +1640,14 @@ class ListShortCuts(QWidget):
         shortcut_16 = QLabel('Go to new line: <span style="background-color: #2d2d2d">Ctrl + Return</span>')
         shortcut_17 = QLabel('Remove current line: <span style="background-color: #2d2d2d">Ctrl + Shift + K</span>')
         shortcut_18 = QLabel('Open Configuration file: <span style="background-color: #2d2d2d">Ctrl + Shift + O</span>')
-
+        shortcut_19 = QLabel('Show/Hide Git Panel: <span style="background-color: #2d2d2d">Ctrl + G</span>')
 
         self.left_column = QVBoxLayout()
         self.right_column = QVBoxLayout()
         self.left_column.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.right_column.setAlignment(Qt.AlignmentFlag.AlignTop)
 
-        for shortcut in [shortcut_1, shortcut_2, shortcut_3, shortcut_4, shortcut_5, shortcut_6, shortcut_7, shortcut_8, shortcut_9]:
+        for shortcut in [shortcut_1, shortcut_2, shortcut_3, shortcut_4, shortcut_5, shortcut_6, shortcut_7, shortcut_8, shortcut_9, shortcut_19]:
             shortcut.setObjectName('ShortCutTexts')
             shortcut.setStyleSheet(get_css_style())
             self.left_column.addWidget(shortcut)
@@ -1663,7 +1668,9 @@ class ListShortCuts(QWidget):
         self.hide()
 
 class GitDock(QDockWidget):
+    # def __init__(self, parent):
     def __init__(self, parent):
+
         super().__init__()
         is_downloaded(MessageBox)
         self.thread_pool = QThreadPool()
@@ -1688,7 +1695,7 @@ class GitDock(QDockWidget):
         self.setTitleBarWidget(self.custom_title)
 
         self.setFeatures(QDockWidget.DockWidgetFeature.DockWidgetMovable)
-        parent.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self)
+        # parent.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self)
 
         self.hide()
 
@@ -1949,8 +1956,6 @@ class GitDock(QDockWidget):
             self.commit.setText(f"↳ Total Commits: {str(total)}")
             self.last_commit.setText(f"↳ Last Committed: {get_latest_commit_time}")
 
-        # else:
-        #     self.checking()
 
     def checking(self):
         if not is_init():
@@ -2048,3 +2053,56 @@ class MessageBox(QMessageBox):
 
 #         if folder_path:
 #             print("Selected folder:", folder_path)
+
+
+
+def pop_messagebox(parent, event, tab_bar):
+    box = QMessageBox(parent)
+
+    box.setWindowFlag(Qt.WindowType.FramelessWindowHint)
+
+    box.setText('Hey!\nIt looks like you are trying to close IDE without saving your progress\nDo you really want your work go in vain?')
+
+    box.setObjectName('MessageBox')
+    box.setStyleSheet(get_css_style())
+
+    save_file = QPushButton(box)
+    save_file.setText('Save File')
+
+    save_file.setObjectName('MessageBoxSave')
+    save_file.setStyleSheet(get_css_style())
+
+    dont_save = QPushButton(box)
+    dont_save.setText("Don't Save")
+
+    dont_save.setObjectName('MessageBoxSaveNot')
+    dont_save.setStyleSheet(get_css_style())
+
+    cancel = QPushButton(box)
+    cancel.setText('Cancel')
+
+    cancel.setObjectName('MessageBoxCancel')
+    cancel.setStyleSheet(get_css_style())
+
+    pixmap = QPixmap('icons/messagebox/warning.png')
+    pixmap.size()
+
+    scaled_pixmap = pixmap.scaled(98, 98, aspectRatioMode=Qt.AspectRatioMode.KeepAspectRatio, transformMode=Qt.TransformationMode.SmoothTransformation)
+    box.setIconPixmap(scaled_pixmap)
+
+
+    box.addButton(save_file, QMessageBox.ButtonRole.YesRole)
+    box.addButton(dont_save, QMessageBox.ButtonRole.NoRole)
+    box.addButton(cancel, QMessageBox.ButtonRole.RejectRole)
+
+    box.exec()
+
+    if box.clickedButton() == save_file:
+        # self.tab_bar.save_current_file()
+        tab_bar.save_current_file()
+
+        event.accept()
+    elif box.clickedButton() == dont_save:
+        event.accept()
+    else:
+        event.ignore()
