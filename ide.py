@@ -1,25 +1,28 @@
 import sys
-from PyQt6.QtWidgets import QLabel, QWidget, QVBoxLayout, QApplication, QMainWindow, QMessageBox, QPushButton, QFileDialog
-from PyQt6.QtGui import  QFont, QSurfaceFormat, QCloseEvent, QPixmap
+from PyQt6.QtWidgets import QLabel, QWidget, QVBoxLayout, QApplication, QMainWindow
+from PyQt6.QtGui import  QFont, QSurfaceFormat, QCloseEvent
 from titlebar import CustomTitleBar
 from PyQt6.QtCore import Qt, QPoint, QRect
+from settings import Setting
 from shortcuts import *
 from get_style import get_css_style
 from pygit import open_file_dialog
 
 
-class IDE(QMainWindow):
+class Kryypto(QMainWindow):
     def __init__(self, clipboard):
         super().__init__()
         self.clipboard = clipboard
+        self.settings = Setting()
         self.opened_directory = open_file_dialog(self)
+
+        self.font_size = 12
 
         self.resize_margin = 20
         self.resize_mode = None
         self.resize_start_pos = QPoint()
         self.resize_start_geometry = QRect()
-        
-        self.setMouseTracking(True)
+
 
         self.setupUI()
         self.setupWidgets()
@@ -36,8 +39,14 @@ class IDE(QMainWindow):
             QMainWindow.DockOption.AllowNestedDocks)
 
     def setupUI(self):
-        self.setWindowTitle("IDE")
-        # self.setGeometry(100, 100, 2000, 1400)
+        # print(self.settings.fileName())
+        self.setWindowTitle("Kryypto")
+        try:
+            self.resize(self.settings.value('Window Size'))
+            self.move(self.settings.value('Window Position'))
+        except:
+            self.setGeometry(100, 100, 400, 800)
+        self.setMouseTracking(True)
         
         self.setObjectName("MainWindow")
         self.setStyleSheet(get_css_style())
@@ -53,12 +62,11 @@ class IDE(QMainWindow):
         central_widget.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
         central_widget.setMouseTracking(True)
 
-        
+
         main_layout = QVBoxLayout(central_widget)
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.setSpacing(0)
 
-        # Add title bar first
         self.title_bar = CustomTitleBar(self)
         main_layout.addWidget(self.title_bar)
 
@@ -74,11 +82,11 @@ class IDE(QMainWindow):
         self.editor_containter = QWidget()
         self.editor_layout = QVBoxLayout(self.editor_containter)
         
-        self.main_text = widgets.MainText(self.editor_layout, self.clipboard)
+        self.main_text = widgets.MainText(self.editor_layout, self.clipboard, self.font_size)
 
         self.welcome_page = widgets.WelcomeWidget()
         self.inner_window = QMainWindow()
-        
+
         self.tab_bar = widgets.ShowOpenedFile(
             self.main_text, content_layout, widgets.error_label, 
             self.inner_window, self.welcome_page, self.editor_containter, 
@@ -104,10 +112,12 @@ class IDE(QMainWindow):
             self.main_text, self.main_text.completer, self.tab_bar, 
             widgets.error_label, self.clipboard, self.editor_layout, 
             self.terminal, self, self.tab_bar, widgets.file_description, 
-            self.list_shortcuts, self.git_panel
+            self.list_shortcuts, self.git_panel, self.font_size
         )
 
-        self.main_text.setFont(QFont("Maple Mono", self.editor_shortcuts.font_size))
+        # self.main_text.setFont(QFont("Maple Mono", self.editor_shortcuts.font_size))
+        self.main_text.setFont(QFont("Maple Mono", self.font_size))
+
         self.show_files = widgets.ShowDirectory(self.main_text, self.tab_bar)
 
         FileDockShortcut(
@@ -179,7 +189,6 @@ class IDE(QMainWindow):
 
     def mouseMoveEvent(self, event):
         if not self.resize_mode:
-            # print(self.geometry())
             mode = self.get_resize_mode(event.position().toPoint())
             self.update_cursor(mode)
         else:
@@ -218,7 +227,6 @@ class IDE(QMainWindow):
 
 
     def enterEvent(self, event):
-        """Force cursor update when mouse enters window"""
         self.setMouseTracking(True)
         super().enterEvent(event)
 
@@ -235,6 +243,10 @@ class IDE(QMainWindow):
 
     def closeEvent(self, event: QCloseEvent):
         from widgets import pop_messagebox
+
+        self.settings.setValue('Window Size', self.size())
+        self.settings.setValue('Window Position', self.pos())
+
         if self.tab_bar.is_save_file_needed():
             pop_messagebox(self, event, self.tab_bar)
 
@@ -247,6 +259,6 @@ if __name__ == '__main__':
     format.setDepthBufferSize(144)
     QSurfaceFormat.setDefaultFormat(format)
     app = QApplication(sys.argv)
-    window = IDE(app.clipboard())
+    window = Kryypto(app.clipboard())
     window.show()
     sys.exit(app.exec())

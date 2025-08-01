@@ -4,9 +4,11 @@ from PyQt6.QtGui import QFont, QShortcut, QKeySequence, QTextCursor
 
 
 class MainTextShortcuts:
-    def __init__(self, parent, completer, tab, error_label, clipboard, bawky_parent, term, bawky_parent_, opened_tabs, file_desc, list_shortcuts, git_panel):
-        self.font_size = 19
+    def __init__(self, parent, completer, tab, error_label, clipboard, bawky_parent, term, bawky_parent_, opened_tabs, file_desc, list_shortcuts, git_panel, font_size):
+        self.font_size = font_size
         self.terminal = term
+        # self.num_lines_font = QFont("Maple Mono", self.font_size)
+
 
 
         delete_line = QShortcut(QKeySequence("Ctrl+Shift+K"), parent)
@@ -43,14 +45,11 @@ class MainTextShortcuts:
         get_error_text.activated.connect(lambda: self.get_text(error_label, clipboard))
 
 
-
         goto_block = QShortcut(QKeySequence("Ctrl+Shift+H"), parent)
         goto_block.activated.connect(lambda: self.goto_block_(parent, bawky_parent))
 
 
-        # hide_show_term = QShortcut(QKeySequence("Ctrl+T"), parent)
         hide_show_term = QShortcut(QKeySequence("Ctrl+T"), bawky_parent_)
-
         hide_show_term.activated.connect(lambda: self.hide_show_terminal(bawky_parent_, parent))
 
         kill_term = QShortcut(QKeySequence("Ctrl+Shift+G"), parent)
@@ -227,7 +226,8 @@ class MainTextShortcuts:
         self.font_size += 1
         text_edit.setFont(QFont("Maple Mono", self.font_size))
         self.terminal.termEmulator.terminal.setFont(QFont("Maple Mono", self.font_size))
-
+        text_edit.line_number_area.update()
+        # text_edit.line_number_area_paint_event.update()
 
     def reduce_font(self, text_edit):
         self.font_size -= 1
@@ -236,6 +236,11 @@ class MainTextShortcuts:
             self.font_size = 1
         text_edit.setFont(QFont("Maple Mono", self.font_size))
         self.terminal.termEmulator.terminal.setFont(QFont("Maple Mono", self.font_size))
+        text_edit.line_number_area.update()
+        self.num_lines_font = QFont("Maple Mono", self.font_size)
+
+        # text_edit.line_number_area_paint_event.update()
+
 
 
 

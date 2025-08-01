@@ -31,8 +31,9 @@ current_file_path = ''
 
 class MainText(QPlainTextEdit):
 
-    def __init__(self, parent, window):
+    def __init__(self, parent, window, font_size):
         super().__init__()
+        self.font_size = font_size
         global commenting
         self.clipboard = window
         self.setCursorWidth(0)
@@ -75,7 +76,6 @@ class MainText(QPlainTextEdit):
         self.completer.setCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
         self.completer.activated.connect(self.insert_completion)
         self.hide()
-
 
     def toggle_cursor(self):
         self.cursor_visible = not self.cursor_visible
@@ -432,7 +432,9 @@ class MainText(QPlainTextEdit):
 
 
     def line_number_area_width(self):
-        font_metrics = QFontMetrics(QFont("Maple Mono", 19))
+        # font_metrics = QFontMetrics(QFont("Maple Mono", 19))
+        font_metrics = QFontMetrics(QFont("Maple Mono", self.font_size))
+
         digits = len(str(self.blockCount()))
         return 3 + font_metrics.horizontalAdvance('9') * digits
 
@@ -456,10 +458,13 @@ class MainText(QPlainTextEdit):
     def line_number_area_paint_event(self, event):
         painter = QPainter(self.line_number_area)
         painter.fillRect(event.rect(), QColor(30, 30, 46))
+        # print(self.font_size)
+        # num_lines_font = QFont("Maple Mono", 19)
+        # num_lines_font = QFont("Maple Mono", self.font_size)
+        self.num_lines_font = QFont("Maple Mono", self.font_size)
 
-        num_lines_font = QFont("Maple Mono", 19)
-        painter.setFont(num_lines_font)
-        font_metrics = QFontMetrics(num_lines_font)
+        painter.setFont(self.num_lines_font)
+        font_metrics = QFontMetrics(self.num_lines_font)
 
         block = self.firstVisibleBlock()
         block_number = block.blockNumber()

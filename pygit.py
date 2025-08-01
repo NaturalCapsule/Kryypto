@@ -3,16 +3,10 @@ import os
 import sys
 import requests
 from datetime import datetime
-# from widgets import MessageBox_someshit
 from PyQt6.QtWidgets import QFileDialog
 from PyQt6.QtCore import QRunnable, pyqtSignal, QObject
 
 folder_path_ = None
-# class Dialog(QMainWindow):
-#     def __init__(self):
-#         super().__init__()
-#         self.deleteLater()
-
 def open_file_dialog(parent):
     global folder_path_
     folder_path = QFileDialog.getExistingDirectory(parent, "Select a folder")
@@ -20,13 +14,6 @@ def open_file_dialog(parent):
     if folder_path:
         folder_path_ = folder_path
         return folder_path
-
-# dialoger = QApplication(sys.argv)
-# window = Dialog()
-# file = open_file_dialog()
-# window.show()
-# sys.exit(dialoger.exec())
-
 
 
 class GitWorkerSignals(QObject):

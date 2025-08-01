@@ -6,14 +6,14 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtCore import Qt, QPoint
 import sys
 from get_style import get_css_style
+from PyQt6.QtGui import QMouseEvent
 
 class CustomTitleBar(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.parent = parent
         self.setFixedHeight(40)
-        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)  # Allow transparent backgrounds
-
+        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
 
         self.setObjectName('TitleBarBG')
         self.setStyleSheet(get_css_style())
@@ -33,21 +33,23 @@ class CustomTitleBar(QWidget):
         layout.setContentsMargins(10, 0, 10, 0)
         layout.setSpacing(0)
         
-        self.title_label = QLabel("IDE")
+        self.title_label = QLabel("Kryypto")
         self.title_label.setObjectName('TitleBarName')
         self.title_label.setStyleSheet(get_css_style())
         layout.addWidget(self.title_label)
         layout.addStretch()
-        
+
         self.min_button = QPushButton("—")
         self.min_button.setObjectName('TitleBarMin')
 
         self.max_button = QPushButton('□')
         self.max_button.setObjectName('TitleBarMax')
-
+        self.max_button.setToolTip('No need to hover over it, you know what this does.')
 
         self.close_button = QPushButton("X")
         self.close_button.setObjectName('TitleBarClose')
+        self.close_button.setToolTip('you gonna close or we gon have a problem?')
+
 
         if parent:
             self.min_button.clicked.connect(parent.showMinimized)
@@ -62,7 +64,7 @@ class CustomTitleBar(QWidget):
         layout.addWidget(self.min_button)
         layout.addWidget(self.max_button)
         layout.addWidget(self.close_button)
-        
+
         self.start = QPoint(0, 0)
         self.pressing = False
 
@@ -93,3 +95,16 @@ class CustomTitleBar(QWidget):
 
     def mouseReleaseEvent(self, event):
         self.pressing = False
+
+
+    def mouseDoubleClickEvent(self, event: QMouseEvent):
+        if event.button() == Qt.MouseButton.LeftButton:
+            if self.parent:
+                if self.parent.isMaximized():
+                    self.max_button.setText('□')
+                    self.parent.showNormal()
+                else:
+                    self.parent.showMaximized()
+                    self.max_button.setText('❐')
+
+        super().mouseDoubleClickEvent(event)
