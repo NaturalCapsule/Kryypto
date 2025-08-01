@@ -1,13 +1,14 @@
 import re
 import sys
-from PyQt6.QtGui import QFont, QShortcut, QKeySequence, QTextCursor
+from PyQt6.QtGui import QFont, QShortcut, QKeySequence, QTextCursor, QFontMetrics
 
 
 class MainTextShortcuts:
-    def __init__(self, parent, completer, tab, error_label, clipboard, bawky_parent, term, bawky_parent_, opened_tabs, file_desc, list_shortcuts, git_panel, font_size):
+    def __init__(self, parent, completer, tab, error_label, clipboard, bawky_parent, term, bawky_parent_, opened_tabs, file_desc, list_shortcuts, git_panel, font_size, lines):
         self.font_size = font_size
         self.terminal = term
         # self.num_lines_font = QFont("Maple Mono", self.font_size)
+        self.lines = lines
 
 
 
@@ -228,19 +229,22 @@ class MainTextShortcuts:
         self.terminal.termEmulator.terminal.setFont(QFont("Maple Mono", self.font_size))
         text_edit.line_number_area.update()
         # text_edit.line_number_area_paint_event.update()
+        font = QFont('Maple Mono', self.font_size)
+        self.lines.setFont(font)
+        self.lines.font_metrics = QFontMetrics(font)
+
 
     def reduce_font(self, text_edit):
         self.font_size -= 1
-
         if self.font_size <= 1:
             self.font_size = 1
         text_edit.setFont(QFont("Maple Mono", self.font_size))
         self.terminal.termEmulator.terminal.setFont(QFont("Maple Mono", self.font_size))
         text_edit.line_number_area.update()
-        self.num_lines_font = QFont("Maple Mono", self.font_size)
-
-        # text_edit.line_number_area_paint_event.update()
-
+        
+        font = QFont('Maple Mono', self.font_size)
+        self.lines.setFont(font)
+        self.lines.font_metrics = QFontMetrics(font)
 
 
 

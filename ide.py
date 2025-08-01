@@ -17,12 +17,12 @@ class Kryypto(QMainWindow):
         self.opened_directory = open_file_dialog(self)
 
         self.font_size = 12
+        self.settingUP_settings()
 
         self.resize_margin = 20
         self.resize_mode = None
         self.resize_start_pos = QPoint()
         self.resize_start_geometry = QRect()
-
 
         self.setupUI()
         self.setupWidgets()
@@ -41,11 +41,11 @@ class Kryypto(QMainWindow):
     def setupUI(self):
         # print(self.settings.fileName())
         self.setWindowTitle("Kryypto")
-        try:
-            self.resize(self.settings.value('Window Size'))
-            self.move(self.settings.value('Window Position'))
-        except:
-            self.setGeometry(100, 100, 400, 800)
+        # try:
+        #     self.resize(self.settings.value('Window Size'))
+        #     self.move(self.settings.value('Window Position'))
+        # except:
+        #     self.setGeometry(100, 100, 400, 800)
         self.setMouseTracking(True)
         
         self.setObjectName("MainWindow")
@@ -53,6 +53,17 @@ class Kryypto(QMainWindow):
         
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint)
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
+
+    def settingUP_settings(self):
+        try:
+            self.resize(self.settings.value('Window Size'))
+            self.move(self.settings.value('Window Position'))
+            self.font_size = self.settings.value('Font Size')
+            # print(self.font_size)
+
+        except:
+            self.setGeometry(100, 100, 400, 800)
+            self.font_size = 12
 
     def setupWidgets(self):
         import widgets
@@ -112,10 +123,9 @@ class Kryypto(QMainWindow):
             self.main_text, self.main_text.completer, self.tab_bar, 
             widgets.error_label, self.clipboard, self.editor_layout, 
             self.terminal, self, self.tab_bar, widgets.file_description, 
-            self.list_shortcuts, self.git_panel, self.font_size
+            self.list_shortcuts, self.git_panel, self.font_size, self.main_text.line_number_area
         )
 
-        # self.main_text.setFont(QFont("Maple Mono", self.editor_shortcuts.font_size))
         self.main_text.setFont(QFont("Maple Mono", self.font_size))
 
         self.show_files = widgets.ShowDirectory(self.main_text, self.tab_bar)
@@ -244,6 +254,8 @@ class Kryypto(QMainWindow):
     def closeEvent(self, event: QCloseEvent):
         from widgets import pop_messagebox
 
+        self.font_size = self.editor_shortcuts.font_size
+        self.settings.setValue('Font Size', self.font_size)
         self.settings.setValue('Window Size', self.size())
         self.settings.setValue('Window Position', self.pos())
 

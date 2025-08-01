@@ -18,7 +18,6 @@ central_widget = QWidget()
 central_widget.setObjectName('MainWindow')
 central_widget.setStyleSheet(get_css_style())
 
-
 error_label = QLabel("Ready")
 error_label.setObjectName("SyntaxChecker")
 error_label.setStyleSheet(get_css_style())
@@ -54,7 +53,7 @@ class MainText(QPlainTextEdit):
         self.blink_timer.timeout.connect(self.toggle_cursor)
         self.blink_timer.start(200)
 
-        self.line_number_area = ShowLines(self)
+        self.line_number_area = ShowLines(self, self.font_size)
         self.blockCountChanged.connect(self.update_line_number_area_width)
         self.updateRequest.connect(self.update_line_number_area)
 
@@ -431,15 +430,15 @@ class MainText(QPlainTextEdit):
         return line, column
 
 
-    def line_number_area_width(self):
+    def line_number_area_width(self, font_metrics):
         # font_metrics = QFontMetrics(QFont("Maple Mono", 19))
-        font_metrics = QFontMetrics(QFont("Maple Mono", self.font_size))
+        # font_metrics = QFontMetrics(QFont("Maple Mono", self.font_size))
 
         digits = len(str(self.blockCount()))
         return 3 + font_metrics.horizontalAdvance('9') * digits
 
     def update_line_number_area_width(self, _):
-        self.setViewportMargins(self.line_number_area_width(), 0, 0, 0)
+        self.setViewportMargins(self.line_number_area_width(self.line_number_area.font_metrics), 0, 0, 0)
 
     def update_line_number_area(self, rect, dy):
         if dy:
@@ -453,18 +452,15 @@ class MainText(QPlainTextEdit):
     def resizeEvent(self, event):
         super().resizeEvent(event)
         cr = self.contentsRect()
-        self.line_number_area.setGeometry(QRect(cr.left(), cr.top(), self.line_number_area_width(), cr.height()))
+        self.line_number_area.setGeometry(QRect(cr.left(), cr.top(), self.line_number_area_width(self.line_number_area.font_metrics), cr.height()))
 
-    def line_number_area_paint_event(self, event):
+    def line_number_area_paint_event(self, event, font_metrics):
         painter = QPainter(self.line_number_area)
         painter.fillRect(event.rect(), QColor(30, 30, 46))
-        # print(self.font_size)
-        # num_lines_font = QFont("Maple Mono", 19)
-        # num_lines_font = QFont("Maple Mono", self.font_size)
-        self.num_lines_font = QFont("Maple Mono", self.font_size)
+        # self.num_lines_font = QFont("Maple Mono", self.font_size)
 
-        painter.setFont(self.num_lines_font)
-        font_metrics = QFontMetrics(self.num_lines_font)
+        # painter.setFont(self.num_lines_font)
+        # font_metrics = QFontMetrics(self.num_lines_font)
 
         block = self.firstVisibleBlock()
         block_number = block.blockNumber()
