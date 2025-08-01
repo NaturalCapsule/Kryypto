@@ -1,11 +1,19 @@
 #MainWindow {
     background-color: #1e1e2e;
+    /* background-color: black; */
+    /* background-color: transparent; */
+
+
     color: #ffffff;
     selection-background-color: #007acc;
-    padding: 2px;
-    margin: 2px;
+    /* padding: 2px;
+    margin: 2px; */
 }
 
+#Window {
+    background-color: #1e1e2e;
+
+}
 
 #Editor {
     background-color: #1e1e2e;
@@ -96,9 +104,49 @@
     color: #ffffff;
 }
 
-#TitleBarBG {
-    background-color: rgba(30, 30, 30, 150);
+/* #TitleBarBG {
+    background-color: rgba(255, 255, 255, 0.7);
     border-radius: 0px;
+} */
+
+#TitleBarBG {
+    background-color: rgba(30,30,46, 200);
+    /* background-color: rgba(255, 255, 255, 200); */
+
+    /* background-color: rgba(255, 255, 255, 200); */
+    /* background-color: #1e1e2e; */
+
+
+    border: none;
+    border-radius: 0px;
+}
+
+#TitleBarName {
+    color: white;
+    font-weight: bold;
+    padding: 5px;
+}
+
+#TitleBarMin, #TitleBarMax, #TitleBarClose {
+    color: white;
+    background-color: transparent;
+    border: none;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+#TitleBarMax {
+    font-size: 16px;
+}
+
+#TitleBarMin:hover, #TitleBarMax:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+}
+
+#TitleBarClose:hover {
+    background-color: rgba(255, 0, 0, 0.7);
+    border-radius: 3px;
 }
 
 #DocStrings {
