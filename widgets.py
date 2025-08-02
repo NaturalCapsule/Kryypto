@@ -39,7 +39,11 @@ class MainText(QPlainTextEdit):
         self.setCursorWidth(0)
 
         # self.setFont(QFont(get_fontFamily(), self.font_size))
-        self.setFont(QFont(get_fontFamily(), get_fontSize()))
+        self.font__ = QFont(get_fontFamily(), get_fontSize())
+        self.font__.setStyleStrategy(QFont.StyleStrategy.PreferAntialias)
+        self.font__.setPixelSize(self.font_size)
+
+        self.setFont(self.font__)
 
 
 
@@ -73,6 +77,7 @@ class MainText(QPlainTextEdit):
         self.completer = QCompleter()
         popup = self.completer.popup()
         popup.setObjectName('AutoCompleter')
+        popup.setFont(self.font__)
         popup.setStyleSheet(get_css_style())
 
 
@@ -490,13 +495,10 @@ class MainText(QPlainTextEdit):
 
 class DocStringDock(QDockWidget):
     def __init__(self, parent, use):
-    # def __init__(self, use):
 
         super().__init__()
         self.custom_title = QLabel("Doc")
-        # self.custom_title = QLabel("Doc")
         self.custom_title.setObjectName('DockTitles')
-        # self.custom_title.setStyleSheet("background-color: transparent; color: white; padding: 4px; border-radius: 10px; margin: 4px")
         self.custom_title.setStyleSheet(get_css_style())
 
 
@@ -518,7 +520,11 @@ class DocStringDock(QDockWidget):
             self.setWindowTitle('Doc String')
             self.doc_panel.setStyleSheet(get_css_style())
 
-            self.doc_panel.setFont(QFont(get_fontFamily(), get_fontSize()))
+            font = QFont(get_fontFamily(), get_fontSize())
+            font.setStyleStrategy(QFont.StyleStrategy.PreferAntialias)
+            font.setPixelSize(get_fontSize())
+
+            self.doc_panel.setFont(font)
             self.setWidget(self.doc_panel)
 
             self.setFeatures(QDockWidget.DockWidgetFeature.DockWidgetMovable)
@@ -528,11 +534,9 @@ class DocStringDock(QDockWidget):
             self.setStyleSheet(get_css_style())
 
 class ShowDirectory(QDockWidget):
-    # def __init__(self, parent, main_text, opened_tabs):
     def __init__(self, main_text, opened_tabs):
         from pygit import folder_path_
 
-        # super().__init__(parent)
         super().__init__()
 
         self.main_text = main_text
@@ -540,8 +544,6 @@ class ShowDirectory(QDockWidget):
         self.custom_title = QLabel("Directory Viewer")
         self.custom_title.setObjectName('DockTitles')
         self.custom_title.setStyleSheet(get_css_style())
-
-
 
         self.setTitleBarWidget(self.custom_title)
         self.setWindowTitle('Directory Viewer')
@@ -565,7 +567,6 @@ class ShowDirectory(QDockWidget):
 
         self.new_file_input.setStyleSheet(get_css_style())
 
-
         self.new_folder_input.setStyleSheet(get_css_style())
 
 
@@ -575,7 +576,13 @@ class ShowDirectory(QDockWidget):
 
         self.file_viewer.setObjectName("DirectoryViewer")
 
-        self.file_viewer.setFont(QFont(get_fontFamily(), get_fontSize()))
+        font = QFont(get_fontFamily(), get_fontSize())
+
+        font.setStyleStrategy(QFont.StyleStrategy.PreferAntialias)
+        font.setPixelSize(get_fontSize())
+
+        self.file_viewer.setFont(font)
+        self.setFont(font)
 
         # self.file_viewer.hide()
         # self.file_viewer.clearFocus()
@@ -1892,14 +1899,8 @@ class GitDock(QDockWidget):
         self.thread_pool.start(worker)
 
     def update_ui(self, commit_msg, branch, total, get_latest_commit_time, file_changes, untracked_files):
-        # print("test")
-        # print('updating')
-        # print(is_init())
-        # if is_init() and self.isVisible():
-        # if self.isVisible():
         if self.isVisible() and is_init():
 
-            # print(self.users_profile.isVisible())
             if not is_init():
 
 
@@ -2055,14 +2056,6 @@ class MessageBox(QMessageBox):
 
         self.exec()
 
-
-# class FileDialog(QFileDialog):
-#     def __init__(self, parent):
-#         super().__init__()
-#         folder_path = self.getExistingDirectory(parent, "Select a folder")
-
-#         if folder_path:
-#             print("Selected folder:", folder_path)
 
 
 

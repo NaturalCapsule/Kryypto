@@ -11,9 +11,7 @@ folder_path_ = get_openedDir()
 
 def open_file_dialog(parent, check):
     global folder_path_
-    print(folder_path_)
     if (folder_path_ == '' or folder_path_ == None or not folder_path_) and check:
-        print(folder_path_)
         from widgets import MessageBox
 
         folder_path = QFileDialog.getExistingDirectory(parent, "Select a folder")
@@ -69,46 +67,29 @@ class GitWorker(QRunnable):
 
             self.signals.dataReady.emit(commit_msg, branch, total, commit_time, file_changes_, untracked_)
         except Exception as e:
-            # print("GitWorker error:", e)
             pass
 
 
 def is_init():
     try:
-        # print(folder_path_)
-        # repo = git.Repo(os.getcwd(), search_parent_directories=True)
-        # repo = git.Repo(fr'{folder_path_}', search_parent_directories=True)
         repo = git.Repo(fr'{get_openedDir()}', search_parent_directories=True)
 
 
 
         if repo:
-            # MessageBox_someshit()
             return True
         else:
             return False
-        # return "Initialized!"
-
-        # else:
-        #     # return "Initialize in current or a parent directory!"
-        #     return "Initialized"
 
     except Exception:
-        # pass
         return False
     except git.InvalidGitRepositoryError:
-        # print('d')
-        # return "Not initialized"
         return False
 
     except git.NoSuchPathError:
         return False
 
 def get_TotalCommits():
-    # repo_path = os.getcwd() 
-
-    # repo = git.Repo(repo_path)
-    # repo = git.Repo(fr'{folder_path_}', search_parent_directories = True)
     repo = git.Repo(fr'{get_openedDir()}', search_parent_directories=True)
 
 
@@ -120,8 +101,6 @@ def get_TotalCommits():
 def get_latest_commit_time():
     try:
         repo_path = os.getcwd()
-        # repo = git.Repo(repo_path, search_parent_directories=True)
-        # repo = git.Repo(fr'{folder_path_}', search_parent_directories=True)
         repo = git.Repo(fr'{get_openedDir()}', search_parent_directories=True)
 
 
@@ -130,7 +109,6 @@ def get_latest_commit_time():
         commit_timestamp = latest_commit.committed_date
         commit_datetime = datetime.fromtimestamp(commit_timestamp)
 
-        # return f"{commit_datetime}"
         return commit_datetime.strftime("%Y-%m-%d %I:%M %p")
 
     except git.InvalidGitRepositoryError:
@@ -142,11 +120,7 @@ def get_latest_commit_time():
 
 def get_reopName():
     try:
-        # repo = git.Repo(fr'{folder_path_}', search_parent_directories=True)
         repo = git.Repo(fr'{get_openedDir()}', search_parent_directories=True)
-
-
-
         repo = repo.remotes.origin.url
         if repo.endswith('.git'):
             repo = repo.split('/')[-1]
@@ -157,7 +131,6 @@ def get_reopName():
 
         return repo
     except git.InvalidGitRepositoryError:
-        # return f"Error: '{repo_name}' is not a valid Git repository."
         pass
 
     except Exception as e:
@@ -165,7 +138,6 @@ def get_reopName():
 
 def get_active_branch_name():
     try:
-        # repo = git.Repo(fr'{folder_path_}', search_parent_directories=True)
         repo = git.Repo(fr'{get_openedDir()}', search_parent_directories=True)
 
 
@@ -183,7 +155,6 @@ def get_active_branch_name():
 def get_github_remote_url(message):
     try:
         repo = git.Repo(fr'{get_openedDir()}', search_parent_directories=True)
-        # repo = git.Repo(fr'{folder_path_}', search_parent_directories=True)
 
 
         if repo:
@@ -202,9 +173,7 @@ def get_github_remote_url(message):
 
 def get_github_profile(message):
     try:
-        # repo = git.Repo(os.getcwd(), search_parent_directories = True)
         repo = git.Repo(fr'{get_openedDir()}', search_parent_directories=True)
-        # repo = git.Repo(fr'{folder_path_}', search_parent_directories=True)
 
         if repo:
             config_reader = repo.config_reader()
@@ -221,29 +190,22 @@ def get_github_profile(message):
                     f.write(avatar_response.content)
 
             else:
-                # print("Could not download pfp")
                 message('Could not download pfp\nplease make sure you have internet connection')
 
 
         else:
-            # print("User not found")
             message('User Not Found!')
 
 
     except git.InvalidGitRepositoryError as e:
-        # message(f'Invalid Git Repository\n{e}')
         return f"Error: something went wrong!"
 
     except Exception as e:
-        # message(f'An error occurred:\n{e}')
         return f"An error occurred: {e}"
 
 def get_github_username():
     try:
-        # repo = git.Repo(os.getcwd(), search_parent_directories = True)
         repo = git.Repo(fr'{get_openedDir()}', search_parent_directories=True)
-        # repo = git.Repo(fr'{folder_path_}', search_parent_directories=True)
-
 
         if repo:
             config_reader = repo.config_reader()
@@ -265,9 +227,7 @@ def is_downloaded(message):
 
 def get_latest_commit():
     try:
-        # repo = git.Repo(os.getcwd(), search_parent_directories = True)
         repo = git.Repo(fr'{get_openedDir()}', search_parent_directories=True)
-        # repo = git.Repo(fr'{folder_path_}', search_parent_directories=True)
 
         if repo:
             commit = str(repo.head.commit.message)
@@ -275,7 +235,6 @@ def get_latest_commit():
             if len(commit) > 43:
                 commit = f"{commit[:43]}..."
 
-            # return repo.head.commit.message
             return commit
 
 
@@ -288,12 +247,9 @@ def get_latest_commit():
 
 def file_changes():
     try:
-        # repo = git.Repo(os.getcwd(), search_parent_directories = True)
         repo = git.Repo(fr'{get_openedDir()}', search_parent_directories=True)
-        # repo = git.Repo(fr'{folder_path_}', search_parent_directories=True)
 
         if repo:
-            # print(repo.head.commit.stats.total)
             return repo.head.commit.stats.files
 
 
@@ -305,15 +261,10 @@ def file_changes():
 
 def untracked():
     try:
-        # repo = git.Repo(os.getcwd(), search_parent_directories = True)
         repo = git.Repo(fr'{get_openedDir()}', search_parent_directories=True)
-        # repo = git.Repo(fr'{folder_path_}', search_parent_directories=True)
 
         if repo:
-            # for file in repo.untracked_files:
-                # print(file)
             untracked_files = "\n   ".join(repo.untracked_files)
-            # return repo.untracked_files
             return untracked_files
 
 

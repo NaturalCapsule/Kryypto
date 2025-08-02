@@ -245,22 +245,33 @@ class MainTextShortcuts:
     def increase_font(self, text_edit, tab_bar):
         
         self.font_size += 1
-        text_edit.setFont(QFont(get_fontFamily(), self.font_size))
-        self.terminal.termEmulator.terminal.setFont(QFont(get_fontFamily(), self.font_size))
+        font = QFont(get_fontFamily(), self.font_size)
+        font.setStyleStrategy(QFont.StyleStrategy.PreferAntialias)
+        font.setPixelSize(self.font_size)
+        text_edit.setFont(font)
+
+        text_edit.completer.popup().setFont(font)
+
+        # self.terminal.termEmulator.terminal.setFont(QFont(get_fontFamily(), self.font_size))
+        self.terminal.termEmulator.terminal.setFont(font)
+
         text_edit.line_number_area.update()
         # font = QFont('Maple Mono', self.font_size)
-        font = QFont(get_fontFamily(), self.font_size)
 
         self.lines.setFont(font)
         self.lines.font_metrics = QFontMetrics(font)
-        self.show_files.file_viewer.setFont(QFont(get_fontFamily(), self.font_size))
+        # self.show_files.file_viewer.setFont(QFont(get_fontFamily(), self.font_size))
+        self.show_files.file_viewer.setFont(font)
 
 
-        if tab_bar.doc_panelstring.doc_panel is not None and text_edit.doc_panel is not None:
 
-            tab_bar.doc_panelstring.doc_panel.setFont(QFont(get_fontFamily(), self.font_size - 1))
+        try:
+            if tab_bar.doc_panelstring.doc_panel is not None and text_edit.doc_panel is not None:
+                tab_bar.doc_panelstring.doc_panel.setFont(font)
+        except AttributeError:
+            pass
 
-        # write_fontSize(self.font_size)
+
         write_config(self.font_size, 'Appearance', 'fontsize')
 
 
@@ -268,17 +279,29 @@ class MainTextShortcuts:
         self.font_size -= 1
         if self.font_size <= 1:
             self.font_size = 1
-        text_edit.setFont(QFont(get_fontFamily(), self.font_size))
-        self.terminal.termEmulator.terminal.setFont(QFont(get_fontFamily(), self.font_size - 1))
-        
         font = QFont(get_fontFamily(), self.font_size)
+        font.setPixelSize(self.font_size)
+        font.setStyleStrategy(QFont.StyleStrategy.PreferAntialias)
+        # text_edit.setFont(QFont(get_fontFamily(), self.font_size))
+        text_edit.setFont(font)
+        text_edit.completer.popup().setFont(font)
+
+        # self.terminal.termEmulator.terminal.setFont(QFont(get_fontFamily(), self.font_size))
+        self.terminal.termEmulator.terminal.setFont(font)
+
+        
         self.lines.setFont(font)
         self.lines.font_metrics = QFontMetrics(font)
-        self.show_files.file_viewer.setFont(QFont(get_fontFamily(), self.font_size - 1))
+        # self.show_files.file_viewer.setFont(QFont(get_fontFamily(), self.font_size))
+        self.show_files.file_viewer.setFont(font)
 
-        if tab_bar.doc_panelstring.doc_panel is not None and text_edit.doc_panel is not None:
 
-            tab_bar.doc_panelstring.doc_panel.setFont(QFont(get_fontFamily(), self.font_size - 1))
+        try:
+            if tab_bar.doc_panelstring.doc_panel is not None and text_edit.doc_panel is not None:
+                tab_bar.doc_panelstring.doc_panel.setFont(font)
+        except AttributeError:
+            pass
+
 
         write_config(self.font_size, 'Appearance', 'fontsize')
 
@@ -398,21 +421,3 @@ class FileDockShortcut:
     def changed(self, main_text):
         main_text.moveCursor(QTextCursor.MoveOperation.Start)
         main_text.find(self.text())
-
-
-
-# not necessary
-# class GitPanelShortcuts:
-#     def __init__(self, parent):
-#         init_git = QShortcut(QKeySequence('Ctrl+I'), parent)
-#         init_git.activated.connect(self.init_git_dir)
-
-#     def init_git_dir(self):
-#         try:
-#             from pygit import folder_path_
-
-#             repo = git.Repo(folder_path_, search_parent_directories = True)
-        
-#         except git.InvalidGitRepositoryError:
-#             repo = git.Repo.init(folder_path_)
-#             print(repo)

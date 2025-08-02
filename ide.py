@@ -15,7 +15,6 @@ class Kryypto(QMainWindow):
         super().__init__()
         self.clipboard = clipboard
         self.settings = Setting()
-        print(folder_path_)
         self.opened_directory = open_file_dialog(self, True)
         self.font_size = 12
         self.settings.setValue('Font Size', get_fontSize())
@@ -55,8 +54,6 @@ class Kryypto(QMainWindow):
             self.resize(self.settings.value('Window Size'))
             self.move(self.settings.value('Window Position'))
             self.font_size = self.settings.value('Font Size')
-            # print(self.font_size)
-            # folder_path_ = self.settings.value('Opened Directory')
 
         except:
             self.setGeometry(100, 100, 400, 800)
@@ -91,6 +88,8 @@ class Kryypto(QMainWindow):
         self.editor_layout = QVBoxLayout(self.editor_containter)
         
         self.main_text = widgets.MainText(self.editor_layout, self.clipboard, self.font_size)
+
+        # self.main_text.completer.popup().setFont()
 
         self.welcome_page = widgets.WelcomeWidget()
         self.inner_window = QMainWindow()

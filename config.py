@@ -374,3 +374,10 @@ def get_openedDir():
     else:
         print("False")
         return None
+
+def get_stylefile():
+    style_file = config.get('Appearance', 'StyleFile')
+    if style_file:
+        return style_file
+    else:
+        return 'config/style.css'
