@@ -351,3 +351,16 @@ def get_markdown_bracket():
     con = config.get('MarkDown', 'bracket')
     r, g, b = con.split(',')
     return int(r), int(g), int(b)
+
+
+def get_fontFamily():
+    return config.get('Appearance', 'FontFamily')
+
+def write_fontSize(font_size):
+    # config.write([''])
+    config['Appearance']['FontSize'] = str(font_size)
+    with open ('config/configuration.cfg', 'w', encoding = 'utf-8') as configfile:
+        config.write(configfile)
+
+def get_fontSize():
+    return config.getint('Appearance', 'FontSize')

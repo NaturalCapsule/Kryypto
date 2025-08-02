@@ -2,6 +2,7 @@ from PyQt6.QtWidgets import QWidget
 from PyQt6.QtCore import QSize
 from PyQt6.QtGui import QFont, QFontMetrics
 from get_style import get_css_style
+from config import get_fontFamily
 
 class ShowLines(QWidget):
     def __init__(self, editor, font_size):
@@ -10,7 +11,7 @@ class ShowLines(QWidget):
 
         self.setObjectName("NumberLines")
         self.setStyleSheet(get_css_style())
-        font_ = QFont("Maple Mono", font_size)
+        font_ = QFont(get_fontFamily(), font_size)
 
         self.setFont(font_)
 

@@ -9,6 +9,7 @@ from PyQt6.QtWidgets import QMessageBox, QFrame, QComboBox, QLabel, QPushButton,
 
 from lines import ShowLines
 from get_style import get_css_style
+from config import get_fontFamily
 
 from highlighter import *
 from show_errors import *
@@ -36,6 +37,11 @@ class MainText(QPlainTextEdit):
         global commenting
         self.clipboard = window
         self.setCursorWidth(0)
+
+        # self.setFont(QFont(get_fontFamily(), self.font_size))
+        self.setFont(QFont(get_fontFamily(), get_fontSize()))
+
+
 
         self.selected_line = None
         self.selected_text = None
@@ -512,6 +518,7 @@ class DocStringDock(QDockWidget):
             self.setWindowTitle('Doc String')
             self.doc_panel.setStyleSheet(get_css_style())
 
+            self.doc_panel.setFont(QFont(get_fontFamily(), get_fontSize()))
             self.setWidget(self.doc_panel)
 
             self.setFeatures(QDockWidget.DockWidgetFeature.DockWidgetMovable)
@@ -529,14 +536,13 @@ class ShowDirectory(QDockWidget):
 
         self.main_text = main_text
 
-        custom_title = QLabel("Directory Viewer")
-        custom_title.setObjectName('DockTitles')
-        # custom_title.setStyleSheet("background-color: transparent; color: white; padding: 4px; border-radius: 10px; margin: 4px")
-        custom_title.setStyleSheet(get_css_style())
+        self.custom_title = QLabel("Directory Viewer")
+        self.custom_title.setObjectName('DockTitles')
+        self.custom_title.setStyleSheet(get_css_style())
 
 
 
-        self.setTitleBarWidget(custom_title)
+        self.setTitleBarWidget(self.custom_title)
         self.setWindowTitle('Directory Viewer')
 
         self.opened_tabs = opened_tabs
@@ -567,6 +573,8 @@ class ShowDirectory(QDockWidget):
         self.file_viewer = QTreeView(self)
 
         self.file_viewer.setObjectName("DirectoryViewer")
+
+        self.file_viewer.setFont(QFont(get_fontFamily(), get_fontSize()))
 
         # self.file_viewer.hide()
         # self.file_viewer.clearFocus()
@@ -1195,6 +1203,7 @@ class TerminalEmulator(QWidget):
         self.setup_selector()
 
         self.terminal = QPlainTextEdit(self)
+        self.terminal.setFont(QFont(get_fontFamily(), get_fontSize()))
         self.terminal.setObjectName('Terminal')
         self.terminal.setStyleSheet((get_css_style()))
 

@@ -33,7 +33,7 @@
     margin: 2px;
     border-radius: 10px;
     border: 2px solid #F38BA8;
-    font-size: 19px;
+    /* font-size: 19px; */
 }
 
 #Finder {
@@ -155,7 +155,7 @@
     border: 2px solid #F9E2AF;
     border-radius: 10px;
     font-family: 'Maple Mono';
-    font-size: 19px;
+    /* font-size: 19px; */
     padding: 5px;
 }
 #DocStrings::title {
@@ -192,7 +192,9 @@
 
 #DirectoryViewer {
     color: #ffffff;
-    font-size: 19px;
+    /* font-size: 19px; */
+    /* font-size: 40px; */
+
     selection-background-color: rgba(255, 255, 255, 0.5);
     selection-color: white;
     border-radius: 10px;

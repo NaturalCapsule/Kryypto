@@ -7,6 +7,7 @@ from settings import Setting
 from shortcuts import *
 from get_style import get_css_style
 from pygit import open_file_dialog
+from config import get_fontSize
 
 
 class Kryypto(QMainWindow):
@@ -17,6 +18,8 @@ class Kryypto(QMainWindow):
         self.opened_directory = open_file_dialog(self)
 
         self.font_size = 12
+        self.settings.setValue('Font Size', get_fontSize())
+
         self.settingUP_settings()
 
         self.resize_margin = 20
@@ -118,17 +121,15 @@ class Kryypto(QMainWindow):
         self.git_panel = widgets.GitDock(self.inner_window)
         self.list_shortcuts = widgets.ListShortCuts()
         self.terminal = widgets.TerminalDock(self)
+        self.show_files = widgets.ShowDirectory(self.main_text, self.tab_bar)
 
         self.editor_shortcuts = MainTextShortcuts(
             self.main_text, self.main_text.completer, self.tab_bar, 
             widgets.error_label, self.clipboard, self.editor_layout, 
             self.terminal, self, self.tab_bar, widgets.file_description, 
-            self.list_shortcuts, self.git_panel, self.font_size, self.main_text.line_number_area
+            self.list_shortcuts, self.git_panel, self.font_size, self.main_text.line_number_area, self.show_files
         )
 
-        self.main_text.setFont(QFont("Maple Mono", self.font_size))
-
-        self.show_files = widgets.ShowDirectory(self.main_text, self.tab_bar)
 
         FileDockShortcut(
             self.inner_window, self.show_files, self.show_files.file_viewer, 
@@ -255,7 +256,9 @@ class Kryypto(QMainWindow):
         from widgets import pop_messagebox
 
         self.font_size = self.editor_shortcuts.font_size
-        self.settings.setValue('Font Size', self.font_size)
+        # self.settings.setValue('Font Size', self.font_size)
+        self.settings.setValue('Font Size', get_fontSize())
+
         self.settings.setValue('Window Size', self.size())
         self.settings.setValue('Window Position', self.pos())
 

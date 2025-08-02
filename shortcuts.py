@@ -1,14 +1,14 @@
 import re
 import sys
 from PyQt6.QtGui import QFont, QShortcut, QKeySequence, QTextCursor, QFontMetrics
-
+from config import get_fontFamily, write_fontSize
 
 class MainTextShortcuts:
-    def __init__(self, parent, completer, tab, error_label, clipboard, bawky_parent, term, bawky_parent_, opened_tabs, file_desc, list_shortcuts, git_panel, font_size, lines):
+    def __init__(self, parent, completer, tab, error_label, clipboard, bawky_parent, term, bawky_parent_, opened_tabs, file_desc, list_shortcuts, git_panel, font_size, lines, show_files):
         self.font_size = font_size
         self.terminal = term
-        # self.num_lines_font = QFont("Maple Mono", self.font_size)
         self.lines = lines
+        self.show_files = show_files
 
 
 
@@ -19,10 +19,10 @@ class MainTextShortcuts:
         new_line.activated.connect(lambda: self.goto_next_block(parent))
 
         increase_font = QShortcut(QKeySequence("Ctrl+="), parent)
-        increase_font.activated.connect(lambda: self.increase_font(parent))
+        increase_font.activated.connect(lambda: self.increase_font(parent, opened_tabs))
 
         reduce_font = QShortcut(QKeySequence("Ctrl+-"), parent)
-        reduce_font.activated.connect(lambda: self.reduce_font(parent))
+        reduce_font.activated.connect(lambda: self.reduce_font(parent, opened_tabs))
 
         show_completer = QShortcut(QKeySequence("Ctrl+Space"), parent)
         show_completer.activated.connect(lambda: self.pressed(completer))
@@ -223,29 +223,44 @@ class MainTextShortcuts:
         cursor.endEditBlock()
 
 
-    def increase_font(self, text_edit):
+    def increase_font(self, text_edit, tab_bar):
+        
         self.font_size += 1
-        text_edit.setFont(QFont("Maple Mono", self.font_size))
-        self.terminal.termEmulator.terminal.setFont(QFont("Maple Mono", self.font_size))
+        text_edit.setFont(QFont(get_fontFamily(), self.font_size))
+        self.terminal.termEmulator.terminal.setFont(QFont(get_fontFamily(), self.font_size))
         text_edit.line_number_area.update()
         # text_edit.line_number_area_paint_event.update()
         font = QFont('Maple Mono', self.font_size)
         self.lines.setFont(font)
         self.lines.font_metrics = QFontMetrics(font)
+        self.show_files.file_viewer.setFont(QFont('Maple Mono', self.font_size))
 
 
-    def reduce_font(self, text_edit):
+        if tab_bar.doc_panelstring.doc_panel is not None and text_edit.doc_panel is not None:
+
+            tab_bar.doc_panelstring.doc_panel.setFont(QFont('Maple Mono', self.font_size))
+
+        write_fontSize(self.font_size)
+
+    def reduce_font(self, text_edit, tab_bar):
         self.font_size -= 1
         if self.font_size <= 1:
             self.font_size = 1
-        text_edit.setFont(QFont("Maple Mono", self.font_size))
-        self.terminal.termEmulator.terminal.setFont(QFont("Maple Mono", self.font_size))
+        text_edit.setFont(QFont(get_fontFamily(), self.font_size))
+        self.terminal.termEmulator.terminal.setFont(QFont(get_fontFamily(), self.font_size - 1))
         text_edit.line_number_area.update()
         
         font = QFont('Maple Mono', self.font_size)
         self.lines.setFont(font)
         self.lines.font_metrics = QFontMetrics(font)
+        self.show_files.file_viewer.setFont(QFont('Maple Mono', self.font_size - 1))
 
+        if tab_bar.doc_panelstring.doc_panel is not None and text_edit.doc_panel is not None:
+
+            tab_bar.doc_panelstring.doc_panel.setFont(QFont('Maple Mono', self.font_size - 1))
+        # print(self.font_size)
+
+        write_fontSize(self.font_size)
 
 
     def pressed(self, completer):
