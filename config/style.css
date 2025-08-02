@@ -123,8 +123,11 @@
 
 #TitleBarName {
     color: white;
-    font-weight: bold;
+    font-size: 15px;
     padding: 5px;
+    font-family: 'Maple Mono';
+    font-weight: bold;
+    font-style: italic;
 }
 
 #TitleBarMin, #TitleBarMax, #TitleBarClose {

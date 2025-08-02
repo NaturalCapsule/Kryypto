@@ -131,9 +131,11 @@ class Kryypto(QMainWindow):
         )
 
         main_layout.addWidget(content_area)
-        
+
         self.setCentralWidget(central_widget)
-        
+
+        content_layout.addWidget(self.list_shortcuts)
+
         self.welcome_page.setFocus()
 
 

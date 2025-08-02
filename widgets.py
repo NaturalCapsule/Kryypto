@@ -1650,6 +1650,7 @@ class ListShortCuts(QWidget):
         shortcut_17 = QLabel('Remove current line: <span style="background-color: #2d2d2d">Ctrl + Shift + K</span>')
         shortcut_18 = QLabel('Open Configuration file: <span style="background-color: #2d2d2d">Ctrl + Shift + O</span>')
         shortcut_19 = QLabel('Show/Hide Git Panel: <span style="background-color: #2d2d2d">Ctrl + G</span>')
+        shortcut_20 = QLabel('Select Folder: <span style="background-color: #2d2d2d">Ctrl + I</span>')
 
         self.left_column = QVBoxLayout()
         self.right_column = QVBoxLayout()
@@ -1661,7 +1662,7 @@ class ListShortCuts(QWidget):
             shortcut.setStyleSheet(get_css_style())
             self.left_column.addWidget(shortcut)
 
-        for shortcut in [shortcut_10, shortcut_11, shortcut_12, shortcut_13, shortcut_14, shortcut_15, shortcut_16, shortcut_17, shortcut_18]:
+        for shortcut in [shortcut_10, shortcut_11, shortcut_12, shortcut_13, shortcut_14, shortcut_15, shortcut_16, shortcut_17, shortcut_18, shortcut_20]:
             shortcut.setObjectName('ShortCutTexts')
             shortcut.setStyleSheet(get_css_style())
             self.right_column.addWidget(shortcut)
