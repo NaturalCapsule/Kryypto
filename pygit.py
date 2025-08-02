@@ -5,16 +5,40 @@ import requests
 from datetime import datetime
 from PyQt6.QtWidgets import QFileDialog
 from PyQt6.QtCore import QRunnable, pyqtSignal, QObject
+from config import write_config, get_openedDir
 
-folder_path_ = None
-def open_file_dialog(parent):
+folder_path_ = get_openedDir()
+
+def open_file_dialog(parent, check):
     global folder_path_
+    print(folder_path_)
+    if (folder_path_ == '' or folder_path_ == None or not folder_path_) and check:
+        print(folder_path_)
+        from widgets import MessageBox
+
+        folder_path = QFileDialog.getExistingDirectory(parent, "Select a folder")
+        if folder_path == '' or folder_path == None:
+            MessageBox('No Folder selected\nKryypto will close')
+            sys.exit()
+
+        elif folder_path:
+            folder_path_ = folder_path
+            write_config(folder_path_, 'Appearance', 'OpenedFolder')
+            return folder_path
+
+def open_file_dialog_again(parent):
+    global folder_path_
+    # from widgets import MessageBox
+
     folder_path = QFileDialog.getExistingDirectory(parent, "Select a folder")
+    # if folder_path == '' or folder_path == None:
+        # MessageBox('No Folder selected\nKryypto will close')
+        # sys.exit()
 
     if folder_path:
         folder_path_ = folder_path
+        write_config(folder_path_, 'Appearance', 'OpenedFolder')
         return folder_path
-
 
 class GitWorkerSignals(QObject):
     dataReady = pyqtSignal(str, str, int, str, dict, str)
@@ -53,7 +77,9 @@ def is_init():
     try:
         # print(folder_path_)
         # repo = git.Repo(os.getcwd(), search_parent_directories=True)
-        repo = git.Repo(fr'{folder_path_}', search_parent_directories=True)
+        # repo = git.Repo(fr'{folder_path_}', search_parent_directories=True)
+        repo = git.Repo(fr'{get_openedDir()}', search_parent_directories=True)
+
 
 
         if repo:
@@ -82,7 +108,9 @@ def get_TotalCommits():
     # repo_path = os.getcwd() 
 
     # repo = git.Repo(repo_path)
-    repo = git.Repo(fr'{folder_path_}', search_parent_directories = True)
+    # repo = git.Repo(fr'{folder_path_}', search_parent_directories = True)
+    repo = git.Repo(fr'{get_openedDir()}', search_parent_directories=True)
+
 
     commits = list(repo.iter_commits('HEAD'))
 
@@ -93,7 +121,9 @@ def get_latest_commit_time():
     try:
         repo_path = os.getcwd()
         # repo = git.Repo(repo_path, search_parent_directories=True)
-        repo = git.Repo(fr'{folder_path_}', search_parent_directories=True)
+        # repo = git.Repo(fr'{folder_path_}', search_parent_directories=True)
+        repo = git.Repo(fr'{get_openedDir()}', search_parent_directories=True)
+
 
 
         latest_commit = repo.head.commit
@@ -112,7 +142,9 @@ def get_latest_commit_time():
 
 def get_reopName():
     try:
-        repo = git.Repo(fr'{folder_path_}', search_parent_directories=True)
+        # repo = git.Repo(fr'{folder_path_}', search_parent_directories=True)
+        repo = git.Repo(fr'{get_openedDir()}', search_parent_directories=True)
+
 
 
         repo = repo.remotes.origin.url
@@ -133,7 +165,9 @@ def get_reopName():
 
 def get_active_branch_name():
     try:
-        repo = git.Repo(fr'{folder_path_}', search_parent_directories=True)
+        # repo = git.Repo(fr'{folder_path_}', search_parent_directories=True)
+        repo = git.Repo(fr'{get_openedDir()}', search_parent_directories=True)
+
 
         if repo:
             return repo.active_branch.name
@@ -148,7 +182,9 @@ def get_active_branch_name():
 
 def get_github_remote_url(message):
     try:
-        repo = git.Repo(fr'{folder_path_}', search_parent_directories=True)
+        repo = git.Repo(fr'{get_openedDir()}', search_parent_directories=True)
+        # repo = git.Repo(fr'{folder_path_}', search_parent_directories=True)
+
 
         if repo:
             return repo.remotes.origin.url
@@ -167,7 +203,8 @@ def get_github_remote_url(message):
 def get_github_profile(message):
     try:
         # repo = git.Repo(os.getcwd(), search_parent_directories = True)
-        repo = git.Repo(fr'{folder_path_}', search_parent_directories=True)
+        repo = git.Repo(fr'{get_openedDir()}', search_parent_directories=True)
+        # repo = git.Repo(fr'{folder_path_}', search_parent_directories=True)
 
         if repo:
             config_reader = repo.config_reader()
@@ -204,7 +241,9 @@ def get_github_profile(message):
 def get_github_username():
     try:
         # repo = git.Repo(os.getcwd(), search_parent_directories = True)
-        repo = git.Repo(fr'{folder_path_}', search_parent_directories=True)
+        repo = git.Repo(fr'{get_openedDir()}', search_parent_directories=True)
+        # repo = git.Repo(fr'{folder_path_}', search_parent_directories=True)
+
 
         if repo:
             config_reader = repo.config_reader()
@@ -227,7 +266,8 @@ def is_downloaded(message):
 def get_latest_commit():
     try:
         # repo = git.Repo(os.getcwd(), search_parent_directories = True)
-        repo = git.Repo(fr'{folder_path_}', search_parent_directories=True)
+        repo = git.Repo(fr'{get_openedDir()}', search_parent_directories=True)
+        # repo = git.Repo(fr'{folder_path_}', search_parent_directories=True)
 
         if repo:
             commit = str(repo.head.commit.message)
@@ -249,7 +289,8 @@ def get_latest_commit():
 def file_changes():
     try:
         # repo = git.Repo(os.getcwd(), search_parent_directories = True)
-        repo = git.Repo(fr'{folder_path_}', search_parent_directories=True)
+        repo = git.Repo(fr'{get_openedDir()}', search_parent_directories=True)
+        # repo = git.Repo(fr'{folder_path_}', search_parent_directories=True)
 
         if repo:
             # print(repo.head.commit.stats.total)
@@ -265,7 +306,8 @@ def file_changes():
 def untracked():
     try:
         # repo = git.Repo(os.getcwd(), search_parent_directories = True)
-        repo = git.Repo(fr'{folder_path_}', search_parent_directories=True)
+        repo = git.Repo(fr'{get_openedDir()}', search_parent_directories=True)
+        # repo = git.Repo(fr'{folder_path_}', search_parent_directories=True)
 
         if repo:
             # for file in repo.untracked_files:

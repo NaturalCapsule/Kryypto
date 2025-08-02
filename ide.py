@@ -6,7 +6,7 @@ from PyQt6.QtCore import Qt, QPoint, QRect
 from settings import Setting
 from shortcuts import *
 from get_style import get_css_style
-from pygit import open_file_dialog
+from pygit import open_file_dialog, folder_path_
 from config import get_fontSize
 
 
@@ -15,8 +15,8 @@ class Kryypto(QMainWindow):
         super().__init__()
         self.clipboard = clipboard
         self.settings = Setting()
-        self.opened_directory = open_file_dialog(self)
-
+        print(folder_path_)
+        self.opened_directory = open_file_dialog(self, True)
         self.font_size = 12
         self.settings.setValue('Font Size', get_fontSize())
 
@@ -42,15 +42,8 @@ class Kryypto(QMainWindow):
             QMainWindow.DockOption.AllowNestedDocks)
 
     def setupUI(self):
-        # print(self.settings.fileName())
         self.setWindowTitle("Kryypto")
-        # try:
-        #     self.resize(self.settings.value('Window Size'))
-        #     self.move(self.settings.value('Window Position'))
-        # except:
-        #     self.setGeometry(100, 100, 400, 800)
         self.setMouseTracking(True)
-        
         self.setObjectName("MainWindow")
         self.setStyleSheet(get_css_style())
         
@@ -63,6 +56,7 @@ class Kryypto(QMainWindow):
             self.move(self.settings.value('Window Position'))
             self.font_size = self.settings.value('Font Size')
             # print(self.font_size)
+            # folder_path_ = self.settings.value('Opened Directory')
 
         except:
             self.setGeometry(100, 100, 400, 800)
@@ -254,16 +248,17 @@ class Kryypto(QMainWindow):
 
     def closeEvent(self, event: QCloseEvent):
         from widgets import pop_messagebox
+        from pygit import folder_path_
 
         self.font_size = self.editor_shortcuts.font_size
-        # self.settings.setValue('Font Size', self.font_size)
         self.settings.setValue('Font Size', get_fontSize())
-
         self.settings.setValue('Window Size', self.size())
         self.settings.setValue('Window Position', self.pos())
+        self.settings.setValue('Opened Directory', folder_path_)
+
 
         if self.tab_bar.is_save_file_needed():
-            pop_messagebox(self, event, self.tab_bar)
+            pop_messagebox(self, event, self.tab_bar, True)
 
 if __name__ == '__main__':
     format = QSurfaceFormat()

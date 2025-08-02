@@ -530,6 +530,7 @@ class DocStringDock(QDockWidget):
 class ShowDirectory(QDockWidget):
     # def __init__(self, parent, main_text, opened_tabs):
     def __init__(self, main_text, opened_tabs):
+        from pygit import folder_path_
 
         # super().__init__(parent)
         super().__init__()
@@ -750,9 +751,7 @@ class ShowDirectory(QDockWidget):
                     file.write('')
                     file.close()
             except Exception:
-                # with open (f"{QDir.currentPath()}/{self.new_file_input.text()}", 'w') as file:
                 with open (f"{folder_path_}/{self.new_file_input.text()}", 'w') as file:
-
                     file.write('')
                     file.close()
 
@@ -2066,7 +2065,7 @@ class MessageBox(QMessageBox):
 
 
 
-def pop_messagebox(parent, event, tab_bar):
+def pop_messagebox(parent, event, tab_bar, use_events):
     box = QMessageBox(parent)
 
     box.setWindowFlag(Qt.WindowType.FramelessWindowHint)
@@ -2107,12 +2106,14 @@ def pop_messagebox(parent, event, tab_bar):
 
     box.exec()
 
-    if box.clickedButton() == save_file:
-        # self.tab_bar.save_current_file()
-        tab_bar.save_current_file()
 
-        event.accept()
-    elif box.clickedButton() == dont_save:
-        event.accept()
-    else:
-        event.ignore()
+    if use_events:
+        if box.clickedButton() == save_file:
+            # self.tab_bar.save_current_file()
+            tab_bar.save_current_file()
+
+            event.accept()
+        elif box.clickedButton() == dont_save:
+            event.accept()
+        else:
+            event.ignore()

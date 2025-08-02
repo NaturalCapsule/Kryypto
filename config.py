@@ -356,11 +356,21 @@ def get_markdown_bracket():
 def get_fontFamily():
     return config.get('Appearance', 'FontFamily')
 
-def write_fontSize(font_size):
+def write_config(value, section, option):
     # config.write([''])
-    config['Appearance']['FontSize'] = str(font_size)
+    # config['Appearance']['FontSize'] = str(value)
+    config[section][option] = str(value)
+
     with open ('config/configuration.cfg', 'w', encoding = 'utf-8') as configfile:
         config.write(configfile)
 
 def get_fontSize():
     return config.getint('Appearance', 'FontSize')
+
+def get_openedDir():
+    dir = config.get('Appearance', 'openedfolder')
+    if dir:
+        return dir
+    else:
+        print("False")
+        return None

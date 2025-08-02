@@ -1,7 +1,19 @@
 import re
-import sys
+import sys, os
 from PyQt6.QtGui import QFont, QShortcut, QKeySequence, QTextCursor, QFontMetrics
-from config import get_fontFamily, write_fontSize
+from PyQt6.QtCore import QProcess, QCoreApplication
+from config import get_fontFamily, write_config
+from pygit import open_file_dialog_again
+
+
+def reboot():
+    python = sys.executable
+    script = os.path.abspath(sys.argv[0])
+    args = sys.argv[1:]
+
+    QProcess.startDetached(python, [script] + args)
+
+    QCoreApplication.quit()
 
 class MainTextShortcuts:
     def __init__(self, parent, completer, tab, error_label, clipboard, bawky_parent, term, bawky_parent_, opened_tabs, file_desc, list_shortcuts, git_panel, font_size, lines, show_files):
@@ -71,6 +83,13 @@ class MainTextShortcuts:
 
         hide_show_gitpanel = QShortcut(QKeySequence("Ctrl+G"), bawky_parent_)
         hide_show_gitpanel.activated.connect(lambda: self.hide_show_gitpanel(git_panel, parent))
+
+        select_folder = QShortcut(QKeySequence("Ctrl+I"), bawky_parent_)
+        select_folder.activated.connect(lambda: self.show_folderGUI(bawky_parent_))
+
+    def show_folderGUI(self, parent):
+        open_file_dialog_again(parent)
+        reboot()
 
     def hide_show_shortcuts(self, parent, list_shortcuts):
         if list_shortcuts.isVisible():
@@ -229,18 +248,21 @@ class MainTextShortcuts:
         text_edit.setFont(QFont(get_fontFamily(), self.font_size))
         self.terminal.termEmulator.terminal.setFont(QFont(get_fontFamily(), self.font_size))
         text_edit.line_number_area.update()
-        # text_edit.line_number_area_paint_event.update()
-        font = QFont('Maple Mono', self.font_size)
+        # font = QFont('Maple Mono', self.font_size)
+        font = QFont(get_fontFamily(), self.font_size)
+
         self.lines.setFont(font)
         self.lines.font_metrics = QFontMetrics(font)
-        self.show_files.file_viewer.setFont(QFont('Maple Mono', self.font_size))
+        self.show_files.file_viewer.setFont(QFont(get_fontFamily(), self.font_size))
 
 
         if tab_bar.doc_panelstring.doc_panel is not None and text_edit.doc_panel is not None:
 
-            tab_bar.doc_panelstring.doc_panel.setFont(QFont('Maple Mono', self.font_size))
+            tab_bar.doc_panelstring.doc_panel.setFont(QFont(get_fontFamily(), self.font_size - 1))
 
-        write_fontSize(self.font_size)
+        # write_fontSize(self.font_size)
+        write_config(self.font_size, 'Appearance', 'fontsize')
+
 
     def reduce_font(self, text_edit, tab_bar):
         self.font_size -= 1
@@ -248,19 +270,17 @@ class MainTextShortcuts:
             self.font_size = 1
         text_edit.setFont(QFont(get_fontFamily(), self.font_size))
         self.terminal.termEmulator.terminal.setFont(QFont(get_fontFamily(), self.font_size - 1))
-        text_edit.line_number_area.update()
         
-        font = QFont('Maple Mono', self.font_size)
+        font = QFont(get_fontFamily(), self.font_size)
         self.lines.setFont(font)
         self.lines.font_metrics = QFontMetrics(font)
-        self.show_files.file_viewer.setFont(QFont('Maple Mono', self.font_size - 1))
+        self.show_files.file_viewer.setFont(QFont(get_fontFamily(), self.font_size - 1))
 
         if tab_bar.doc_panelstring.doc_panel is not None and text_edit.doc_panel is not None:
 
-            tab_bar.doc_panelstring.doc_panel.setFont(QFont('Maple Mono', self.font_size - 1))
-        # print(self.font_size)
+            tab_bar.doc_panelstring.doc_panel.setFont(QFont(get_fontFamily(), self.font_size - 1))
 
-        write_fontSize(self.font_size)
+        write_config(self.font_size, 'Appearance', 'fontsize')
 
 
     def pressed(self, completer):
