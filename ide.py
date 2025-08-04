@@ -9,7 +9,6 @@ from get_style import get_css_style
 from pygit import open_file_dialog, folder_path_
 from config import get_fontSize
 
-
 class Kryypto(QMainWindow):
     def __init__(self, clipboard):
         super().__init__()

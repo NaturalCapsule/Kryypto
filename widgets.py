@@ -901,11 +901,13 @@ class ShowOpenedFile(QTabBar):
 
         if self.count() > 0:
             self.track_tabs(self.currentIndex())
+            # self.editor.show()
         else:
 
             cursor = self.editor.textCursor()
             cursor.beginEditBlock()
             self.editor.setPlainText("")
+            # self.editor.hide()
             cursor.endEditBlock()
 
 
@@ -986,11 +988,16 @@ class ShowOpenedFile(QTabBar):
 
                 if file_name.lower().endswith('.py') or file_name.lower().endswith('.pyi'):
                     current_file_path = path
+                    # self.highlighter = OptimizedPythonSyntaxHighlighter(use_highlighter = True, parent=self.editor.document())
                     self.highlighter = PythonSyntaxHighlighter(use_highlighter = True, parent=self.editor.document())
+
+
                     self.show_error = ShowErrors(self.editor, self.highlighter)
+
+
                     self.editor.show_completer = True
                     self.show_error.error_label = self.error_label
-                    # self.layout_.addWidget(self.error_label)
+                    self.layout_.addWidget(self.error_label)
                     self.editor_layout.addWidget(self.error_label)
 
                     self.error_label.show()
@@ -1169,6 +1176,7 @@ class ShowOpenedFile(QTabBar):
 
             else:
                 file_description[path] = file_name
+
 
     def is_save_file_needed(self):
         current_index = self.currentIndex()

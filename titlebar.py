@@ -3,7 +3,7 @@ from PyQt6.QtWidgets import (
     QPushButton, QHBoxLayout, QGraphicsBlurEffect
 )
 # from BlurWindow.blurWindow import blur
-from PyQt6.QtCore import Qt, QPoint
+from PyQt6.QtCore import Qt, QPoint, QTimer
 import sys
 from get_style import get_css_style
 from PyQt6.QtGui import QMouseEvent
@@ -67,6 +67,20 @@ class CustomTitleBar(QWidget):
 
         self.start = QPoint(0, 0)
         self.pressing = False
+
+        self.check_timer = QTimer()
+        self.check_timer.timeout.connect(self.check_fullscreen)
+        self.check_timer.start(100)
+
+        # self.check_fullscreen()
+
+    def check_fullscreen(self):
+        if self.parent.isMaximized():
+            self.max_button.setText('❐')
+        else:
+            self.max_button.setText('□')
+
+
 
     def toggle_maximize(self):
         if self.parent:

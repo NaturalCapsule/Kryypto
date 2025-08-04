@@ -4,8 +4,6 @@ from configparser import ConfigParser
 # config = configparser.ConfigParser()
 
 
-
-
 config = ConfigParser()
 config.read('config/configuration.cfg')
 
@@ -357,10 +355,7 @@ def get_fontFamily():
     return config.get('Appearance', 'FontFamily')
 
 def write_config(value, section, option):
-    # config.write([''])
-    # config['Appearance']['FontSize'] = str(value)
     config[section][option] = str(value)
-
     with open ('config/configuration.cfg', 'w', encoding = 'utf-8') as configfile:
         config.write(configfile)
 
@@ -381,3 +376,10 @@ def get_stylefile():
         return style_file
     else:
         return 'config/style.css'
+
+def useItalic():
+    con = config.getboolean('AllFormats', 'Italic')
+    if con:
+        return con
+    else:
+        return False
