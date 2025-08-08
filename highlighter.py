@@ -24,7 +24,33 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
         else:
             pass
 
+        self._compiled_patterns = {}
+        self._last_instances = {}
+
     def setup_highlighting_rules(self):
+        #ISSUE HERE
+        r, g, b = get_comment()
+        self.comment_format = QTextCharFormat()
+        self.comment_format.setForeground(QColor(r, g, b))  
+        self.highlighting_rules.append((QRegularExpression('^#[^\n]*'), self.comment_format, 'comment'))
+
+
+
+        string_format = QTextCharFormat()
+        r, g, b = get_string()
+        string_format.setForeground(QColor(r, g, b))  # Green
+
+        self.highlighting_rules.append((
+            QRegularExpression(r'"[^"\\]*(\\.[^"\\]*)*"'),
+            string_format,
+            'string'
+        ))
+        self.highlighting_rules.append((
+            QRegularExpression(r"'[^'\\]*(\\.[^'\\]*)*'"),
+            string_format,
+            'string'
+        ))
+
 
         r, g, b = get_comment()
         self.comment_format = QTextCharFormat()
@@ -35,12 +61,12 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
 
         keyword_format = QTextCharFormat()
         r, g, b = get_python_keyword()
-        keyword_format.setForeground(QColor(r, g, b))  # Blue
+        keyword_format.setForeground(QColor(r, g, b))
 
 
         string_format = QTextCharFormat()
         r, g, b = get_string()
-        string_format.setForeground(QColor(r, g, b))  # Green
+        string_format.setForeground(QColor(r, g, b))
 
         
         self.highlighting_rules.append((
@@ -204,14 +230,9 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
             self.highlighting_rules.append((pattern, builtin_format, 'builtins'))
 
 
-        # r, g, b = get_comment()
-        # self.comment_format = QTextCharFormat()
-        # self.comment_format.setForeground(QColor(r, g, b))  
-        # self.highlighting_rules.append((QRegularExpression('#[^\n]*'), self.comment_format, 'comment'))
-
         r, g, b = get_number()
         number_format = QTextCharFormat()
-        number_format.setForeground(QColor(r, g, b))  # Magenta
+        number_format.setForeground(QColor(r, g, b))
 
         self.highlighting_rules.append((QRegularExpression('\\b\\d+\\.?\\d*\\b'), number_format, 'number'))
 
@@ -224,11 +245,18 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
 
 
         r, g, b = get_python_class()
-        class_format = QTextCharFormat()
-        class_format.setForeground(QColor(r, g, b))
+        self.class_format = QTextCharFormat()
+        self.class_format.setForeground(QColor(r, g, b))
 
-        self.highlighting_rules.append((QRegularExpression('\\bclass\\s+(\\w+)'), class_format, 'class'))
+        self.highlighting_rules.append((QRegularExpression('\\bclass\\s+(\\w+)'), self.class_format, 'class'))
 
+        self.highlighting_rules.append((
+            QRegularExpression(r'^\bimport\s+([a-zA-Z0-9_,\s]+)'), self.class_format, 'import'
+        ))
+
+        self.highlighting_rules.append((
+            QRegularExpression(r'\bfrom\s+([a-zA-Z0-9_.]+)\s+import\b'), self.class_format, 'import'
+        ))
 
         for punctuation in ['!', '@', '$', '%', '^', '&', '*', '-', '=', '+', '>', '<']:
             punction_format = QTextCharFormat()
@@ -265,6 +293,10 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
         self.function_calls_format = QTextCharFormat()
         self.function_calls_format.setForeground(QColor(r, g, b))
 
+        r, g, b = get_python_method()
+        self.method_calls_format = QTextCharFormat()
+        self.method_calls_format.setForeground(QColor(r, g, b))
+
         self.function_args = set()
 
         self.c_instances = {}
@@ -274,10 +306,11 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
 
         if useItalic():
             self.function_calls_format.setFontItalic(True)
+            self.method_calls_format.setFontItalic(True)
             self.c_instance_foramt.setFontItalic(True)  
             self.arg_usage_format.setFontItalic(True)
             self.arg_def_format.setFontItalic(True)
-            class_format.setFontItalic(True)
+            self.class_format.setFontItalic(True)
             function_format.setFontItalic(True)
             self.comment_format.setFontItalic(True)
             builtin_format.setFontItalic(True)
@@ -299,9 +332,23 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
 
     def get_calls(self, instances: dict):
         try:
+            if instances == self._last_instances:
+                return
+                
             self.c_instances = instances
+            self._last_instances = instances.copy()
+            
+            self._compiled_patterns.clear()
+            
+            for name, type_name in instances.items():
+                escaped_name = QRegularExpression.escape(name)
+                pattern = QRegularExpression(fr"\b{escaped_name}\b")
+                self._compiled_patterns[name] = (pattern, type_name)
+                
         except Exception:
             self.c_instances.clear()
+            self._compiled_patterns.clear()
+            self._last_instances.clear()
 
     def highlight_function_calls(self, calls):
         try:
@@ -310,7 +357,6 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
                 if value == 'function':
                     self.function_calls.add(key)
         except Exception:
-            # self.c_instances.clear()
             self.function_calls.clear()
 
     def highlightBlock(self, text):
@@ -326,7 +372,6 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
 
             default_format = QTextCharFormat()
             default_format.setForeground(QColor("white"))
-            # default_format.setFontWeight(QFont.Weight.Bold)
             self.setFormat(0, len(text), default_format)
 
             used_ranges = set()
@@ -354,39 +399,21 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
                         length = len(text) - start_index
 
                     string_format = QTextCharFormat()
-                    # string_format.setForeground(QColor(166, 227, 161))  # Green
                     r, g, b = get_string()
-                    string_format.setForeground(QColor(r, g, b))  # Green
+                    string_format.setForeground(QColor(r, g, b))
 
-                    # string_format.setForeground(QColor(0, 128, 0))  # Green
                     self.setFormat(start_index, length, string_format)
                     used_ranges.add((start_index, start_index + length))
 
                     next_match = start_expression.match(text, start_index + length)
                     start_index = next_match.capturedStart() if next_match.hasMatch() else -1
 
-            # comment_format = QTextCharFormat()
-            # r, g, b = get_comment()
-            # comment_format.setForeground(QColor(r, g, b))  
-            # comment_format.setFontItalic(True)
-
-            # comment_regex = QRegularExpression(r'#[^\n]*')
-            # comment_matcher = comment_regex.globalMatch(text)
-            # while comment_matcher.hasNext():
-            #     match = comment_matcher.next()
-            #     start = match.capturedStart()
-            #     length = match.capturedLength()
-            #     self.setFormat(start, length, self.comment_format)
-            #     used_ranges.add((start, start + length))
 
             for pattern, fmt, name in self.highlighting_rules:
-                # if name == 'comment':
-                #     continue
-
                 matches = pattern.globalMatch(text)
                 while matches.hasNext():
                     match = matches.next()
-                    if name == 'class' or name == 'function':
+                    if name == 'class' or name == 'function' or name == 'import':
                         start = match.capturedStart(1)
                         length = match.capturedLength(1)
                     else:
@@ -423,7 +450,7 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
 
                 string_format = QTextCharFormat()
                 r, g, b = get_string()
-                string_format.setForeground(QColor(r, g, b))  # Green
+                string_format.setForeground(QColor(r, g, b))
                 self.setFormat(start_index, length, string_format)
 
                 start_match = start_expression.match(text, start_index + length)
@@ -451,23 +478,24 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
 
 
 
-            # for arg in self.function_args:
-            #     pattern = QRegularExpression(fr"\b{arg}\b")
-            #     it = pattern.globalMatch(text)
+            for arg in self.function_args:
+                pattern = QRegularExpression(fr"\b{arg}\b")
+                it = pattern.globalMatch(text)
 
 
-            #     while it.hasNext():
-            #         match = it.next()
+                while it.hasNext():
+                    match = it.next()
 
-            #         if is_overlapping(match.capturedStart(), match.capturedLength(), used_ranges):
-            #             continue
+                    if is_overlapping(match.capturedStart(), match.capturedLength(), used_ranges):
+                        continue
 
-            #         self.setFormat(match.capturedStart(), match.capturedLength(), self.arg_usage_format)
-            #         used_ranges.add((match.capturedStart(), match.capturedStart() + match.capturedLength()))
+                    self.setFormat(match.capturedStart(), match.capturedLength(), self.arg_usage_format)
+                    used_ranges.add((match.capturedStart(), match.capturedStart() + match.capturedLength()))
+
 
             try:
-                for call, type in self.c_instances.items():
-                    pattern = QRegularExpression(fr"\b{call}\b")
+                for name, (pattern, type_name) in self._compiled_patterns.items():
+                    # print(name)
                     it = pattern.globalMatch(text)
                     while it.hasNext():
                         match = it.next()
@@ -475,17 +503,33 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
                         if is_overlapping(match.capturedStart(), match.capturedLength(), used_ranges):
                             continue
 
-
-                        if type == 'class':
+                        if type_name == 'class':
+                            # self.setFormat(match.capturedStart(), match.capturedLength(), self.c_instance_foramt)
                             self.setFormat(match.capturedStart(), match.capturedLength(), self.c_instance_foramt)
-                        elif type == 'function':
+
+                        elif type_name == 'function':
                             self.setFormat(match.capturedStart(), match.capturedLength(), self.function_calls_format)
+                        elif type_name == 'method':
+                            # print(name)
+                            self.setFormat(match.capturedStart(), match.capturedLength(), self.method_calls_format)
+                        # elif type_name == 'attribute':
+                        #     print(name)
+                            # self.setFormat(match.capturedStart(), match.capturedLength(), self.c_instance_foramt)
+                        # elif type_name == 'variable':
+                        #     self.setFormat(match.capturedStart(), match.capturedLength(), self.function_calls_format)
+                        elif type_name == 'module':
+                            self.setFormat(match.capturedStart(), match.capturedLength(), self.class_format)
+                            # self.setFormat(match.capturedStart(), match.capturedLength(), self.function_calls_format)
+                        elif type_name == 'import':
+                            self.setFormat(match.capturedStart(), match.capturedLength(), self.class_format)
+                            # self.setFormat(match.capturedStart(), match.capturedLength(), self.function_calls_format)
+
 
                         used_ranges.add((match.capturedStart(), match.capturedStart() + match.capturedLength()))
 
             except RuntimeError:
                 pass
-                # self.c_instances.clear()
+
 
 class ConfigSyntaxHighlighter(QSyntaxHighlighter):
     def __init__(self,use_highlighter ,parent=None):
@@ -750,20 +794,20 @@ class CssSyntaxHighlighter(QSyntaxHighlighter):
         # class_format.setForeground(QColor(249, 226, 175))
 
         r, g, b = get_css_class()
-        class_format = QTextCharFormat()
-        class_format.setForeground(QColor(r, g, b))  # Choose your color
+        self.class_format = QTextCharFormat()
+        self.class_format.setForeground(QColor(r, g, b))  # Choose your color
         # class_format.setFontWeight(QFont.Weight.Bold)
         # class_format.setFontItalic(True)
 
         self.highlighting_rules.append((
             QRegularExpression(r'#(?![0-9a-fA-F]{3}(?:[0-9a-fA-F]{3})?\b)[\w-]+'),
-            class_format,
+            self.class_format,
             'css-id'
         ))
 
         self.highlighting_rules.append((
             QRegularExpression(r'\.(?!\d)\w[\w-]*'),
-            class_format,
+            self.class_format,
             'css-class'
         ))
 
@@ -820,7 +864,7 @@ class CssSyntaxHighlighter(QSyntaxHighlighter):
 
         if useItalic():
             comment_format.setFontItalic(True)
-            class_format.setFontItalic(True)
+            self.class_format.setFontItalic(True)
             property_format.setFontItalic(True)
 
 

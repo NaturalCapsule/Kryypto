@@ -51,6 +51,12 @@ def get_python_function():
     r, g, b = con.split(',')
     return int(r), int(g), int(b)
 
+def get_python_method():
+    # return config.get('Python', 'method')
+    con = config.get('Python', 'method')
+    r, g, b = con.split(',')
+    return int(r), int(g), int(b)
+
 def get_python_keyword():
     # return config.get('Python', 'keyword')
     con = config.get('Python', 'keyword')
@@ -73,6 +79,9 @@ def get_python_builtin():
     con = config.get('Python', 'builtin')
     r, g, b = con.split(',')
     return int(r), int(g), int(b)
+
+def set_advancedHighlighting():
+    return config.getboolean('Python', "AdvancedSyntaxHighlighting")
 
 # def get_python_number():
 #     # return config.get('Python', 'number')

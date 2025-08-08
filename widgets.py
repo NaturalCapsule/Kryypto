@@ -29,8 +29,470 @@ current_file_path = ''
 
 # layout = QVBoxLayout(central_widget)
 
-class MainText(QPlainTextEdit):
+# class MainText(QPlainTextEdit):
 
+#     def __init__(self, parent, window, font_size):
+#         super().__init__()
+#         self.font_size = font_size
+#         global commenting
+#         self.clipboard = window
+#         self.setCursorWidth(0)
+
+#         # self.setFont(QFont(get_fontFamily(), self.font_size))
+#         self.font__ = QFont(get_fontFamily(), get_fontSize())
+#         self.font__.setStyleStrategy(QFont.StyleStrategy.PreferAntialias)
+#         self.font__.setPixelSize(self.font_size)
+
+#         self.setFont(self.font__)
+
+
+
+#         self.selected_line = None
+#         self.selected_text = None
+#         self.setContextMenuPolicy(Qt.ContextMenuPolicy.NoContextMenu)
+
+#         self.doc_panel = None
+#         self.cursorPositionChanged.connect(self.update_docstring)
+
+#         self.finder = findingText(parent, self)
+
+#         self.cursor_visible = True
+#         self.cursor_color = QColor("#f38ba8")
+
+#         self.blink_timer = QTimer(self)
+#         self.blink_timer.timeout.connect(self.toggle_cursor)
+#         self.blink_timer.start(200)
+
+#         self.line_number_area = ShowLines(self, self.font_size)
+#         self.blockCountChanged.connect(self.update_line_number_area_width)
+#         self.updateRequest.connect(self.update_line_number_area)
+
+#         self.update_line_number_area_width(0)
+#         self.setObjectName('Editor')
+
+#         self.setStyleSheet(get_css_style())
+
+#         self.show_completer = False
+
+#         self.completer = QCompleter()
+#         popup = self.completer.popup()
+#         popup.setObjectName('AutoCompleter')
+#         popup.setFont(self.font__)
+#         popup.setStyleSheet(get_css_style())
+
+
+#         self.completer.setWidget(self)
+#         self.completer.setCompletionMode(QCompleter.CompletionMode.PopupCompletion)
+#         self.completer.setCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
+#         self.completer.activated.connect(self.insert_completion)
+#         self.hide()
+
+#     def toggle_cursor(self):
+#         self.cursor_visible = not self.cursor_visible
+#         self.viewport().update()
+
+#     def paintEvent(self, event):
+#         super().paintEvent(event)
+#         if self.cursor_visible and self.hasFocus():
+#             painter = QPainter(self.viewport())
+#             painter.setPen(self.cursor_color)
+#             rect = self.cursorRect()
+#             painter.fillRect(rect.left(), rect.top(), 3, rect.height(), QColor("#f38ba8"))
+
+
+
+#     def insert_completion(self, completion):
+#         cursor = self.textCursor()
+#         cursor.beginEditBlock()
+
+#         cursor.select(cursor.SelectionType.WordUnderCursor)
+#         cursor.removeSelectedText()
+#         cursor.insertText(completion)
+#         self.setTextCursor(cursor)
+#         cursor.endEditBlock()
+
+
+#     def update_docstring(self):
+#         cursor = self.textCursor()
+#         cursor.beginEditBlock()
+
+#         line = cursor.blockNumber() + 1
+#         column = cursor.positionInBlock()
+#         code = self.toPlainText()
+
+#         doc = self.get_definition_docstring(code, line, column)
+#         doc = doc or ""
+#         if self.doc_panel:
+#             if doc == "":
+#                 self.doc_panel.hide()
+#                 if self.doc_panel.custom_title:
+#                     self.doc_panel.custom_title.hide()
+#                     self.doc_panel.dock.hide()
+#             else:
+#                 self.doc_viewer = self.parse_docstring(doc)
+#                 self.doc_panel.setHtml(self.doc_viewer or "")
+
+#                 self.doc_panel.dock.show()
+#                 self.doc_panel.custom_title.show()
+
+#                 self.doc_panel.show()
+
+#         cursor.endEditBlock()
+
+#     def parse_docstring(self, doc: str):
+#         lines = doc.strip().splitlines()
+#         formatted = []
+#         for line in lines:
+#             line = line.strip()
+#             if line in ('---', '***', '___'):
+#                 formatted.append('<hr>')
+#             elif line.endswith(':') and not line.startswith(' '):
+#                 formatted.append(f'<b style="font-size:30px;">{line}</b>')
+
+#             elif re.match(r'^\*{3,}$', line):
+#                 formatted.append('<hr>')
+#             else:
+#                 formatted.append(line)
+#         return "<br>".join(formatted)
+
+#     def get_definition_docstring(self, code, line, column):
+#         global current_file_path
+#         try:
+#             script = jedi.Script(code=code, path=fr"{current_file_path}")
+#             definitions = script.help(line, column)
+
+#             if definitions:
+#                 return definitions[0].docstring()
+#         except Exception as e:
+#             return f"Error: {e}"
+
+#         return ""
+
+
+#     def keyPressEvent(self, event: QKeyEvent):
+#         global current_file_path
+#         # self.
+#         key = event.key()
+#         text = event.text()
+#         pairs = {'"': '"', "'": "'", '(': ')', '[': ']', '{': '}'}
+
+
+#         if self.completer.popup().isVisible():
+#             if key in (Qt.Key.Key_Enter, Qt.Key.Key_Return, Qt.Key.Key_Tab):
+#                 event.ignore()
+#                 self.insert_completion(self.completer.currentCompletion())
+#                 self.completer.popup().hide()
+#                 return
+#             elif key == Qt.Key.Key_Escape:
+#                 self.completer.popup().hide()
+#                 return
+
+#         if text in pairs:
+#             cursor = self.textCursor()
+#             cursor.beginEditBlock()
+
+#             closing_char = pairs[text]
+#             cursor.insertText(text + closing_char)
+#             cursor.movePosition(QTextCursor.MoveOperation.Left)
+#             self.setTextCursor(cursor)
+
+#             cursor.endEditBlock()
+#             return
+
+#         if key == Qt.Key.Key_Tab:
+#             cursor = self.textCursor()
+#             cursor.beginEditBlock()
+
+#             cursor.insertText(" " * 4)
+
+#             cursor.endEditBlock()
+#             return
+
+
+#         if key == Qt.Key.Key_Slash and event.modifiers() & Qt.KeyboardModifier.ControlModifier:
+#             cursor = self.textCursor()
+#             cursor.beginEditBlock()
+
+
+#             if not cursor.hasSelection():
+#                 cursor.select(QTextCursor.SelectionType.LineUnderCursor)
+
+#             start = cursor.selectionStart()
+#             end = cursor.selectionEnd()
+
+#             cursor.setPosition(start)
+#             cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock)
+#             start_block = cursor.blockNumber()
+
+#             cursor.setPosition(end)
+#             cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock)
+#             end_block = cursor.blockNumber()
+
+#             for block_num in range(start_block, end_block + 1):
+#                 block = self.document().findBlockByNumber(block_num)
+#                 text = block.text()
+
+#                 leading_spaces = len(text) - len(text.lstrip())
+#                 indent = text[:leading_spaces]
+#                 content = text[leading_spaces:]
+
+#                 cursor.setPosition(block.position())
+#                 cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock, QTextCursor.MoveMode.KeepAnchor)
+
+#                 if content.startswith(commenting) and not content.startswith('/*') and not content.startswith('<!--'):
+#                     content = content[len(commenting):].lstrip()
+
+#                 elif content.startswith('/*'):
+#                     content = content[1:-2].lstrip()
+#                     content = content[len(commenting):].lstrip()
+
+#                 elif content.startswith('<!--'):
+#                     content = content[4:-3].lstrip()
+#                     # content = content[len(commenting):].lstrip()
+
+#                 else:
+#                     if commenting == '/*':
+#                         content += '*/'
+#                     elif commenting == '<!--':
+#                         content += '-->'
+
+#                     content = f"{commenting} {content}"
+
+#                 cursor.insertText(indent + content)
+
+#             cursor.endEditBlock()
+#             return
+
+#         if key == Qt.Key.Key_X and event.modifiers() & Qt.KeyboardModifier.ControlModifier:
+#             cursor = self.textCursor()
+#             cursor.beginEditBlock()
+
+#             if cursor.selectedText() == '':
+#                 cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock)
+#                 cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock, QTextCursor.MoveMode.KeepAnchor)
+#                 text = cursor.selectedText()
+#                 self.selected_line = text
+
+#                 self.selected_text = None
+
+#                 self.clipboard.setText(self.selected_line)
+#                 cursor.removeSelectedText()
+#                 cursor.deleteChar()
+
+#             else:
+#                 self.selected_text = cursor.selectedText()
+#                 self.selected_line = None
+#                 self.clipboard.setText(self.selected_text)
+#                 cursor.removeSelectedText()
+#                 cursor.deleteChar()
+
+#             self.completer.popup().hide()
+#             cursor.endEditBlock()
+
+#             return
+
+#         if key == Qt.Key.Key_C and event.modifiers() & Qt.KeyboardModifier.ControlModifier:
+#             cursor = self.textCursor()
+#             cursor.beginEditBlock()
+
+#             if cursor.selectedText() == '':
+
+
+#                 cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock)
+#                 cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock, QTextCursor.MoveMode.KeepAnchor)
+#                 text = cursor.selectedText()
+#                 self.selected_line = text
+
+#                 self.clipboard.setText(self.selected_line)
+#                 self.selected_text = None
+
+
+#             else:
+
+#                 self.selected_text = cursor.selectedText()
+#                 self.selected_line = None
+#                 self.clipboard.setText(self.selected_text)
+
+
+#             cursor.endEditBlock()
+
+#             return
+
+#         if key == Qt.Key.Key_V and event.modifiers() & Qt.KeyboardModifier.ControlModifier:
+#             if self.clipboard.text() != '' and self.selected_line is None:
+#                 cursor = self.textCursor()
+#                 cursor.beginEditBlock()
+
+#                 self.setTextCursor(cursor)
+
+#                 cursor.insertText(self.clipboard.text())
+#                 cursor.endEditBlock()
+
+#                 self.selected_line = None
+
+#             if self.selected_line is not None:
+#                 cursor = self.textCursor()
+#                 cursor.beginEditBlock()
+
+#                 cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock)
+#                 self.setTextCursor(cursor)
+
+#                 cursor.insertText("\n" + self.selected_line)
+
+#                 self.selected_text = None
+#                 cursor.endEditBlock()
+#             return
+
+#         if key == Qt.Key.Key_F and event.modifiers() & Qt.KeyboardModifier.ControlModifier:
+#             if self.finder.isVisible():
+#                 self.finder.hide()
+#                 self.setFocus()
+#             else:
+#                 self.finder.show()
+#                 self.finder.setFocus()
+#             return
+
+#         if key in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
+#             cursor = self.textCursor()
+#             cursor.beginEditBlock()
+
+#             block_text = cursor.block().text()
+
+#             indent_match = re.match(r'^(\s*)', block_text)
+#             current_indent = indent_match.group(1) if indent_match else ""
+
+#             if block_text.strip().endswith(":"):
+#                 new_indent = current_indent + " " * 4
+#             else:
+#                 new_indent = current_indent
+
+#             cursor.insertText("\n" + new_indent)
+#             cursor.endEditBlock()
+
+#             return
+
+#         super().keyPressEvent(event)
+
+#         if not (Qt.Key.Key_A <= key <= Qt.Key.Key_Z or 
+#                 Qt.Key.Key_0 <= key <= Qt.Key.Key_9 or 
+#                 key in (Qt.Key.Key_Period, Qt.Key.Key_Underscore)):
+#             return
+
+
+#         try:
+#             if self.show_completer:
+#                 code = self.toPlainText()
+#                 cursor = self.textCursor()
+#                 cursor.beginEditBlock()
+
+#                 pos = cursor.position()
+
+#                 line, column = self.cursor_to_line_column(pos)
+
+#                 script = jedi.Script(code=code, path=fr"{current_file_path}")
+#                 completions = script.complete(line, column)
+
+#                 model = QStandardItemModel()
+
+
+#                 words = []
+#                 for c in completions[:30]:
+#                     words.append(c.name)
+#                     item = QStandardItem()
+#                     item.setText(c.name)
+#                     if c.type == 'statement':
+#                         item.setIcon(QIcon('icons/autocompleterIcons/variable.svg'))
+#                     elif c.type == 'class' or c.type == 'module':
+#                         item.setIcon(QIcon('icons/autocompleterIcons/class.svg'))
+#                     elif c.type == 'function':
+#                         item.setIcon(QIcon('icons/autocompleterIcons/function.svg'))
+#                     elif c.type == 'keyword':
+#                         item.setIcon(QIcon('icons/autocompleterIcons/keyword.svg'))
+
+#                     model.appendRow(item)
+
+
+#                 if words:
+#                     cursor.select(cursor.SelectionType.WordUnderCursor)
+#                     prefix = cursor.selectedText()
+#                     self.completer.setModel(model)
+#                     self.completer.setCompletionPrefix(prefix)
+#                     cr = self.cursorRect()
+#                     cr.setWidth(self.completer.popup().sizeHintForColumn(0) + 10)
+#                     self.completer.complete(cr)
+#                 else:
+#                     self.completer.popup().hide()
+
+#                 cursor.endEditBlock()
+
+
+
+#         except Exception as e:
+#             print("Autocomplete error:", e)
+#             self.completer.popup().hide()
+
+
+
+#     def cursor_to_line_column(self, pos):
+#         text = self.toPlainText()
+#         lines = text[:pos].splitlines()
+#         line = len(lines) if lines else 1
+#         column = len(lines[-1]) if lines else 0
+#         return line, column
+
+
+#     def line_number_area_width(self, font_metrics):
+#         # font_metrics = QFontMetrics(QFont("Maple Mono", 19))
+#         # font_metrics = QFontMetrics(QFont("Maple Mono", self.font_size))
+
+#         digits = len(str(self.blockCount()))
+#         return 3 + font_metrics.horizontalAdvance('9') * digits
+
+#     def update_line_number_area_width(self, _):
+#         self.setViewportMargins(self.line_number_area_width(self.line_number_area.font_metrics), 0, 0, 0)
+
+#     def update_line_number_area(self, rect, dy):
+#         if dy:
+#             self.line_number_area.scroll(0, dy)
+#         else:
+#             self.line_number_area.update(0, rect.y(), self.line_number_area.width(), rect.height())
+
+#         if rect.contains(self.viewport().rect()):
+#             self.update_line_number_area_width(0)
+
+#     def resizeEvent(self, event):
+#         super().resizeEvent(event)
+#         cr = self.contentsRect()
+#         self.line_number_area.setGeometry(QRect(cr.left(), cr.top(), self.line_number_area_width(self.line_number_area.font_metrics), cr.height()))
+
+#     def line_number_area_paint_event(self, event, font_metrics):
+#         painter = QPainter(self.line_number_area)
+#         painter.fillRect(event.rect(), QColor(30, 30, 46))
+#         # self.num_lines_font = QFont("Maple Mono", self.font_size)
+
+#         # painter.setFont(self.num_lines_font)
+#         # font_metrics = QFontMetrics(self.num_lines_font)
+
+#         block = self.firstVisibleBlock()
+#         block_number = block.blockNumber()
+#         top = int(self.blockBoundingGeometry(block).translated(self.contentOffset()).top())
+#         bottom = top + int(self.blockBoundingRect(block).height())
+
+#         while block.isValid() and top <= event.rect().bottom():
+#             if block.isVisible() and bottom >= event.rect().top():
+#                 number = str(block_number + 1)
+#                 painter.setPen(QColor(160, 160, 160))
+#                 painter.drawText(
+#                     0, top, self.line_number_area.width() - 5, font_metrics.height(),
+#                     Qt.AlignmentFlag.AlignRight, number
+#                 )
+#             block = block.next()
+#             top = bottom
+#             bottom = top + int(self.blockBoundingRect(block).height())
+#             block_number += 1
+
+
+class MainText(QPlainTextEdit):
     def __init__(self, parent, window, font_size):
         super().__init__()
         self.font_size = font_size
@@ -38,27 +500,28 @@ class MainText(QPlainTextEdit):
         self.clipboard = window
         self.setCursorWidth(0)
 
-        # self.setFont(QFont(get_fontFamily(), self.font_size))
         self.font__ = QFont(get_fontFamily(), get_fontSize())
         self.font__.setStyleStrategy(QFont.StyleStrategy.PreferAntialias)
         self.font__.setPixelSize(self.font_size)
-
         self.setFont(self.font__)
-
-
 
         self.selected_line = None
         self.selected_text = None
         self.setContextMenuPolicy(Qt.ContextMenuPolicy.NoContextMenu)
 
         self.doc_panel = None
-        self.cursorPositionChanged.connect(self.update_docstring)
+        
+        # OPTIMIZATION: Debounce cursor position changes
+        self.docstring_timer = QTimer()
+        self.docstring_timer.setSingleShot(True)
+        self.docstring_timer.timeout.connect(self.update_docstring)
+        self.cursorPositionChanged.connect(self.schedule_docstring_update)
 
         self.finder = findingText(parent, self)
 
+        # ... your existing cursor and line number setup ...
         self.cursor_visible = True
         self.cursor_color = QColor("#f38ba8")
-
         self.blink_timer = QTimer(self)
         self.blink_timer.timeout.connect(self.toggle_cursor)
         self.blink_timer.start(200)
@@ -66,78 +529,35 @@ class MainText(QPlainTextEdit):
         self.line_number_area = ShowLines(self, self.font_size)
         self.blockCountChanged.connect(self.update_line_number_area_width)
         self.updateRequest.connect(self.update_line_number_area)
-
         self.update_line_number_area_width(0)
+        
         self.setObjectName('Editor')
-
         self.setStyleSheet(get_css_style())
-
         self.show_completer = False
 
+        # ... your existing completer setup ...
         self.completer = QCompleter()
         popup = self.completer.popup()
         popup.setObjectName('AutoCompleter')
         popup.setFont(self.font__)
         popup.setStyleSheet(get_css_style())
-
-
         self.completer.setWidget(self)
         self.completer.setCompletionMode(QCompleter.CompletionMode.PopupCompletion)
         self.completer.setCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
         self.completer.activated.connect(self.insert_completion)
         self.hide()
 
-    def toggle_cursor(self):
-        self.cursor_visible = not self.cursor_visible
-        self.viewport().update()
+        # Cache for docstring operations
+        self._last_docstring_position = -1
+        self._last_docstring = ""
 
-    def paintEvent(self, event):
-        super().paintEvent(event)
-        if self.cursor_visible and self.hasFocus():
-            painter = QPainter(self.viewport())
-            painter.setPen(self.cursor_color)
-            rect = self.cursorRect()
-            painter.fillRect(rect.left(), rect.top(), 3, rect.height(), QColor("#f38ba8"))
+    def cursor_to_line_column(self, pos):
+        text = self.toPlainText()
+        lines = text[:pos].splitlines()
+        line = len(lines) if lines else 1
+        column = len(lines[-1]) if lines else 0
+        return line, column
 
-
-
-    def insert_completion(self, completion):
-        cursor = self.textCursor()
-        cursor.beginEditBlock()
-
-        cursor.select(cursor.SelectionType.WordUnderCursor)
-        cursor.removeSelectedText()
-        cursor.insertText(completion)
-        self.setTextCursor(cursor)
-        cursor.endEditBlock()
-
-
-    def update_docstring(self):
-        cursor = self.textCursor()
-        cursor.beginEditBlock()
-
-        line = cursor.blockNumber() + 1
-        column = cursor.positionInBlock()
-        code = self.toPlainText()
-
-        doc = self.get_definition_docstring(code, line, column)
-        doc = doc or ""
-        if self.doc_panel:
-            if doc == "":
-                self.doc_panel.hide()
-                if self.doc_panel.custom_title:
-                    self.doc_panel.custom_title.hide()
-                    self.doc_panel.dock.hide()
-            else:
-                self.doc_viewer = self.parse_docstring(doc)
-                self.doc_panel.setHtml(self.doc_viewer or "")
-
-                self.doc_panel.dock.show()
-                self.doc_panel.custom_title.show()
-
-                self.doc_panel.show()
-
-        cursor.endEditBlock()
 
     def parse_docstring(self, doc: str):
         lines = doc.strip().splitlines()
@@ -155,27 +575,113 @@ class MainText(QPlainTextEdit):
                 formatted.append(line)
         return "<br>".join(formatted)
 
+    def line_number_area_width(self, font_metrics):
+        digits = len(str(self.blockCount()))
+        return 3 + font_metrics.horizontalAdvance('9') * digits
+
+    def update_line_number_area_width(self, _):
+        self.setViewportMargins(self.line_number_area_width(self.line_number_area.font_metrics), 0, 0, 0)
+
+    def update_line_number_area(self, rect, dy):
+        if dy:
+            self.line_number_area.scroll(0, dy)
+        else:
+            self.line_number_area.update(0, rect.y(), self.line_number_area.width(), rect.height())
+
+        if rect.contains(self.viewport().rect()):
+            self.update_line_number_area_width(0)
+
+
+    def toggle_cursor(self):
+        self.cursor_visible = not self.cursor_visible
+        self.viewport().update()
+
+    def paintEvent(self, event):
+        super().paintEvent(event)
+        if self.cursor_visible and self.hasFocus():
+            painter = QPainter(self.viewport())
+            painter.setPen(self.cursor_color)
+            rect = self.cursorRect()
+            painter.fillRect(rect.left(), rect.top(), 3, rect.height(), QColor("#f38ba8"))
+
+    def insert_completion(self, completion):
+        cursor = self.textCursor()
+        cursor.beginEditBlock()
+
+        cursor.select(cursor.SelectionType.WordUnderCursor)
+        cursor.removeSelectedText()
+        cursor.insertText(completion)
+        self.setTextCursor(cursor)
+        cursor.endEditBlock()
+
+
+
+    def schedule_docstring_update(self):
+        if not self.textCursor().hasSelection():
+            self.docstring_timer.start(150)
+
+    def update_docstring(self):
+        cursor = self.textCursor()
+        
+        if cursor.hasSelection():
+            return
+            
+        current_position = cursor.position()
+        
+        if abs(current_position - self._last_docstring_position) < 3:
+            return
+            
+        line = cursor.blockNumber() + 1
+        column = cursor.positionInBlock()
+        code = self.toPlainText()
+
+        doc = self.get_definition_docstring(code, line, column)
+        doc = doc or ""
+        
+        self._last_docstring_position = current_position
+        self._last_docstring = doc
+        
+        if self.doc_panel:
+            if doc == "":
+                self.doc_panel.hide()
+                if self.doc_panel.custom_title:
+                    self.doc_panel.custom_title.hide()
+                    self.doc_panel.dock.hide()
+            else:
+                self.doc_viewer = self.parse_docstring(doc)
+                self.doc_panel.setHtml(self.doc_viewer or "")
+                self.doc_panel.dock.show()
+                self.doc_panel.custom_title.show()
+                self.doc_panel.show()
+
     def get_definition_docstring(self, code, line, column):
         global current_file_path
         try:
+            if hasattr(self, '_docstring_cache'):
+                cache_key = f"{line}:{column}"
+                if cache_key in self._docstring_cache:
+                    return self._docstring_cache[cache_key]
+            else:
+                self._docstring_cache = {}
+            
             script = jedi.Script(code=code, path=fr"{current_file_path}")
             definitions = script.help(line, column)
 
-            if definitions:
-                return definitions[0].docstring()
+            result = definitions[0].docstring() if definitions else ""
+            
+            if len(self._docstring_cache) > 10:
+                self._docstring_cache.clear()
+            self._docstring_cache[f"{line}:{column}"] = result
+            
+            return result
         except Exception as e:
-            return f"Error: {e}"
-        
-        return ""
-
+            return ""
 
     def keyPressEvent(self, event: QKeyEvent):
         global current_file_path
-        # self.
         key = event.key()
         text = event.text()
         pairs = {'"': '"', "'": "'", '(': ')', '[': ']', '{': '}'}
-
 
         if self.completer.popup().isVisible():
             if key in (Qt.Key.Key_Enter, Qt.Key.Key_Return, Qt.Key.Key_Tab):
@@ -190,157 +696,34 @@ class MainText(QPlainTextEdit):
         if text in pairs:
             cursor = self.textCursor()
             cursor.beginEditBlock()
-
             closing_char = pairs[text]
             cursor.insertText(text + closing_char)
             cursor.movePosition(QTextCursor.MoveOperation.Left)
             self.setTextCursor(cursor)
-
             cursor.endEditBlock()
             return
 
         if key == Qt.Key.Key_Tab:
             cursor = self.textCursor()
             cursor.beginEditBlock()
-
             cursor.insertText(" " * 4)
-
             cursor.endEditBlock()
             return
 
-
         if key == Qt.Key.Key_Slash and event.modifiers() & Qt.KeyboardModifier.ControlModifier:
-            cursor = self.textCursor()
-            cursor.beginEditBlock()
-
-
-            if not cursor.hasSelection():
-                cursor.select(QTextCursor.SelectionType.LineUnderCursor)
-
-            start = cursor.selectionStart()
-            end = cursor.selectionEnd()
-
-            cursor.setPosition(start)
-            cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock)
-            start_block = cursor.blockNumber()
-
-            cursor.setPosition(end)
-            cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock)
-            end_block = cursor.blockNumber()
-
-            for block_num in range(start_block, end_block + 1):
-                block = self.document().findBlockByNumber(block_num)
-                text = block.text()
-
-                leading_spaces = len(text) - len(text.lstrip())
-                indent = text[:leading_spaces]
-                content = text[leading_spaces:]
-
-                cursor.setPosition(block.position())
-                cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock, QTextCursor.MoveMode.KeepAnchor)
-
-                if content.startswith(commenting) and not content.startswith('/*') and not content.startswith('<!--'):
-                    content = content[len(commenting):].lstrip()
-
-                elif content.startswith('/*'):
-                    content = content[1:-2].lstrip()
-                    content = content[len(commenting):].lstrip()
-
-                elif content.startswith('<!--'):
-                    content = content[4:-3].lstrip()
-                    # content = content[len(commenting):].lstrip()
-
-                else:
-                    if commenting == '/*':
-                        content += '*/'
-                    elif commenting == '<!--':
-                        content += '-->'
-
-                    content = f"{commenting} {content}"
-
-                cursor.insertText(indent + content)
-
-            cursor.endEditBlock()
+            self.toggle_comments()
             return
 
         if key == Qt.Key.Key_X and event.modifiers() & Qt.KeyboardModifier.ControlModifier:
-            cursor = self.textCursor()
-            cursor.beginEditBlock()
-
-            if cursor.selectedText() == '':
-                cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock)
-                cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock, QTextCursor.MoveMode.KeepAnchor)
-                text = cursor.selectedText()
-                self.selected_line = text
-
-                self.selected_text = None
-
-                self.clipboard.setText(self.selected_line)
-                cursor.removeSelectedText()
-                cursor.deleteChar()
-
-            else:
-                self.selected_text = cursor.selectedText()
-                self.selected_line = None
-                self.clipboard.setText(self.selected_text)
-                cursor.removeSelectedText()
-                cursor.deleteChar()
-
-            self.completer.popup().hide()
-            cursor.endEditBlock()
-
+            self.cut_text()
             return
 
         if key == Qt.Key.Key_C and event.modifiers() & Qt.KeyboardModifier.ControlModifier:
-            cursor = self.textCursor()
-            cursor.beginEditBlock()
-
-            if cursor.selectedText() == '':
-
-
-                cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock)
-                cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock, QTextCursor.MoveMode.KeepAnchor)
-                text = cursor.selectedText()
-                self.selected_line = text
-
-                self.clipboard.setText(self.selected_line)
-                self.selected_text = None
-
-
-            else:
-
-                self.selected_text = cursor.selectedText()
-                self.selected_line = None
-                self.clipboard.setText(self.selected_text)
-
-
-            cursor.endEditBlock()
-
+            self.copy_text()
             return
 
         if key == Qt.Key.Key_V and event.modifiers() & Qt.KeyboardModifier.ControlModifier:
-            if self.clipboard.text() != '' and self.selected_line is None:
-                cursor = self.textCursor()
-                cursor.beginEditBlock()
-
-                self.setTextCursor(cursor)
-
-                cursor.insertText(self.clipboard.text())
-                cursor.endEditBlock()
-
-                self.selected_line = None
-
-            if self.selected_line is not None:
-                cursor = self.textCursor()
-                cursor.beginEditBlock()
-
-                cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock)
-                self.setTextCursor(cursor)
-
-                cursor.insertText("\n" + self.selected_line)
-
-                self.selected_text = None
-                cursor.endEditBlock()
+            self.paste_text()
             return
 
         if key == Qt.Key.Key_F and event.modifiers() & Qt.KeyboardModifier.ControlModifier:
@@ -353,22 +736,7 @@ class MainText(QPlainTextEdit):
             return
 
         if key in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
-            cursor = self.textCursor()
-            cursor.beginEditBlock()
-
-            block_text = cursor.block().text()
-
-            indent_match = re.match(r'^(\s*)', block_text)
-            current_indent = indent_match.group(1) if indent_match else ""
-
-            if block_text.strip().endswith(":"):
-                new_indent = current_indent + " " * 4
-            else:
-                new_indent = current_indent
-
-            cursor.insertText("\n" + new_indent)
-            cursor.endEditBlock()
-
+            self.handle_enter()
             return
 
         super().keyPressEvent(event)
@@ -378,73 +746,177 @@ class MainText(QPlainTextEdit):
                 key in (Qt.Key.Key_Period, Qt.Key.Key_Underscore)):
             return
 
+        if self.show_completer:
+            self.handle_autocomplete()
 
+    def toggle_comments(self):
+        cursor = self.textCursor()
+        cursor.beginEditBlock()
+        
+        if not cursor.hasSelection():
+            cursor.select(QTextCursor.SelectionType.LineUnderCursor)
+
+        start = cursor.selectionStart()
+        end = cursor.selectionEnd()
+
+        cursor.setPosition(start)
+        cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock)
+        start_block = cursor.blockNumber()
+
+        cursor.setPosition(end)
+        cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock)
+        end_block = cursor.blockNumber()
+
+        for block_num in range(start_block, end_block + 1):
+            block = self.document().findBlockByNumber(block_num)
+            text = block.text()
+
+            leading_spaces = len(text) - len(text.lstrip())
+            indent = text[:leading_spaces]
+            content = text[leading_spaces:]
+
+            cursor.setPosition(block.position())
+            cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock, QTextCursor.MoveMode.KeepAnchor)
+
+            if content.startswith(commenting) and not content.startswith('/*') and not content.startswith('<!--'):
+                content = content[len(commenting):].lstrip()
+            elif content.startswith('/*'):
+                content = content[1:-2].lstrip()
+                content = content[len(commenting):].lstrip()
+            elif content.startswith('<!--'):
+                content = content[4:-3].lstrip()
+            else:
+                if commenting == '/*':
+                    content += '*/'
+                elif commenting == '<!--':
+                    content += '-->'
+                content = f"{commenting} {content}"
+
+            cursor.insertText(indent + content)
+
+        cursor.endEditBlock()
+
+    def cut_text(self):
+        cursor = self.textCursor()
+        cursor.beginEditBlock()
+
+        if cursor.selectedText() == '':
+            cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock)
+            cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock, QTextCursor.MoveMode.KeepAnchor)
+            text = cursor.selectedText()
+            self.selected_line = text
+            self.selected_text = None
+            self.clipboard.setText(self.selected_line)
+            cursor.removeSelectedText()
+            cursor.deleteChar()
+        else:
+            self.selected_text = cursor.selectedText()
+            self.selected_line = None
+            self.clipboard.setText(self.selected_text)
+            cursor.removeSelectedText()
+            cursor.deleteChar()
+
+        self.completer.popup().hide()
+        cursor.endEditBlock()
+
+    def copy_text(self):
+        cursor = self.textCursor()
+        
+        if cursor.selectedText() == '':
+            cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock)
+            cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock, QTextCursor.MoveMode.KeepAnchor)
+            text = cursor.selectedText()
+            self.selected_line = text
+            self.clipboard.setText(self.selected_line)
+            self.selected_text = None
+        else:
+            self.selected_text = cursor.selectedText()
+            self.selected_line = None
+            self.clipboard.setText(self.selected_text)
+
+    def paste_text(self):
+        if self.clipboard.text() != '' and self.selected_line is None:
+            cursor = self.textCursor()
+            cursor.beginEditBlock()
+            cursor.insertText(self.clipboard.text())
+            cursor.endEditBlock()
+            self.selected_line = None
+
+        if self.selected_line is not None:
+            cursor = self.textCursor()
+            cursor.beginEditBlock()
+            cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock)
+            self.setTextCursor(cursor)
+            cursor.insertText("\n" + self.selected_line)
+            self.selected_text = None
+            cursor.endEditBlock()
+
+    def handle_enter(self):
+        cursor = self.textCursor()
+        cursor.beginEditBlock()
+
+        block_text = cursor.block().text()
+        indent_match = re.match(r'^(\s*)', block_text)
+        current_indent = indent_match.group(1) if indent_match else ""
+
+        if block_text.strip().endswith(":"):
+            new_indent = current_indent + " " * 4
+        else:
+            new_indent = current_indent
+
+        cursor.insertText("\n" + new_indent)
+        cursor.endEditBlock()
+
+    def handle_autocomplete(self):
         try:
-            if self.show_completer:
-                code = self.toPlainText()
-                cursor = self.textCursor()
-                cursor.beginEditBlock()
+            code = self.toPlainText()
+            cursor = self.textCursor()
+            pos = cursor.position()
+            line, column = self.cursor_to_line_column(pos)
 
-                pos = cursor.position()
+            if cursor.hasSelection():
+                return
 
-                line, column = self.cursor_to_line_column(pos)
+            script = jedi.Script(code=code, path=fr"{current_file_path}")
+            completions = script.complete(line, column)
 
-                script = jedi.Script(code=code, path=fr"{current_file_path}")
-                completions = script.complete(line, column)
+            model = QStandardItemModel()
+            words = []
+            
+            for c in completions[:30]:
+                words.append(c.name)
+                item = QStandardItem()
+                item.setText(c.name)
+                
+                # Set icons based on type
+                if c.type == 'statement':
+                    item.setIcon(QIcon('icons/autocompleterIcons/variable.svg'))
+                elif c.type in ('class', 'module'):
+                    item.setIcon(QIcon('icons/autocompleterIcons/class.svg'))
+                elif c.type == 'function':
+                    item.setIcon(QIcon('icons/autocompleterIcons/function.svg'))
+                elif c.type == 'keyword':
+                    item.setIcon(QIcon('icons/autocompleterIcons/keyword.svg'))
+                
+                model.appendRow(item)
 
-                model = QStandardItemModel()
-
-
-                words = []
-                for c in completions[:30]:
-                    words.append(c.name)
-                    item = QStandardItem()
-                    item.setText(c.name)
-                    if c.type == 'statement':
-                        item.setIcon(QIcon('icons/autocompleterIcons/variable.svg'))
-                    elif c.type == 'class' or c.type == 'module':
-                        item.setIcon(QIcon('icons/autocompleterIcons/class.svg'))
-                    elif c.type == 'function':
-                        item.setIcon(QIcon('icons/autocompleterIcons/function.svg'))
-                    elif c.type == 'keyword':
-                        item.setIcon(QIcon('icons/autocompleterIcons/keyword.svg'))
-
-                    model.appendRow(item)
-
-
-                if words:
-                    cursor.select(cursor.SelectionType.WordUnderCursor)
-                    prefix = cursor.selectedText()
-                    self.completer.setModel(model)
-                    self.completer.setCompletionPrefix(prefix)
-                    cr = self.cursorRect()
-                    cr.setWidth(self.completer.popup().sizeHintForColumn(0) + 10)
-                    self.completer.complete(cr)
-                else:
-                    self.completer.popup().hide()
-
-                cursor.endEditBlock()
-
-
+            if words:
+                cursor.select(cursor.SelectionType.WordUnderCursor)
+                prefix = cursor.selectedText()
+                self.completer.setModel(model)
+                self.completer.setCompletionPrefix(prefix)
+                cr = self.cursorRect()
+                cr.setWidth(self.completer.popup().sizeHintForColumn(0) + 10)
+                self.completer.complete(cr)
+            else:
+                self.completer.popup().hide()
 
         except Exception as e:
             print("Autocomplete error:", e)
             self.completer.popup().hide()
 
 
-
-    def cursor_to_line_column(self, pos):
-        text = self.toPlainText()
-        lines = text[:pos].splitlines()
-        line = len(lines) if lines else 1
-        column = len(lines[-1]) if lines else 0
-        return line, column
-
-
     def line_number_area_width(self, font_metrics):
-        # font_metrics = QFontMetrics(QFont("Maple Mono", 19))
-        # font_metrics = QFontMetrics(QFont("Maple Mono", self.font_size))
-
         digits = len(str(self.blockCount()))
         return 3 + font_metrics.horizontalAdvance('9') * digits
 
@@ -468,10 +940,6 @@ class MainText(QPlainTextEdit):
     def line_number_area_paint_event(self, event, font_metrics):
         painter = QPainter(self.line_number_area)
         painter.fillRect(event.rect(), QColor(30, 30, 46))
-        # self.num_lines_font = QFont("Maple Mono", self.font_size)
-
-        # painter.setFont(self.num_lines_font)
-        # font_metrics = QFontMetrics(self.num_lines_font)
 
         block = self.firstVisibleBlock()
         block_number = block.blockNumber()
@@ -490,7 +958,6 @@ class MainText(QPlainTextEdit):
             top = bottom
             bottom = top + int(self.blockBoundingRect(block).height())
             block_number += 1
-
 
 
 class DocStringDock(QDockWidget):
@@ -988,7 +1455,6 @@ class ShowOpenedFile(QTabBar):
 
                 if file_name.lower().endswith('.py') or file_name.lower().endswith('.pyi'):
                     current_file_path = path
-                    # self.highlighter = OptimizedPythonSyntaxHighlighter(use_highlighter = True, parent=self.editor.document())
                     self.highlighter = PythonSyntaxHighlighter(use_highlighter = True, parent=self.editor.document())
 
 
@@ -1017,6 +1483,8 @@ class ShowOpenedFile(QTabBar):
 
                     try:
                         if self.show_error:
+                            if hasattr(self.show_error, 'cleanup'):
+                                self.show_error.cleanup()
                             self.show_error.error_label = None
                             self.show_error = None
                     except Exception as e:
@@ -1057,6 +1525,8 @@ class ShowOpenedFile(QTabBar):
 
                     try:
                         if self.show_error:
+                            if hasattr(self.show_error, 'cleanup'):
+                                self.show_error.cleanup()
                             self.show_error.error_label = None
                             self.show_error = None
                     except Exception as e:
@@ -1094,6 +1564,8 @@ class ShowOpenedFile(QTabBar):
 
                     try:
                         if self.show_error:
+                            if hasattr(self.show_error, 'cleanup'):
+                                self.show_error.cleanup()
                             self.show_error.error_label = None
                             self.show_error = None
                     except Exception as e:

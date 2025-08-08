@@ -2,327 +2,178 @@ import ast
 import cssutils
 import io
 import logging
-import re, jedi
+import re
 import json, commentjson
 
 from PyQt6.QtGui import QTextCursor, QColor, QTextCharFormat, QTextCursor, QColor
-from PyQt6.QtCore import QTimer, QRunnable, pyqtSlot, pyqtSignal, QObject, QThread, QMutex, QMutexLocker
+from PyQt6.QtCore import QThreadPool, QTimer, QRunnable, pyqtSlot, pyqtSignal, QObject, QThread, QMutex, QMutexLocker, Q_ARG
 from PyQt6.QtWidgets import QApplication
 
 from func_classes import list_classes_functions
 from lark.exceptions import UnexpectedToken
 from threading import Thread
-class SyntaxCheckerWorker(QObject):
-    
-    finished = pyqtSignal(dict, str)
-    error = pyqtSignal(int, int, str)
-    
-    def __init__(self):
+from config import set_advancedHighlighting
+
+
+class AnalysisWorker(QRunnable):
+    def __init__(self, code, callback, task_id):
         super().__init__()
-        self.current_code = ""
-        self.should_cancel = False
+        self.code = code
+        self.callback = callback
+        self.task_id = task_id
+        self.setAutoDelete(True)
     
-    @pyqtSlot(str)
-    def process_code(self, code):
-        self.current_code = code
-        self.should_cancel = False
-        
-        if not code.strip():
-            self.finished.emit({}, "✔️ No syntax errors")
-            return
-        
+    def run(self):
         try:
-            if self.should_cancel:
-                return
-                
-            ast.parse(code)
-            
-            if self.should_cancel:
+            if hasattr(self.callback, '_current_task_id') and self.callback._current_task_id != self.task_id:
                 return
             
-            instances = self.list_classes_functions(code)
-            
-            if self.should_cancel:
-                return
-                
-            self.finished.emit(instances, "✔️ No syntax errors")
-            
-        except (SyntaxError, NameError) as e:
-            if self.should_cancel:
-                return
-                
-            line = getattr(e, 'lineno', 1) or 1
-            offset = getattr(e, 'offset', 1) or 1
-            msg = getattr(e, 'msg', 'Syntax error') or 'Syntax error'
-            
-            self.error.emit(line, offset, f"❌ Line {line}: {msg}")
-    
-    @pyqtSlot()
-    def cancel_processing(self):
-        self.should_cancel = True
-    
-    def list_classes_functions(self, code):
-        try:
-            if self.should_cancel:
-                return {}
-                
-            func_class_instances = {}
-            
-            tree = ast.parse(code)
-            
-            for node in ast.walk(tree):
-                if self.should_cancel:
-                    return {}
-                
-                if isinstance(node, ast.FunctionDef):
-                    func_class_instances[node.name] = 'function'
-                elif isinstance(node, ast.ClassDef):
-                    func_class_instances[node.name] = 'class'
-                elif isinstance(node, ast.Assign):
-                    if isinstance(node.value, ast.Call) and isinstance(node.value.func, ast.Name):
-                        class_name = node.value.func.id
-                        if class_name not in ('int', 'len', 'str', 'float', 'bool', 'list', 'dict', 'tuple', 'set'):
-                            func_class_instances[class_name] = 'class'
-                elif isinstance(node, ast.ImportFrom) and node.module:
-                    func_class_instances[node.module] = 'class'
-                elif isinstance(node, ast.Call):
-                    func = node.func
-                    if isinstance(func, ast.Attribute):
-                        func_class_instances[func.attr] = 'function'
-            
-            if len(code) < 10000 and not self.should_cancel:
-                try:
-                    script = jedi.Script(code=code)
-                    names = script.get_names(all_scopes=True, definitions=True)
-                    
-                    for name in names:
-                        if self.should_cancel:
-                            break
-                            
-                        if name.type in ['class', 'module']:
-                            func_class_instances[name.name] = 'class'
-                        elif name.type == 'function':
-                            func_class_instances[name.name] = 'function'
-                            
-                except Exception:
-                    pass
-            
-            return func_class_instances
-            
-        except Exception:
-            return {}
+            instances = list_classes_functions(self.code)
 
-
-class ShowErrors:
-    
-    def __init__(self, parent, highlighter):
-        self.parent = parent
-        self.highlighter = highlighter
-        self.error_label = None
-        
-        self.timer = QTimer()
-        self.timer.setSingleShot(True)
-        self.timer.timeout.connect(self.run_check)
-        
-        self.parent.textChanged.connect(self.schedule_check)
-        
-        self.thread = QThread()
-        self.worker = SyntaxCheckerWorker()
-        self.worker.moveToThread(self.thread)
-        
-        self.worker.finished.connect(self.handle_success)
-        self.worker.error.connect(self.handle_error)
-        
-        self.thread.start()
-        
-        self.is_processing = False
-    
-    def schedule_check(self):
-        self.timer.stop()
-        
-        if self.is_processing:
-            self.worker.cancel_processing()
-        
-        self.timer.start(500)
-    
-    def run_check(self):
-        if not self.thread.isRunning():
-            return
-        
-        self.clear_error_highlighting()
-        
-        code = self.parent.toPlainText()
-        
-        self.is_processing = True
-        
-        QApplication.instance().processEvents()
-        self.worker.process_code(code)
-    
-    def handle_success(self, instances, message):
-        self.is_processing = False
-        
-        if self.error_label:
-            self.error_label.setText(message)
-        
-        self.analyze_code(instances)
-    
-    def handle_error(self, lineno, offset, message):
-        self.is_processing = False
-        
-        if self.error_label:
-            self.error_label.setText(message)
-        
-        self.underline_error(lineno, offset)
-    
-    def clear_error_highlighting(self):
-        try:
-            cursor = self.parent.textCursor()
-            cursor.beginEditBlock()
-            
-            cursor.select(QTextCursor.SelectionType.Document)
-            fmt = QTextCharFormat()
-            fmt.setUnderlineStyle(QTextCharFormat.UnderlineStyle.NoUnderline)
-            cursor.mergeCharFormat(fmt)
-            
-            cursor.endEditBlock()
-        except Exception:
-            pass
-    
-    def underline_error(self, line, column):
-        try:
-            cursor = self.parent.textCursor()
-            cursor.beginEditBlock()
-            
-            cursor.movePosition(QTextCursor.MoveOperation.Start)
-            
-            cursor.movePosition(QTextCursor.MoveOperation.Down, 
-                              QTextCursor.MoveMode.MoveAnchor, line - 1)
-            
-            if column and column > 1:
-                cursor.movePosition(QTextCursor.MoveOperation.Right, 
-                                  QTextCursor.MoveMode.MoveAnchor, column - 1)
-            
-            cursor.select(QTextCursor.SelectionType.WordUnderCursor)
-            if not cursor.hasSelection():
-                cursor.movePosition(QTextCursor.MoveOperation.Right, 
-                                  QTextCursor.MoveMode.KeepAnchor, 1)
-            
-            fmt = QTextCharFormat()
-            fmt.setUnderlineStyle(QTextCharFormat.UnderlineStyle.SpellCheckUnderline)
-            fmt.setUnderlineColor(QColor("red"))
-            cursor.mergeCharFormat(fmt)
-            
-            cursor.endEditBlock()
-        except Exception:
-            pass
-    
-    def analyze_code(self, instances):
-        try:
-            if hasattr(self.highlighter, 'get_calls'):
-                self.highlighter.get_calls(instances)
-            doc_length = len(self.parent.toPlainText())
-            
-            if doc_length < 20000:
-                QTimer.singleShot(150, self._safe_rehighlight)
-            else:
-                print(f"Skipping rehighlight for large document ({doc_length} chars)")
+            if hasattr(self.callback, '_current_task_id') and self.callback._current_task_id != self.task_id:
+                return
                 
+            from PyQt6.QtCore import QMetaObject, Qt
+            QMetaObject.invokeMethod(self.callback, "_update_highlighter", 
+                                   Qt.ConnectionType.QueuedConnection,
+                                   Q_ARG(dict, instances))
         except Exception as e:
             print(f"Analysis error: {e}")
-    
-    def _safe_rehighlight(self):
-        try:
-            if hasattr(self.highlighter, 'rehighlight'):
-                self.highlighter.rehighlight()
-        except Exception as e:
-            print(f"Rehighlight error: {e}")
-    
-    def cleanup(self):
+
+
+class ShowErrors(QObject):
+    def __init__(self, parent, highlighter):
+        super().__init__()
+        parent.textChanged.connect(self.schedule_check)
+
+        self.timer = QTimer()
+        self.timer.setSingleShot(True)
+        self.timer.timeout.connect(self.check_syntax)
+        
+        self.error_label = None
+        self.parent = parent
+        self.highlighter = highlighter
+        
+        self.thread_pool = QThreadPool()
+        self.thread_pool.setMaxThreadCount(1)
+        
+        self._current_code = ""
+        self._last_instances = {}
+        self._use_background = True
+        self._use_sync_fallback = False
+        self._current_task_id = 0
+        self._max_file_size = 50000
+        self._sync_threshold = 500
+
+    def schedule_check(self):
         self.timer.stop()
+        self.timer.start(800)
+        # self.timer.start(300)
+
+
+    def check_syntax(self):
+        code = self.parent.toPlainText()
         
-        if self.is_processing:
-            self.worker.cancel_processing()
+        if code == self._current_code:
+            return
+            
+        self._current_code = code
+        self.clear_error_highlighting()
+
+        try:
+            ast.parse(code)
+
+            if self.error_label:
+                self.error_label.setText("✔️ No syntax errors")
+
+
+            if set_advancedHighlighting():
+                if len(code) > self._max_file_size:
+                    if self.error_label:
+                        self.error_label.setText("⚠️ File too large for syntax highlighting")
+                    return
+                
+                if self._use_sync_fallback:
+                    instances = list_classes_functions(code)
+                    self._update_highlighter(instances)
+                else:
+                    if len(code.strip()) < self._sync_threshold:
+                        instances = list_classes_functions(code)
+                        self._update_highlighter(instances)
+                    else:
+                        if self._use_background:
+                            # Cancel previous task
+                            self._current_task_id += 1
+                            worker = AnalysisWorker(code, self, self._current_task_id)
+                            self.thread_pool.start(worker)
+                        else:
+                            instances = list_classes_functions(code)
+                            self._update_highlighter(instances)
+
+        except (SyntaxError, NameError) as e:
+            if self.error_label:
+                self.error_label.setText(f"❌ Line {e.lineno}: {e.msg}")
+            self.underline_error(e.lineno, e.offset)
+
+    @pyqtSlot(dict)
+    def _update_highlighter(self, instances):
+        try:
+            if instances and isinstance(instances, dict):
+                if instances != self._last_instances:
+                    self.analyze_code(instances)
+                    self._last_instances = instances
+        except Exception as e:
+            print(f"Error in update highlighter: {e}")
+
+    def clear_error_highlighting(self):
+        cursor = self.parent.textCursor()
+        cursor.beginEditBlock()
+
+        cursor.select(QTextCursor.SelectionType.Document)
+        fmt = QTextCharFormat()
+        fmt.setUnderlineStyle(QTextCharFormat.UnderlineStyle.NoUnderline)
+        cursor.setCharFormat(fmt)
+
+        cursor.endEditBlock()
+
+    def underline_error(self, line, column):
+        cursor = self.parent.textCursor()
+        cursor.beginEditBlock()
+
+        cursor.movePosition(QTextCursor.MoveOperation.Start)
+        for _ in range(line - 1):
+            cursor.movePosition(QTextCursor.MoveOperation.Down)
+
+        cursor.movePosition(QTextCursor.MoveOperation.Right, n=column - 1)
+        cursor.movePosition(QTextCursor.MoveOperation.Right, QTextCursor.MoveMode.KeepAnchor)
+
+        fmt = QTextCharFormat()
+        fmt.setUnderlineStyle(QTextCharFormat.UnderlineStyle.SpellCheckUnderline)
+        fmt.setUnderlineColor(QColor("red"))
+        cursor.setCharFormat(fmt)
+
+        cursor.endEditBlock()
+
+    def analyze_code(self, instances):
+        try:
+            self.highlighter.get_calls(instances)
+            self.highlighter.rehighlight()
+        except Exception as e:
+            print(f"Error in analyze_code: {e}")
         
-        self.thread.quit()
-        if not self.thread.wait(2000):
-            self.thread.terminate()
-            self.thread.wait(1000)
-
-
-
-# class ShowErrors:
-#     def __init__(self, parent, highlighter):
-#         parent.textChanged.connect(self.schedule_check)
-
-
-#         self.timer = QTimer()
-#         self.timer.setSingleShot(True)
-#         self.timer.timeout.connect(self.check_syntax)
+    def cleanup(self):
+        self._current_task_id += 1
+        self.thread_pool.waitForDone(500)
+    
+    def enable_sync_fallback(self):
+        self._use_sync_fallback = True
+        self._use_background = False
         
-#         self.error_label = None
-#         self.parent = parent
-#         self.highlighter = highlighter
+    def set_max_file_size(self, size):
+        self._max_file_size = size
 
-#     def schedule_check(self):
-#         self.timer.start(500)
-
-#     def check_syntax(self):
-#         code = self.parent.toPlainText()
-
-#         # self.clear_error_highlighting()
-
-#         try:
-#             # ast.parse(code)
-#             # pass
-
-#             if self.error_label:
-#                 self.error_label.setText("✔️ No syntax errors")
-#             # instances = list_classes_functions(code)
-#             instances = list_classes_functions(code)
-#             print(instances)
-
-#             self.analyze_code(instances)
-
-
-#         except (SyntaxError, NameError) as e:
-#             if self.error_label:
-#                 self.error_label.setText(f"❌ Line {e.lineno}: {e.msg}")
-#             self.underline_error(e.lineno, e.offset)
-
-#     def clear_error_highlighting(self):
-#         cursor = self.parent.textCursor()
-#         cursor.beginEditBlock()
-
-#         cursor.select(QTextCursor.SelectionType.Document)
-#         fmt = QTextCharFormat()
-#         fmt.setUnderlineStyle(QTextCharFormat.UnderlineStyle.NoUnderline)
-#         cursor.setCharFormat(fmt)
-
-#         cursor.endEditBlock()
-
-#     def underline_error(self, line, column):
-#         cursor = self.parent.textCursor()
-#         cursor.beginEditBlock()
-
-#         cursor.movePosition(QTextCursor.MoveOperation.Start)
-#         for _ in range(line - 1):
-#             cursor.movePosition(QTextCursor.MoveOperation.Down)
-
-#         cursor.movePosition(QTextCursor.MoveOperation.Right, n=column - 1)
-#         cursor.movePosition(QTextCursor.MoveOperation.Right, QTextCursor.MoveMode.KeepAnchor)
-
-#         fmt = QTextCharFormat()
-#         fmt.setUnderlineStyle(QTextCharFormat.UnderlineStyle.SpellCheckUnderline)
-#         fmt.setUnderlineColor(QColor("red"))
-#         cursor.setCharFormat(fmt)
-
-#         cursor.endEditBlock()
-
-#     def analyze_code(self, instances):
-#         self.highlighter.get_calls(instances)
-#         self.highlighter.rehighlight()
-
-
+    def set_sync_threshold(self, threshold):
+        self._sync_threshold = threshold
 
 class ShowJsonErrors:
     def __init__(self, parent, highlighter, file_path, use_jsonc):

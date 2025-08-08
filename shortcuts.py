@@ -87,6 +87,13 @@ class MainTextShortcuts:
         select_folder = QShortcut(QKeySequence("Ctrl+I"), bawky_parent_)
         select_folder.activated.connect(lambda: self.show_folderGUI(bawky_parent_))
 
+        maximze = QShortcut(QKeySequence("Ctrl+M"), bawky_parent_)
+        maximze.activated.connect(lambda: self.max_(bawky_parent_))
+
+    def max_(self, parent):
+        parent.showMaximized()
+
+
     def show_folderGUI(self, parent):
         open_file_dialog_again(parent)
         reboot()
