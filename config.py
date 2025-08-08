@@ -392,3 +392,13 @@ def useItalic():
         return con
     else:
         return False
+
+
+def get_cursorColor():
+    con = config.get('Cursor', 'Color')
+    r, g, b = con.split(',')
+    return int(r), int(g), int(b)
+
+
+def get_cursorWidth():
+    return config.getint('Cursor', 'Width')

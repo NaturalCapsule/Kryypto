@@ -15,7 +15,6 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
         super().__init__(parent)
 
         self.useit = use_highlighter
-        # self.parent_ = self.parent
 
         if self.useit:
             self.highlighting_rules = []

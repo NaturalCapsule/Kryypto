@@ -511,7 +511,6 @@ class MainText(QPlainTextEdit):
 
         self.doc_panel = None
         
-        # OPTIMIZATION: Debounce cursor position changes
         self.docstring_timer = QTimer()
         self.docstring_timer.setSingleShot(True)
         self.docstring_timer.timeout.connect(self.update_docstring)
@@ -519,9 +518,11 @@ class MainText(QPlainTextEdit):
 
         self.finder = findingText(parent, self)
 
-        # ... your existing cursor and line number setup ...
         self.cursor_visible = True
-        self.cursor_color = QColor("#f38ba8")
+        r, g, b = get_cursorColor()
+        # self.cursor_color = QColor("#f38ba8")
+        self.cursor_color = QColor(r, g, b)
+
         self.blink_timer = QTimer(self)
         self.blink_timer.timeout.connect(self.toggle_cursor)
         self.blink_timer.start(200)
@@ -535,7 +536,6 @@ class MainText(QPlainTextEdit):
         self.setStyleSheet(get_css_style())
         self.show_completer = False
 
-        # ... your existing completer setup ...
         self.completer = QCompleter()
         popup = self.completer.popup()
         popup.setObjectName('AutoCompleter')
@@ -547,7 +547,6 @@ class MainText(QPlainTextEdit):
         self.completer.activated.connect(self.insert_completion)
         self.hide()
 
-        # Cache for docstring operations
         self._last_docstring_position = -1
         self._last_docstring = ""
 
@@ -602,7 +601,11 @@ class MainText(QPlainTextEdit):
             painter = QPainter(self.viewport())
             painter.setPen(self.cursor_color)
             rect = self.cursorRect()
-            painter.fillRect(rect.left(), rect.top(), 3, rect.height(), QColor("#f38ba8"))
+            
+            # painter.fillRect(rect.left(), rect.top(), get_cursorWidth(), rect.height(), QColor("#f38ba8"))
+            r, g, b = get_cursorColor()
+            painter.fillRect(rect.left(), rect.top(), get_cursorWidth(), rect.height(), QColor(r, g, b))
+
 
     def insert_completion(self, completion):
         cursor = self.textCursor()
