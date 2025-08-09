@@ -254,8 +254,13 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
         ))
 
         self.highlighting_rules.append((
-            QRegularExpression(r'\bfrom\s+([a-zA-Z0-9_.]+)\s+import\b'), self.class_format, 'import'
+            QRegularExpression(r'\bfrom\s+([a-zA-Z0-9_.]+)\s+import\b'), self.class_format, 'Fromimport'
         ))
+
+        # self.highlighting_rules.append((
+        #     QRegularExpression(r'\b([a-zA-Z_][a-zA-Z0-9_]*)\b(?=\.)'),
+        #     self.class_format, 'class'
+        # ))
 
         for punctuation in ['!', '@', '$', '%', '^', '&', '*', '-', '=', '+', '>', '<']:
             punction_format = QTextCharFormat()
@@ -303,6 +308,8 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
 
         self.function_calls = set()
 
+        self.class_dots = set()
+
         if useItalic():
             self.function_calls_format.setFontItalic(True)
             self.method_calls_format.setFontItalic(True)
@@ -314,12 +321,11 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
             self.comment_format.setFontItalic(True)
             builtin_format.setFontItalic(True)
 
-
+        self.couting = 1
 
     def set_code(self, code: str):
         try:
             tree = ast.parse(code)
-            print("test")
             self.function_args.clear()
             for node in ast.walk(tree):
                 if isinstance(node, ast.FunctionDef):
@@ -358,6 +364,27 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
         except Exception:
             self.function_calls.clear()
 
+    # def get_classes(self):
+    #     from func_classes import check_class
+
+    #     for classes in check_class:
+    #         if not classes:
+    #             continue  # skip empty strings
+
+    #         if classes not in self.class_dots:
+    #             import re
+    #         # Optionally: escape special regex characters in classes
+    #             safe_class = re.escape(classes)
+
+    #             pattern = QRegularExpression(rf'\b{safe_class}\b(?=\.)')
+    #             if not pattern.isValid():
+    #                 print(f"Invalid regex for: {safe_class}")
+    #                 continue
+
+    #             self.highlighting_rules.append((pattern, self.class_format, 'class'))
+    #         self.class_dots.add(classes)
+
+
     def highlightBlock(self, text):
         def is_overlapping(start, length, used_ranges):
             end = start + length
@@ -367,7 +394,9 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
             return False
 
 
+
         if self.useit:
+            # self.get_classes()
 
             default_format = QTextCharFormat()
             default_format.setForeground(QColor("white"))
@@ -412,7 +441,29 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
                 matches = pattern.globalMatch(text)
                 while matches.hasNext():
                     match = matches.next()
-                    if name == 'class' or name == 'function' or name == 'import':
+                    if name == 'class' or name == 'function' or name == 'import' or name == 'Fromimport':
+                        if (name == 'class' and match.captured(1) not in self.class_dots) or (name == 'import' and match.captured(1) not in self.class_dots):
+                        # if (name == 'class' and match.captured(1) not in self.class_dots) or (name == 'import' and match.captured(1) not in self.class_dots):
+
+
+                            if not match.captured(1) or match.captured(1) == '*':
+                                continue
+
+                            if match.captured(1) not in self.class_dots:
+                                import re
+                                safe_class = re.escape(match.captured(1))
+
+                                pattern = QRegularExpression(rf'\b{safe_class}\b(?=\.)')
+                                print(safe_class)
+                                if not pattern.isValid():
+                                    print(f"Invalid regex for: {safe_class}")
+                                    continue
+
+                                self.highlighting_rules.append((pattern, self.class_format, 'class'))
+                            self.class_dots.add(match.captured(1))
+
+
+
                         start = match.capturedStart(1)
                         length = match.capturedLength(1)
                     else:
@@ -498,6 +549,8 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
                     it = pattern.globalMatch(text)
                     while it.hasNext():
                         match = it.next()
+                        # print(match.captured(), "===", type_name)
+
 
                         if is_overlapping(match.capturedStart(), match.capturedLength(), used_ranges):
                             continue
@@ -519,7 +572,7 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
                         elif type_name == 'module':
                             self.setFormat(match.capturedStart(), match.capturedLength(), self.class_format)
                             # self.setFormat(match.capturedStart(), match.capturedLength(), self.function_calls_format)
-                        elif type_name == 'import':
+                        elif type_name == 'import' or type_name == 'Fromimport':
                             self.setFormat(match.capturedStart(), match.capturedLength(), self.class_format)
                             # self.setFormat(match.capturedStart(), match.capturedLength(), self.function_calls_format)
 

@@ -2,3 +2,4 @@ gitpython
 PyQt6
 commentjson
 jedi
+parso

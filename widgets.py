@@ -3,10 +3,9 @@ import re
 import subprocess
 import os
 from datetime import datetime
-from PyQt6.QtCore import QThreadPool, QRectF, QTimer, Qt, QRect, Qt, QDir, QFileInfo, pyqtSignal, QProcess
+from PyQt6.QtCore import QThreadPool, QRectF, QTimer, Qt, QRect, Qt, QDir, QFileInfo, pyqtSignal, QProcess, QParallelAnimationGroup, QEasingCurve, QEvent, QPropertyAnimation
 from PyQt6.QtGui import QPainter, QPainterPath, QPixmap, QTextCursor, QKeyEvent, QPainter, QColor, QFont, QFontMetrics, QTextCursor, QColor, QFileSystemModel, QIcon, QStandardItemModel, QStandardItem
 from PyQt6.QtWidgets import QMessageBox, QFrame, QComboBox, QLabel, QPushButton, QHBoxLayout, QLineEdit, QPlainTextEdit, QVBoxLayout, QWidget, QCompleter, QDockWidget, QTextEdit, QTreeView, QFileIconProvider, QTabBar
-
 from lines import ShowLines
 from get_style import get_css_style
 from config import get_fontFamily
@@ -2168,7 +2167,6 @@ class ListShortCuts(QWidget):
         self.hide()
 
 class GitDock(QDockWidget):
-    # def __init__(self, parent):
     def __init__(self, parent):
 
         super().__init__()
@@ -2188,7 +2186,6 @@ class GitDock(QDockWidget):
         self.labels()
         # self._layout()
 
-
         self.setWidget(content_widget)
         content_widget.setLayout(self.layout_)
 
@@ -2200,6 +2197,7 @@ class GitDock(QDockWidget):
         self.hide()
 
         self.checking()
+
 
     def _layout(self):
         self.layout_.addWidget(self.users_profile)
@@ -2429,17 +2427,6 @@ class GitDock(QDockWidget):
                     self.show_changes.show()
                     self.users_profile.show()
                     self._layout()
-        # self.commit_info.hide()
-
-
-                    # self.changes(file_changes)
-
-                    # self.untracked_files.setText(f"   {untracked_files}")
-
-                    # self.latest_commit.setText(f"↳ Message: {commit_msg}")
-                    # self.active_branch_name.setText(f"Branch: <code>{branch}</code>")
-                    # self.commit.setText(f"↳ Total Commits: {str(total)}")
-                    # self.last_commit.setText(f"↳ Last Committed: {get_latest_commit_time}")
 
             self.changes(file_changes)
 
@@ -2454,8 +2441,6 @@ class GitDock(QDockWidget):
     def checking(self):
         if not is_init():
             if self.users_profile.isVisible():
-                # self.layout_.addWidget(self.image_container, alignment = Qt.AlignmentFlag.AlignHCenter)
-                # self.layout_.removeWidget(self.image_container)
                 self.layout_.addWidget(self.image_container, alignment = Qt.AlignmentFlag.AlignHCenter)
 
 
