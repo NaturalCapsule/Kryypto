@@ -8,7 +8,8 @@ from PyQt6.QtGui import QPainter, QPainterPath, QPixmap, QTextCursor, QKeyEvent,
 from PyQt6.QtWidgets import QMessageBox, QFrame, QComboBox, QLabel, QPushButton, QHBoxLayout, QLineEdit, QPlainTextEdit, QVBoxLayout, QWidget, QCompleter, QDockWidget, QTextEdit, QTreeView, QFileIconProvider, QTabBar
 from lines import ShowLines
 from get_style import get_css_style
-from config import get_fontFamily
+from config import *
+# from config import get_fontFamily
 
 from highlighter import *
 from show_errors import *
@@ -27,468 +28,6 @@ commenting = ''
 current_file_path = ''
 
 # layout = QVBoxLayout(central_widget)
-
-# class MainText(QPlainTextEdit):
-
-#     def __init__(self, parent, window, font_size):
-#         super().__init__()
-#         self.font_size = font_size
-#         global commenting
-#         self.clipboard = window
-#         self.setCursorWidth(0)
-
-#         # self.setFont(QFont(get_fontFamily(), self.font_size))
-#         self.font__ = QFont(get_fontFamily(), get_fontSize())
-#         self.font__.setStyleStrategy(QFont.StyleStrategy.PreferAntialias)
-#         self.font__.setPixelSize(self.font_size)
-
-#         self.setFont(self.font__)
-
-
-
-#         self.selected_line = None
-#         self.selected_text = None
-#         self.setContextMenuPolicy(Qt.ContextMenuPolicy.NoContextMenu)
-
-#         self.doc_panel = None
-#         self.cursorPositionChanged.connect(self.update_docstring)
-
-#         self.finder = findingText(parent, self)
-
-#         self.cursor_visible = True
-#         self.cursor_color = QColor("#f38ba8")
-
-#         self.blink_timer = QTimer(self)
-#         self.blink_timer.timeout.connect(self.toggle_cursor)
-#         self.blink_timer.start(200)
-
-#         self.line_number_area = ShowLines(self, self.font_size)
-#         self.blockCountChanged.connect(self.update_line_number_area_width)
-#         self.updateRequest.connect(self.update_line_number_area)
-
-#         self.update_line_number_area_width(0)
-#         self.setObjectName('Editor')
-
-#         self.setStyleSheet(get_css_style())
-
-#         self.show_completer = False
-
-#         self.completer = QCompleter()
-#         popup = self.completer.popup()
-#         popup.setObjectName('AutoCompleter')
-#         popup.setFont(self.font__)
-#         popup.setStyleSheet(get_css_style())
-
-
-#         self.completer.setWidget(self)
-#         self.completer.setCompletionMode(QCompleter.CompletionMode.PopupCompletion)
-#         self.completer.setCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
-#         self.completer.activated.connect(self.insert_completion)
-#         self.hide()
-
-#     def toggle_cursor(self):
-#         self.cursor_visible = not self.cursor_visible
-#         self.viewport().update()
-
-#     def paintEvent(self, event):
-#         super().paintEvent(event)
-#         if self.cursor_visible and self.hasFocus():
-#             painter = QPainter(self.viewport())
-#             painter.setPen(self.cursor_color)
-#             rect = self.cursorRect()
-#             painter.fillRect(rect.left(), rect.top(), 3, rect.height(), QColor("#f38ba8"))
-
-
-
-#     def insert_completion(self, completion):
-#         cursor = self.textCursor()
-#         cursor.beginEditBlock()
-
-#         cursor.select(cursor.SelectionType.WordUnderCursor)
-#         cursor.removeSelectedText()
-#         cursor.insertText(completion)
-#         self.setTextCursor(cursor)
-#         cursor.endEditBlock()
-
-
-#     def update_docstring(self):
-#         cursor = self.textCursor()
-#         cursor.beginEditBlock()
-
-#         line = cursor.blockNumber() + 1
-#         column = cursor.positionInBlock()
-#         code = self.toPlainText()
-
-#         doc = self.get_definition_docstring(code, line, column)
-#         doc = doc or ""
-#         if self.doc_panel:
-#             if doc == "":
-#                 self.doc_panel.hide()
-#                 if self.doc_panel.custom_title:
-#                     self.doc_panel.custom_title.hide()
-#                     self.doc_panel.dock.hide()
-#             else:
-#                 self.doc_viewer = self.parse_docstring(doc)
-#                 self.doc_panel.setHtml(self.doc_viewer or "")
-
-#                 self.doc_panel.dock.show()
-#                 self.doc_panel.custom_title.show()
-
-#                 self.doc_panel.show()
-
-#         cursor.endEditBlock()
-
-#     def parse_docstring(self, doc: str):
-#         lines = doc.strip().splitlines()
-#         formatted = []
-#         for line in lines:
-#             line = line.strip()
-#             if line in ('---', '***', '___'):
-#                 formatted.append('<hr>')
-#             elif line.endswith(':') and not line.startswith(' '):
-#                 formatted.append(f'<b style="font-size:30px;">{line}</b>')
-
-#             elif re.match(r'^\*{3,}$', line):
-#                 formatted.append('<hr>')
-#             else:
-#                 formatted.append(line)
-#         return "<br>".join(formatted)
-
-#     def get_definition_docstring(self, code, line, column):
-#         global current_file_path
-#         try:
-#             script = jedi.Script(code=code, path=fr"{current_file_path}")
-#             definitions = script.help(line, column)
-
-#             if definitions:
-#                 return definitions[0].docstring()
-#         except Exception as e:
-#             return f"Error: {e}"
-
-#         return ""
-
-
-#     def keyPressEvent(self, event: QKeyEvent):
-#         global current_file_path
-#         # self.
-#         key = event.key()
-#         text = event.text()
-#         pairs = {'"': '"', "'": "'", '(': ')', '[': ']', '{': '}'}
-
-
-#         if self.completer.popup().isVisible():
-#             if key in (Qt.Key.Key_Enter, Qt.Key.Key_Return, Qt.Key.Key_Tab):
-#                 event.ignore()
-#                 self.insert_completion(self.completer.currentCompletion())
-#                 self.completer.popup().hide()
-#                 return
-#             elif key == Qt.Key.Key_Escape:
-#                 self.completer.popup().hide()
-#                 return
-
-#         if text in pairs:
-#             cursor = self.textCursor()
-#             cursor.beginEditBlock()
-
-#             closing_char = pairs[text]
-#             cursor.insertText(text + closing_char)
-#             cursor.movePosition(QTextCursor.MoveOperation.Left)
-#             self.setTextCursor(cursor)
-
-#             cursor.endEditBlock()
-#             return
-
-#         if key == Qt.Key.Key_Tab:
-#             cursor = self.textCursor()
-#             cursor.beginEditBlock()
-
-#             cursor.insertText(" " * 4)
-
-#             cursor.endEditBlock()
-#             return
-
-
-#         if key == Qt.Key.Key_Slash and event.modifiers() & Qt.KeyboardModifier.ControlModifier:
-#             cursor = self.textCursor()
-#             cursor.beginEditBlock()
-
-
-#             if not cursor.hasSelection():
-#                 cursor.select(QTextCursor.SelectionType.LineUnderCursor)
-
-#             start = cursor.selectionStart()
-#             end = cursor.selectionEnd()
-
-#             cursor.setPosition(start)
-#             cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock)
-#             start_block = cursor.blockNumber()
-
-#             cursor.setPosition(end)
-#             cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock)
-#             end_block = cursor.blockNumber()
-
-#             for block_num in range(start_block, end_block + 1):
-#                 block = self.document().findBlockByNumber(block_num)
-#                 text = block.text()
-
-#                 leading_spaces = len(text) - len(text.lstrip())
-#                 indent = text[:leading_spaces]
-#                 content = text[leading_spaces:]
-
-#                 cursor.setPosition(block.position())
-#                 cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock, QTextCursor.MoveMode.KeepAnchor)
-
-#                 if content.startswith(commenting) and not content.startswith('/*') and not content.startswith('<!--'):
-#                     content = content[len(commenting):].lstrip()
-
-#                 elif content.startswith('/*'):
-#                     content = content[1:-2].lstrip()
-#                     content = content[len(commenting):].lstrip()
-
-#                 elif content.startswith('<!--'):
-#                     content = content[4:-3].lstrip()
-#                     # content = content[len(commenting):].lstrip()
-
-#                 else:
-#                     if commenting == '/*':
-#                         content += '*/'
-#                     elif commenting == '<!--':
-#                         content += '-->'
-
-#                     content = f"{commenting} {content}"
-
-#                 cursor.insertText(indent + content)
-
-#             cursor.endEditBlock()
-#             return
-
-#         if key == Qt.Key.Key_X and event.modifiers() & Qt.KeyboardModifier.ControlModifier:
-#             cursor = self.textCursor()
-#             cursor.beginEditBlock()
-
-#             if cursor.selectedText() == '':
-#                 cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock)
-#                 cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock, QTextCursor.MoveMode.KeepAnchor)
-#                 text = cursor.selectedText()
-#                 self.selected_line = text
-
-#                 self.selected_text = None
-
-#                 self.clipboard.setText(self.selected_line)
-#                 cursor.removeSelectedText()
-#                 cursor.deleteChar()
-
-#             else:
-#                 self.selected_text = cursor.selectedText()
-#                 self.selected_line = None
-#                 self.clipboard.setText(self.selected_text)
-#                 cursor.removeSelectedText()
-#                 cursor.deleteChar()
-
-#             self.completer.popup().hide()
-#             cursor.endEditBlock()
-
-#             return
-
-#         if key == Qt.Key.Key_C and event.modifiers() & Qt.KeyboardModifier.ControlModifier:
-#             cursor = self.textCursor()
-#             cursor.beginEditBlock()
-
-#             if cursor.selectedText() == '':
-
-
-#                 cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock)
-#                 cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock, QTextCursor.MoveMode.KeepAnchor)
-#                 text = cursor.selectedText()
-#                 self.selected_line = text
-
-#                 self.clipboard.setText(self.selected_line)
-#                 self.selected_text = None
-
-
-#             else:
-
-#                 self.selected_text = cursor.selectedText()
-#                 self.selected_line = None
-#                 self.clipboard.setText(self.selected_text)
-
-
-#             cursor.endEditBlock()
-
-#             return
-
-#         if key == Qt.Key.Key_V and event.modifiers() & Qt.KeyboardModifier.ControlModifier:
-#             if self.clipboard.text() != '' and self.selected_line is None:
-#                 cursor = self.textCursor()
-#                 cursor.beginEditBlock()
-
-#                 self.setTextCursor(cursor)
-
-#                 cursor.insertText(self.clipboard.text())
-#                 cursor.endEditBlock()
-
-#                 self.selected_line = None
-
-#             if self.selected_line is not None:
-#                 cursor = self.textCursor()
-#                 cursor.beginEditBlock()
-
-#                 cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock)
-#                 self.setTextCursor(cursor)
-
-#                 cursor.insertText("\n" + self.selected_line)
-
-#                 self.selected_text = None
-#                 cursor.endEditBlock()
-#             return
-
-#         if key == Qt.Key.Key_F and event.modifiers() & Qt.KeyboardModifier.ControlModifier:
-#             if self.finder.isVisible():
-#                 self.finder.hide()
-#                 self.setFocus()
-#             else:
-#                 self.finder.show()
-#                 self.finder.setFocus()
-#             return
-
-#         if key in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
-#             cursor = self.textCursor()
-#             cursor.beginEditBlock()
-
-#             block_text = cursor.block().text()
-
-#             indent_match = re.match(r'^(\s*)', block_text)
-#             current_indent = indent_match.group(1) if indent_match else ""
-
-#             if block_text.strip().endswith(":"):
-#                 new_indent = current_indent + " " * 4
-#             else:
-#                 new_indent = current_indent
-
-#             cursor.insertText("\n" + new_indent)
-#             cursor.endEditBlock()
-
-#             return
-
-#         super().keyPressEvent(event)
-
-#         if not (Qt.Key.Key_A <= key <= Qt.Key.Key_Z or 
-#                 Qt.Key.Key_0 <= key <= Qt.Key.Key_9 or 
-#                 key in (Qt.Key.Key_Period, Qt.Key.Key_Underscore)):
-#             return
-
-
-#         try:
-#             if self.show_completer:
-#                 code = self.toPlainText()
-#                 cursor = self.textCursor()
-#                 cursor.beginEditBlock()
-
-#                 pos = cursor.position()
-
-#                 line, column = self.cursor_to_line_column(pos)
-
-#                 script = jedi.Script(code=code, path=fr"{current_file_path}")
-#                 completions = script.complete(line, column)
-
-#                 model = QStandardItemModel()
-
-
-#                 words = []
-#                 for c in completions[:30]:
-#                     words.append(c.name)
-#                     item = QStandardItem()
-#                     item.setText(c.name)
-#                     if c.type == 'statement':
-#                         item.setIcon(QIcon('icons/autocompleterIcons/variable.svg'))
-#                     elif c.type == 'class' or c.type == 'module':
-#                         item.setIcon(QIcon('icons/autocompleterIcons/class.svg'))
-#                     elif c.type == 'function':
-#                         item.setIcon(QIcon('icons/autocompleterIcons/function.svg'))
-#                     elif c.type == 'keyword':
-#                         item.setIcon(QIcon('icons/autocompleterIcons/keyword.svg'))
-
-#                     model.appendRow(item)
-
-
-#                 if words:
-#                     cursor.select(cursor.SelectionType.WordUnderCursor)
-#                     prefix = cursor.selectedText()
-#                     self.completer.setModel(model)
-#                     self.completer.setCompletionPrefix(prefix)
-#                     cr = self.cursorRect()
-#                     cr.setWidth(self.completer.popup().sizeHintForColumn(0) + 10)
-#                     self.completer.complete(cr)
-#                 else:
-#                     self.completer.popup().hide()
-
-#                 cursor.endEditBlock()
-
-
-
-#         except Exception as e:
-#             print("Autocomplete error:", e)
-#             self.completer.popup().hide()
-
-
-
-#     def cursor_to_line_column(self, pos):
-#         text = self.toPlainText()
-#         lines = text[:pos].splitlines()
-#         line = len(lines) if lines else 1
-#         column = len(lines[-1]) if lines else 0
-#         return line, column
-
-
-#     def line_number_area_width(self, font_metrics):
-#         # font_metrics = QFontMetrics(QFont("Maple Mono", 19))
-#         # font_metrics = QFontMetrics(QFont("Maple Mono", self.font_size))
-
-#         digits = len(str(self.blockCount()))
-#         return 3 + font_metrics.horizontalAdvance('9') * digits
-
-#     def update_line_number_area_width(self, _):
-#         self.setViewportMargins(self.line_number_area_width(self.line_number_area.font_metrics), 0, 0, 0)
-
-#     def update_line_number_area(self, rect, dy):
-#         if dy:
-#             self.line_number_area.scroll(0, dy)
-#         else:
-#             self.line_number_area.update(0, rect.y(), self.line_number_area.width(), rect.height())
-
-#         if rect.contains(self.viewport().rect()):
-#             self.update_line_number_area_width(0)
-
-#     def resizeEvent(self, event):
-#         super().resizeEvent(event)
-#         cr = self.contentsRect()
-#         self.line_number_area.setGeometry(QRect(cr.left(), cr.top(), self.line_number_area_width(self.line_number_area.font_metrics), cr.height()))
-
-#     def line_number_area_paint_event(self, event, font_metrics):
-#         painter = QPainter(self.line_number_area)
-#         painter.fillRect(event.rect(), QColor(30, 30, 46))
-#         # self.num_lines_font = QFont("Maple Mono", self.font_size)
-
-#         # painter.setFont(self.num_lines_font)
-#         # font_metrics = QFontMetrics(self.num_lines_font)
-
-#         block = self.firstVisibleBlock()
-#         block_number = block.blockNumber()
-#         top = int(self.blockBoundingGeometry(block).translated(self.contentOffset()).top())
-#         bottom = top + int(self.blockBoundingRect(block).height())
-
-#         while block.isValid() and top <= event.rect().bottom():
-#             if block.isVisible() and bottom >= event.rect().top():
-#                 number = str(block_number + 1)
-#                 painter.setPen(QColor(160, 160, 160))
-#                 painter.drawText(
-#                     0, top, self.line_number_area.width() - 5, font_metrics.height(),
-#                     Qt.AlignmentFlag.AlignRight, number
-#                 )
-#             block = block.next()
-#             top = bottom
-#             bottom = top + int(self.blockBoundingRect(block).height())
-#             block_number += 1
 
 
 class MainText(QPlainTextEdit):
@@ -2041,7 +1580,7 @@ class WelcomeWidget(QWidget):
         current_date.setObjectName('Date')
         current_date.setStyleSheet(get_css_style())
 
-        shortcut_1 = QLabel('Press <span style="font-family: monospace; background-color: #2d2d2d; padding: 2px 4px; border: 1px; border-radius: 15px;">Ctrl + B</span> to open Directory Viewer and start working!')
+        shortcut_1 = QLabel(f'Press <span style="font-family: monospace; background-color: #2d2d2d; padding: 2px 4px; border: 1px; border-radius: 15px;">{Hide_Show_viewer()}</span> to open Directory Viewer and start working!')
         shortcut_1.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
 
@@ -2056,14 +1595,14 @@ class WelcomeWidget(QWidget):
         # shortcut_2.setStyleSheet(get_css_style())
 
 
-        shortcut_2 = QLabel('Press <span style="font-family: monospace; background-color: #2d2d2d; padding: 2px 4px; border: 1px; border-radius: 15px;">CTRL + L</span> to open Shorcut List')
+        shortcut_2 = QLabel(f'Press <span style="font-family: monospace; background-color: #2d2d2d; padding: 2px 4px; border: 1px; border-radius: 15px;">{Show_Hide_Shortcuts()}</span> to open Shorcut List')
         shortcut_2.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
 
         shortcut_2.setObjectName('ShortCutTexts')
         shortcut_2.setStyleSheet(get_css_style())
 
-        shortcut_3 = QLabel('Press <span style="font-family: monospace; background-color: #2d2d2d; padding: 2px 4px; border: 1px; border-radius: 15px;">Ctrl + Shift + S</span> to open CSS file')
+        shortcut_3 = QLabel(f'Press <span style="font-family: monospace; background-color: #2d2d2d; padding: 2px 4px; border: 1px; border-radius: 15px;">{OpenStyleFile()}</span> to open CSS file')
         shortcut_3.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignBottom)
 
 
@@ -2071,7 +1610,7 @@ class WelcomeWidget(QWidget):
         shortcut_3.setStyleSheet(get_css_style())
 
 
-        shortcut_4 = QLabel('Press <span style="font-family: monospace; background-color: #2d2d2d; padding: 2px 4px; border: 1px; border-radius: 15px;">Ctrl + Shift + O</span> to open Configuration file')
+        shortcut_4 = QLabel(f'Press <span style="font-family: monospace; background-color: #2d2d2d; padding: 2px 4px; border: 1px; border-radius: 15px;">{OpenConfigFile()}</span> to open Configuration file')
         shortcut_4.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignBottom)
 
 
@@ -2120,38 +1659,59 @@ class ListShortCuts(QWidget):
         self.layout_.setContentsMargins(0, 0, 0, 0)
         self.setLayout(self.layout_)
 
-        shortcut_1 = QLabel('Save Current File: <span style="background-color: #2d2d2d">Ctrl + S</span>')
-        shortcut_2 = QLabel('Show/Hide Directory Viewer: <span style="background-color: #2d2d2d">Ctrl + B</span>')
-        shortcut_3 = QLabel('Run current python file: <span style="background-color: #2d2d2d">Ctrl + N</span>')
-        shortcut_4 = QLabel('Kill Terminal: <span style="background-color: #2d2d2d">Ctrl + Shift + G</span>')
-        shortcut_5 = QLabel('Show/Hide Terminal: <span style="background-color: #2d2d2d">Ctrl + T</span>')
-        shortcut_6 = QLabel('Go to line: <span style="background-color: #2d2d2d">Ctrl + Shift + H</span>')
-        shortcut_7 = QLabel('Find text: <span style="background-color: #2d2d2d">Ctrl + F</span>')
-        shortcut_8 = QLabel('Get Error: <span style="background-color: #2d2d2d">Ctrl + Shift + C</span>')
-        shortcut_9 = QLabel('Move Tab to left: <span style="background-color: #2d2d2d">Ctrl + Shift + E</span>')
-        shortcut_10 = QLabel('Move tab to right: <span style="background-color: #2d2d2d">Ctrl + Shift + T</span>')
-        shortcut_11 = QLabel('Remove current tab: <span style="background-color: #2d2d2d">Ctrl + Shift + R</span>')
-        shortcut_12 = QLabel('Remove line indent: <span style="background-color: #2d2d2d">Ctrl + [</span>')
-        shortcut_13 = QLabel('Indet line: <span style="background-color: #2d2d2d">Ctrl + ]</span>')
-        shortcut_14 = QLabel('Increase font size: <span style="background-color: #2d2d2d">Ctrl + =</span>')
-        shortcut_15 = QLabel('decrease font size: <span style="background-color: #2d2d2d">Ctrl + -</span>')
-        shortcut_16 = QLabel('Go to new line: <span style="background-color: #2d2d2d">Ctrl + Return</span>')
-        shortcut_17 = QLabel('Remove current line: <span style="background-color: #2d2d2d">Ctrl + Shift + K</span>')
-        shortcut_18 = QLabel('Open Configuration file: <span style="background-color: #2d2d2d">Ctrl + Shift + O</span>')
-        shortcut_19 = QLabel('Show/Hide Git Panel: <span style="background-color: #2d2d2d">Ctrl + G</span>')
-        shortcut_20 = QLabel('Select Folder: <span style="background-color: #2d2d2d">Ctrl + I</span>')
+        shortcut_1 = QLabel(f'Save Current File: <span style="background-color: #2d2d2d">{SaveCurrentFile()}</span>')
+        # shortcut_1 = QLabel('Save Current File: <span style="background-color: #2d2d2d">Ctrl + S</span>')
+        shortcut_2 = QLabel(f'Show/Hide Directory Viewer: <span style="background-color: #2d2d2d">{Hide_Show_viewer()}</span>')
+        # shortcut_2 = QLabel('Show/Hide Directory Viewer: <span style="background-color: #2d2d2d">Ctrl + B</span>')
+        shortcut_3 = QLabel(f'Run current python file: <span style="background-color: #2d2d2d">{RunCurrentPythonFile()}</span>')
+        # shortcut_3 = QLabel(f'Run current python file: <span style="background-color: #2d2d2d">Ctrl + N</span>')
+        shortcut_4 = QLabel(f'Kill Terminal: <span style="background-color: #2d2d2d">{KillTerminalSession()}</span>')
+        # shortcut_4 = QLabel(f'Kill Terminal: <span style="background-color: #2d2d2d">Ctrl + Shift + G</span>')
+        shortcut_5 = QLabel(f'Show/Hide Terminal: <span style="background-color: #2d2d2d">{Hide_Show_term()}</span>')
+        # shortcut_5 = QLabel(f'Show/Hide Terminal: <span style="background-color: #2d2d2d">Ctrl + T</span>')
+        shortcut_6 = QLabel(f'Go to line: <span style="background-color: #2d2d2d">{GotoBlock_()}</span>')
+        # shortcut_6 = QLabel(f'Go to line: <span style="background-color: #2d2d2d">Ctrl + Shift + H</span>')
+        shortcut_7 = QLabel(f'Find text: <span style="background-color: #2d2d2d">Ctrl + F</span>')
+        shortcut_8 = QLabel(f'Get Error: <span style="background-color: #2d2d2d">Ctrl + Shift + C</span>')
+        shortcut_9 = QLabel(f'Move Tab to left: <span style="background-color: #2d2d2d">{MoveTabLeft()}</span>')
+        # shortcut_9 = QLabel(f'Move Tab to left: <span style="background-color: #2d2d2d">Ctrl + Shift + E</span>')
+        shortcut_10 = QLabel(f'Move tab to right: <span style="background-color: #2d2d2d">{MoveTabRight()}</span>')
+        # shortcut_10 = QLabel(f'Move tab to right: <span style="background-color: #2d2d2d">Ctrl + Shift + T</span>')
+        shortcut_11 = QLabel(f'Remove current tab: <span style="background-color: #2d2d2d">{RemoveCurrentTab()}</span>')
+        # shortcut_11 = QLabel(f'Remove current tab: <span style="background-color: #2d2d2d">Ctrl + Shift + R</span>')
+        shortcut_12 = QLabel(f'Remove line indent: <span style="background-color: #2d2d2d">{removeIndentCurrent()}</span>')
+        # shortcut_12 = QLabel(f'Remove line indent: <span style="background-color: #2d2d2d">Ctrl + [</span>')
+        shortcut_13 = QLabel(f'Indet line: <span style="background-color: #2d2d2d">{IndentCurrentLine()}</span>')
+        # shortcut_13 = QLabel(f'Indet line: <span style="background-color: #2d2d2d">Ctrl + ]</span>')
+        shortcut_14 = QLabel(f'Increase font size: <span style="background-color: #2d2d2d">{IncreaseFont()}</span>')
+        # shortcut_14 = QLabel(f'Increase font size: <span style="background-color: #2d2d2d">Ctrl + =</span>')
+        shortcut_15 = QLabel(f'decrease font size: <span style="background-color: #2d2d2d">{DecreaseFont()}</span>')
+        # shortcut_15 = QLabel(f'decrease font size: <span style="background-color: #2d2d2d">Ctrl + -</span>')
+        shortcut_16 = QLabel(f'Go to new line: <span style="background-color: #2d2d2d">{newLine()}</span>')
+        # shortcut_16 = QLabel(f'Go to new line: <span style="background-color: #2d2d2d">Ctrl + Return</span>')
+        shortcut_17 = QLabel(f'Remove current line: <span style="background-color: #2d2d2d">{DeleteLine()}</span>')
+        # shortcut_17 = QLabel(f'Remove current line: <span style="background-color: #2d2d2d">Ctrl + Shift + K</span>')
+        shortcut_18 = QLabel(f'Open Configuration file: <span style="background-color: #2d2d2d">{OpenConfigFile()}</span>')
+        # shortcut_18 = QLabel(f'Open Configuration file: <span style="background-color: #2d2d2d">Ctrl + Shift + O</span>')
+        shortcut_19 = QLabel(f'Show/Hide Git Panel: <span style="background-color: #2d2d2d">{Hide_Show_gitpanel()}</span>')
+        # shortcut_19 = QLabel(f'Show/Hide Git Panel: <span style="background-color: #2d2d2d">Ctrl + G</span>')
+        shortcut_20 = QLabel(f'Select Folder: <span style="background-color: #2d2d2d">{SelectFolder()}</span>')
+        shortcut_21 = QLabel(f'Close: <span style="background-color: #2d2d2d">{Close()}</span>')
+        shortcut_22 = QLabel(f'Minimize: <span style="background-color: #2d2d2d">{Minimize()}</span>')
+        shortcut_23 = QLabel(f'Restart: <span style="background-color: #2d2d2d">{Reboot()}</span>')
+        shortcut_24 = QLabel(f'Maximize: <span style="background-color: #2d2d2d">{Maximize()}</span>')
 
         self.left_column = QVBoxLayout()
         self.right_column = QVBoxLayout()
         self.left_column.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.right_column.setAlignment(Qt.AlignmentFlag.AlignTop)
 
-        for shortcut in [shortcut_1, shortcut_2, shortcut_3, shortcut_4, shortcut_5, shortcut_6, shortcut_7, shortcut_8, shortcut_9, shortcut_19]:
+        for shortcut in [shortcut_1, shortcut_2, shortcut_3, shortcut_4, shortcut_5, shortcut_6, shortcut_7, shortcut_8, shortcut_9, shortcut_19, shortcut_21, shortcut_23]:
             shortcut.setObjectName('ShortCutTexts')
             shortcut.setStyleSheet(get_css_style())
             self.left_column.addWidget(shortcut)
 
-        for shortcut in [shortcut_10, shortcut_11, shortcut_12, shortcut_13, shortcut_14, shortcut_15, shortcut_16, shortcut_17, shortcut_18, shortcut_20]:
+        for shortcut in [shortcut_10, shortcut_11, shortcut_12, shortcut_13, shortcut_14, shortcut_15, shortcut_16, shortcut_17, shortcut_18, shortcut_20, shortcut_22, shortcut_24]:
             shortcut.setObjectName('ShortCutTexts')
             shortcut.setStyleSheet(get_css_style())
             self.right_column.addWidget(shortcut)
@@ -2176,7 +1736,6 @@ class GitDock(QDockWidget):
         self.setStyleSheet(get_css_style())
         self.clearFocus()
         self.setWindowTitle('Git Panel')
-
         content_widget = QWidget()
         self.layout_ = QVBoxLayout()
         content_widget.setObjectName('GitPanel')
@@ -2185,6 +1744,7 @@ class GitDock(QDockWidget):
 
         self.labels()
         # self._layout()
+        
 
         self.setWidget(content_widget)
         content_widget.setLayout(self.layout_)

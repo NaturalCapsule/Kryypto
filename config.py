@@ -402,3 +402,91 @@ def get_cursorColor():
 
 def get_cursorWidth():
     return config.getint('Cursor', 'Width')
+
+def newLine():
+    return config.get('ShortCuts', 'new-line')
+
+
+def DeleteLine():
+    return config.get('ShortCuts', 'deleteCurrent-line')
+
+
+def GotoBlock_():
+    return config.get('ShortCuts', 'GotoBlock')
+
+
+def IncreaseFont():
+    return config.get('ShortCuts', 'IncreaseFont')
+
+
+def DecreaseFont():
+    return config.get('ShortCuts', 'DecreaseFont')
+
+
+def IndentCurrentLine():
+    return config.get('ShortCuts', 'IndentCurrent-line')
+
+
+def removeIndentCurrent():
+    return config.get('ShortCuts', 'removeIndentCurrent-line')
+
+
+def MoveTabRight():
+    return config.get('ShortCuts', 'MoveTabRight')
+
+
+def MoveTabLeft():
+    return config.get('ShortCuts', 'MoveTabLeft')
+
+
+def RemoveCurrentTab():
+    return config.get('ShortCuts', 'RemoveCurrentTab')
+
+def Hide_Show_term():
+    return config.get('ShortCuts', 'Hide-Show-Terminal')
+
+def Hide_Show_viewer():
+    return config.get('ShortCuts', 'Hide-Show-DirectoryViewer')
+
+# def Hide_Show_shortcuts():
+#     return config.get('ShortCuts', 'Hide-Show-ShortCuts')
+
+def Hide_Show_gitpanel():
+    return config.get('ShortCuts', 'Hide-Show-GitPanel')
+
+def KillTerminalSession():
+    return config.get('ShortCuts', 'KillTerminalSession')
+
+def RunCurrentPythonFile():
+    return config.get('ShortCuts', 'RunCurrentPythonFile')
+
+def OpenConfigFile():
+    return config.get('ShortCuts', 'OpenConfigFile')
+
+
+def OpenStyleFile():
+    return config.get('ShortCuts', 'OpenStyleFile')
+
+def Maximize():
+    return config.get('ShortCuts', 'Maximize')
+
+def SaveCurrentFile():
+    return config.get('ShortCuts', 'SaveCurrentFile')
+
+def SelectFolder():
+    return config.get('ShortCuts', 'SelectFolder')
+
+def Show_Hide_Shortcuts():
+    return config.get('ShortCuts', 'Hide-Show-ShortCuts')
+
+def Minimize():
+    return config.get('ShortCuts', 'Minimize')
+
+def Close():
+    return config.get('ShortCuts', 'Close')
+
+def Reboot():
+    return config.get('ShortCuts', 'Reboot')
+
+def setCustomTitleBar():
+    return config.getboolean('Appearance', 'CustomTitleBar')

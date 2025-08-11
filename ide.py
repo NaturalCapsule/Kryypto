@@ -5,6 +5,8 @@ from titlebar import CustomTitleBar
 from PyQt6.QtCore import Qt, QPoint, QRect
 from settings import Setting
 from shortcuts import *
+
+from config import setCustomTitleBar
 from get_style import get_css_style
 from pygit import open_file_dialog, folder_path_
 from config import get_fontSize
@@ -17,7 +19,6 @@ class Kryypto(QMainWindow):
         self.opened_directory = open_file_dialog(self, True)
         self.font_size = 12
         self.settings.setValue('Font Size', get_fontSize())
-
         self.settingUP_settings()
 
         self.resize_margin = 20
@@ -45,8 +46,9 @@ class Kryypto(QMainWindow):
         self.setObjectName("MainWindow")
         self.setStyleSheet(get_css_style())
         
-        self.setWindowFlags(Qt.WindowType.FramelessWindowHint)
-        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
+        if setCustomTitleBar():
+            self.setWindowFlags(Qt.WindowType.FramelessWindowHint)
+            self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
 
     def settingUP_settings(self):
         try:
@@ -62,17 +64,30 @@ class Kryypto(QMainWindow):
         import widgets
         
         central_widget = QWidget()
-        
-        central_widget.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
-        central_widget.setMouseTracking(True)
+
+
+        # if setCustomTitleBar():
+        #     self.title_bar = CustomTitleBar(self)
+        #     main_layout.addWidget(self.title_bar)
+        #     central_widget.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
+        #     central_widget.setMouseTracking(True)
 
 
         main_layout = QVBoxLayout(central_widget)
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.setSpacing(0)
 
-        self.title_bar = CustomTitleBar(self)
-        main_layout.addWidget(self.title_bar)
+        if setCustomTitleBar():
+            self.title_bar = CustomTitleBar(self)
+            main_layout.addWidget(self.title_bar)
+            central_widget.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
+            central_widget.setMouseTracking(True)
+
+
+        # if setCustomTitleBar():
+
+        #     self.title_bar = CustomTitleBar(self)
+        #     main_layout.addWidget(self.title_bar)
 
         content_area = QWidget()
         content_area.setMouseTracking(True)
@@ -182,69 +197,71 @@ class Kryypto(QMainWindow):
         else:
             self.setCursor(Qt.CursorShape.ArrowCursor)
 
-    def mousePressEvent(self, event):
-        if event.button() == Qt.MouseButton.LeftButton:
-            self.resize_mode = self.get_resize_mode(event.position().toPoint())
-            if self.resize_mode:
-                self.resize_start_pos = event.globalPosition().toPoint()
-                self.resize_start_geometry = self.geometry()
+
+    if setCustomTitleBar():
+        def mousePressEvent(self, event):
+            if event.button() == Qt.MouseButton.LeftButton:
+                self.resize_mode = self.get_resize_mode(event.position().toPoint())
+                if self.resize_mode:
+                    self.resize_start_pos = event.globalPosition().toPoint()
+                    self.resize_start_geometry = self.geometry()
+                    event.accept()
+                    return
+            super().mousePressEvent(event)
+
+        def mouseMoveEvent(self, event):
+            if not self.resize_mode:
+                mode = self.get_resize_mode(event.position().toPoint())
+                self.update_cursor(mode)
+            else:
+                current_pos = event.globalPosition().toPoint()
+                diff = current_pos - self.resize_start_pos
+                
+                new_geo = QRect(self.resize_start_geometry)
+                
+                if 'left' in self.resize_mode:
+                    new_geo.setLeft(new_geo.left() + diff.x())
+                if 'right' in self.resize_mode:
+                    new_geo.setRight(new_geo.right() + diff.x())
+                if 'top' in self.resize_mode:
+                    new_geo.setTop(new_geo.top() + diff.y())
+                if 'bottom' in self.resize_mode:
+                    new_geo.setBottom(new_geo.bottom() + diff.y())
+                
+                min_width, min_height = 800, 600
+                if new_geo.width() < min_width:
+                    if 'left' in self.resize_mode:
+                        new_geo.setLeft(new_geo.right() - min_width)
+                    else:
+                        new_geo.setRight(new_geo.left() + min_width)
+                
+                if new_geo.height() < min_height:
+                    if 'top' in self.resize_mode:
+                        new_geo.setTop(new_geo.bottom() - min_height)
+                    else:
+                        new_geo.setBottom(new_geo.top() + min_height)
+                
+                self.setGeometry(new_geo)
                 event.accept()
                 return
-        super().mousePressEvent(event)
 
-    def mouseMoveEvent(self, event):
-        if not self.resize_mode:
-            mode = self.get_resize_mode(event.position().toPoint())
-            self.update_cursor(mode)
-        else:
-            current_pos = event.globalPosition().toPoint()
-            diff = current_pos - self.resize_start_pos
-            
-            new_geo = QRect(self.resize_start_geometry)
-            
-            if 'left' in self.resize_mode:
-                new_geo.setLeft(new_geo.left() + diff.x())
-            if 'right' in self.resize_mode:
-                new_geo.setRight(new_geo.right() + diff.x())
-            if 'top' in self.resize_mode:
-                new_geo.setTop(new_geo.top() + diff.y())
-            if 'bottom' in self.resize_mode:
-                new_geo.setBottom(new_geo.bottom() + diff.y())
-            
-            min_width, min_height = 800, 600
-            if new_geo.width() < min_width:
-                if 'left' in self.resize_mode:
-                    new_geo.setLeft(new_geo.right() - min_width)
-                else:
-                    new_geo.setRight(new_geo.left() + min_width)
-            
-            if new_geo.height() < min_height:
-                if 'top' in self.resize_mode:
-                    new_geo.setTop(new_geo.bottom() - min_height)
-                else:
-                    new_geo.setBottom(new_geo.top() + min_height)
-            
-            self.setGeometry(new_geo)
-            event.accept()
-            return
-
-        super().mouseMoveEvent(event)
+            super().mouseMoveEvent(event)
 
 
-    def enterEvent(self, event):
-        self.setMouseTracking(True)
-        super().enterEvent(event)
+        def enterEvent(self, event):
+            self.setMouseTracking(True)
+            super().enterEvent(event)
 
-    def mouseReleaseEvent(self, event):
-        if event.button() == Qt.MouseButton.LeftButton:
-            self.resize_mode = None
-            self.setCursor(Qt.CursorShape.ArrowCursor)
-        super().mouseReleaseEvent(event)
+        def mouseReleaseEvent(self, event):
+            if event.button() == Qt.MouseButton.LeftButton:
+                self.resize_mode = None
+                self.setCursor(Qt.CursorShape.ArrowCursor)
+            super().mouseReleaseEvent(event)
 
-    def leaveEvent(self, event):
-        if not self.resize_mode:
-            self.setCursor(Qt.CursorShape.ArrowCursor)
-        super().leaveEvent(event)
+        def leaveEvent(self, event):
+            if not self.resize_mode:
+                self.setCursor(Qt.CursorShape.ArrowCursor)
+            super().leaveEvent(event)
 
     def closeEvent(self, event: QCloseEvent):
         from widgets import pop_messagebox

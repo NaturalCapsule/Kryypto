@@ -27,34 +27,62 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
         self._last_instances = {}
 
     def setup_highlighting_rules(self):
-        #ISSUE HERE
         r, g, b = get_comment()
+        self.string_format = QTextCharFormat()
+        r, g, b = get_string()
+        self.string_format.setForeground(QColor(r, g, b))
+
+
+        r, g, b = get_comment()
+
         self.comment_format = QTextCharFormat()
         self.comment_format.setForeground(QColor(r, g, b))  
-        self.highlighting_rules.append((QRegularExpression('^#[^\n]*'), self.comment_format, 'comment'))
+        # self.highlighting_rules.append((QRegularExpression('#[^\n]*'), self.comment_format, 'comment'))
+
+
+        self.string_pattern = QRegularExpression(r'"([^"\\]|\\.)*"|\'([^\'\\]|\\.)*\'')
+        self.comment_pattern = QRegularExpression(r'#[^\n]*')
+
+        # self.highlighting_rules.append((
+        #     QRegularExpression(r'"([^"\\]|\\.)*"|\'([^\'\\]|\\.)*\'|#[^\n]*'),
+        #     string_format,
+        #     'mixed'
+        # ))
+
+
+        # self.comment_format = QTextCharFormat()
+        # self.comment_format.setForeground(QColor(r, g, b))  
+        # self.highlighting_rules.append((QRegularExpression('#[^\n]*'), self.comment_format, 'comment'))
 
 
 
-        string_format = QTextCharFormat()
-        r, g, b = get_string()
-        string_format.setForeground(QColor(r, g, b))  # Green
+        # string_format = QTextCharFormat()
+        # r, g, b = get_string()
+        # string_format.setForeground(QColor(r, g, b))
 
         self.highlighting_rules.append((
             QRegularExpression(r'"[^"\\]*(\\.[^"\\]*)*"'),
-            string_format,
+            self.string_format,
             'string'
         ))
         self.highlighting_rules.append((
             QRegularExpression(r"'[^'\\]*(\\.[^'\\]*)*'"),
-            string_format,
+            self.string_format,
             'string'
         ))
 
+        # self.highlighting_rules.append((
+        #     QRegularExpression(r'"([^"\\]|\\.)*"|\'([^\'\\]|\\.)*\'|#[^\n]*'),
+        #     string_format,  # We'll decide formatting dynamically
+        #     'mixed'
+        # ))
 
-        r, g, b = get_comment()
-        self.comment_format = QTextCharFormat()
-        self.comment_format.setForeground(QColor(r, g, b))  
-        self.highlighting_rules.append((QRegularExpression('#[^\n]*'), self.comment_format, 'comment'))
+
+
+        # r, g, b = get_comment()
+        # self.comment_format = QTextCharFormat()
+        # self.comment_format.setForeground(QColor(r, g, b))  
+        # self.highlighting_rules.append((QRegularExpression('#[^\n]*'), self.comment_format, 'comment'))
 
 
 
@@ -70,13 +98,13 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
         
         self.highlighting_rules.append((
             QRegularExpression(r'''(?<=\W|^)f"[^"\\]*(\\.[^"\\]*)*"'''),
-            string_format,
+            self.string_format,
             'f-string'
         ))
 
         self.highlighting_rules.append((
             QRegularExpression(r'''(?<=\W|^)f'[^'\\]*(\\.[^'\\]*)*' '''),
-            string_format,
+            self.string_format,
             'f-string'
         ))
 
@@ -84,49 +112,49 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
 
         self.highlighting_rules.append((
             QRegularExpression(r'''(?<=\W|^)fr"[^"\\]*(\\.[^"\\]*)*"'''),
-            string_format,
+            self.string_format,
             'fr-string'
         ))
 
         self.highlighting_rules.append((
             QRegularExpression(r"""fr'[^'\\]*(\\.[^'\\]*)*""" + r"'"),
-            string_format,
+            self.string_format,
             'fr-string'
         ))
 
 
         self.highlighting_rules.append((
             QRegularExpression(r'''(?<=\W|^)b"[^"\\]*(\\.[^"\\]*)*"'''),
-            string_format,
+            self.string_format,
             'b-string'
         ))
 
         self.highlighting_rules.append((
             QRegularExpression(r"""b'[^'\\]*(\\.[^'\\]*)*""" + r"'"),
-            string_format,
+            self.string_format,
             'b-string'
         ))
 
         self.highlighting_rules.append((
             QRegularExpression(r'''(?<=\W|^)br"[^"\\]*(\\.[^"\\]*)*"'''),
-            string_format,
+            self.string_format,
             'br-string'
         ))
 
         self.highlighting_rules.append((
             QRegularExpression(r"""br'[^'\\]*(\\.[^'\\]*)*""" + r"'"),
-            string_format,
+            self.string_format,
             'br-string'
         ))
 
         self.highlighting_rules.append((
             QRegularExpression(r'"[^"\\]*(\\.[^"\\]*)*"'),
-            string_format,
+            self.string_format,
             'string'
         ))
         self.highlighting_rules.append((
             QRegularExpression(r"'[^'\\]*(\\.[^'\\]*)*'"),
-            string_format,
+            self.string_format,
             'string'
         ))
 
@@ -443,8 +471,6 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
                     match = matches.next()
                     if name == 'class' or name == 'function' or name == 'import' or name == 'Fromimport':
                         if (name == 'class' and match.captured(1) not in self.class_dots) or (name == 'import' and match.captured(1) not in self.class_dots):
-                        # if (name == 'class' and match.captured(1) not in self.class_dots) or (name == 'import' and match.captured(1) not in self.class_dots):
-
 
                             if not match.captured(1) or match.captured(1) == '*':
                                 continue
@@ -545,12 +571,9 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
 
             try:
                 for name, (pattern, type_name) in self._compiled_patterns.items():
-                    # print(name)
                     it = pattern.globalMatch(text)
                     while it.hasNext():
                         match = it.next()
-                        # print(match.captured(), "===", type_name)
-
 
                         if is_overlapping(match.capturedStart(), match.capturedLength(), used_ranges):
                             continue
@@ -581,6 +604,23 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
 
             except RuntimeError:
                 pass
+
+            string_matches = []
+            match_it = self.string_pattern.globalMatch(text)
+            while match_it.hasNext():
+                match = match_it.next()
+                self.setFormat(match.capturedStart(), match.capturedLength(), self.string_format)
+                string_matches.append((match.capturedStart(), match.capturedEnd()))
+
+            # Then, highlight comments **only if they are outside string ranges**
+            match_it = self.comment_pattern.globalMatch(text)
+            while match_it.hasNext():
+                match = match_it.next()
+                start, end = match.capturedStart(), match.capturedEnd()
+
+                # Check if inside any string range
+                if not any(s <= start < e for s, e in string_matches):
+                    self.setFormat(start, end - start, self.comment_format)
 
 
 class ConfigSyntaxHighlighter(QSyntaxHighlighter):
