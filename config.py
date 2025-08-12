@@ -490,3 +490,6 @@ def Reboot():
 
 def setCustomTitleBar():
     return config.getboolean('Appearance', 'CustomTitleBar')
+
+def get_cursorBlinkingRate():
+    return config.getint('Cursor', 'BlinkingRate')

@@ -1,11 +1,4 @@
-import parso
-import importlib
-import inspect
-
-_cache = {}
-_cache_size_limit = 20
-
-check_class = []
+import importlib, inspect
 
 def classify_import(module_name, attr_name):
     try:
@@ -15,250 +8,375 @@ def classify_import(module_name, attr_name):
             return "class"
         elif inspect.isfunction(obj):
             return "function"
-        else:
-            return "variable"
     except Exception:
         return "import"
 
-def list_classes_functions(code):
-    try:
-        if code in _cache:
-            return _cache[code]
-        
-        if len(code) > 100000:
-            return {}
+import tokenize
+import io
 
-        func_class_instances = {}
-        
-        if not code.strip():
-            return func_class_instances
-        
-        try:
-            tree = parso.parse(code)
-        except Exception:
-            return {}
-        
-        node_count = 0
-        max_nodes = 10000
-        
-        def process_node(node, in_class=False, current_scope="", depth=0):
-            nonlocal node_count
-            
-            # Safety checks
-            if node_count > max_nodes or depth > 50:
-                return
-            node_count += 1
-            
-            node_type = node.type
-            
-            # Handle function definitions
-            # if node_type in ('funcdef', 'async_funcdef'):
-            #     func_name_node = node.children[1]  # Function name is second child
-            #     if hasattr(func_name_node, 'value'):
-            #         func_name = func_name_node.value
-            #         if in_class:
-            #             func_class_instances[func_name] = 'method'
-            #         else:
-            #             func_class_instances[func_name] = 'function'
-            
+_cache = {}
+_cache_size_limit = 20
 
-            if node_type in ('funcdef', 'async_funcdef'):
-                func_name_node = node.children[1]
-                if hasattr(func_name_node, 'value'):
-                    func_name = func_name_node.value
-                    if in_class:
-                        func_class_instances[func_name] = 'method'
-                    else:
-                        func_class_instances[func_name] = 'function'
+def list_classes_functions(code_text):
+    func_class_instances = {}
 
-            # Handle class definitions
-            # elif node_type == 'classdef':
-            #     class_name_node = node.children[1]  # Class name is second child
-            #     if hasattr(class_name_node, 'value'):
-            #         class_name = class_name_node.value
-            #         func_class_instances[class_name] = 'class'
-                    
-            #         # Process class body with in_class=True
-            #         for child in node.children:
-            #             if child.type == 'suite':
-            #                 process_node(child, in_class=True, current_scope=class_name, depth=depth + 1)
-            #         return
-            
-            elif node_type == 'classdef':
-                class_name_node = node.children[1]
-                if hasattr(class_name_node, 'value'):
-                    class_name = class_name_node.value
-                    func_class_instances[class_name] = 'class'
+    prev = None
+    state = None
 
-                # Process all children inside the class with in_class=True
-                if hasattr(node, 'children'):
-                    for child in node.children:
-                        process_node(child, in_class=True, current_scope=class_name, depth=depth + 1)
-                return
+    if code_text in _cache:
+        return _cache[code_text]
+    
+    # if len(code_text) > 100000:
+    #     return {}
 
-            elif node_type == 'expr_stmt' and len(node.children) >= 3:
-                if (len(node.children) >= 3 and 
-                    node.children[1].type == 'operator' and 
-                    node.children[1].value == '='):
-                    
-                    rhs = node.children[2]
-                    
-                    if rhs.type == 'power' and len(rhs.children) >= 2:
-                        has_call = False
-                        for child in rhs.children:
-                            if child.type == 'trailer' and len(child.children) >= 2:
-                                if (child.children[0].type == 'operator' and 
-                                    child.children[0].value == '('):
-                                    has_call = True
-                                    break
-                        
-                        if has_call:
-                            first_child = rhs.children[0]
-                            if first_child.type == 'name':
-                                func_name = first_child.value
-                                func_class_instances[func_name] = 'class'
-                                if current_scope:
-                                    full_name = f"{current_scope}.{func_name}"
-                                    func_class_instances[full_name] = 'class'
-            
-            elif node_type == 'import_from':
-                module_parts = []
-                imported_names = []
-                
-                for child in node.children:
-                    if child.type == 'dotted_as_names' or child.type == 'import_as_names':
-                        for subchild in child.children:
-                            if subchild.type == 'name':
-                                imported_names.append(subchild.value)
-                            elif subchild.type == 'dotted_as_name' or subchild.type == 'import_as_name':
-                                for name_node in subchild.children:
-                                    if name_node.type == 'name':
-                                        imported_names.append(name_node.value)
-                                        break
-                    elif child.type == 'dotted_name':
-                        # Extract module name
-                        for subchild in child.children:
-                            if subchild.type == 'name':
-                                module_parts.append(subchild.value)
-                    elif child.type == 'name' and child.value not in ('from', 'import'):
-                        if not module_parts:
-                            module_parts.append(child.value)
-                        else:
-                            imported_names.append(child.value)
-                
-                module_name = '.'.join(module_parts)
-                
-                for import_name in imported_names:
-                    if import_name and module_name:
-                        type_ = classify_import(module_name, import_name)
-                        func_class_instances[import_name] = type_
-            
-            elif node_type == 'import_name':
-                for child in node.children:
-                    if child.type == 'dotted_as_names':
-                        for subchild in child.children:
-                            if subchild.type == 'name':
-                                func_class_instances[subchild.value] = 'module'
-                            elif subchild.type == 'dotted_as_name':
-                                for name_node in subchild.children:
-                                    if name_node.type == 'name':
-                                        func_class_instances[name_node.value] = 'module'
-                                        break
-            
-            # elif node_type == 'power':
-            #     print(f"Found power node with {len(node.children)} children")
-                
-            #     for i, child in enumerate(node.children):
-            #         print(f"  Child {i}: {child.type} - {getattr(child, 'value', 'no value')}")
-                
-            #     if len(node.children) >= 3:
-            #         base = node.children[0]
-                    
-            #         i = 1
-            #         while i < len(node.children) - 1:
-            #             current = node.children[i]
-            #             next_node = node.children[i + 1]
-                        
-            #             if (current.type == 'trailer' and
-            #                 len(current.children) >= 2 and
-            #                 hasattr(current.children[0], 'value') and
-            #                 current.children[0].value == '.' and
-            #                 current.children[1].type == 'name'):
-                            
-            #                 if (next_node.type == 'trailer' and
-            #                     len(next_node.children) >= 1 and
-            #                     hasattr(next_node.children[0], 'value') and
-            #                     next_node.children[0].value == '('):
-                                
-            #                     method_name = current.children[1].value
-            #                     func_class_instances[method_name] = 'function'
-            #             i += 1
-                
-            #     if (len(node.children) >= 2 and
-            #         node.children[0].type == 'name'):
-                    
-            #         for trailer in node.children[1:]:
-            #             if (trailer.type == 'trailer' and
-            #                 len(trailer.children) >= 1 and
-            #                 hasattr(trailer.children[0], 'value') and
-            #                 trailer.children[0].value == '('):
-                            
-            #                 func_name = node.children[0].value
-            #                 func_class_instances[func_name] = 'function'
-            #                 break
-
-            
-            elif node.type == 'trailer' and len(node.children) >= 2:
-                first = node.children[0]
-                second = node.children[1]
-
-                if first.type == 'operator' and first.value == '.' and second.type == 'name':
-                    parent_children = getattr(node.parent, 'children', [])
-                    try:
-                        idx = parent_children.index(node)
-                        if (idx + 1 < len(parent_children) and
-                            parent_children[idx + 1].type == 'trailer' and
-                            parent_children[idx + 1].children[0].value == '('):
-                            # method_calls.append(second.value)
-                            func_class_instances[second.value] = 'method'
-
-                    except ValueError:
-                        pass
-
-            # Recursively process children
-            if hasattr(node, 'children'):
-                for child in node.children:
-                    process_node(child, in_class, current_scope, depth + 1)
-        
-        # Debug: Print the Parso tree for small code samples
-        # if len(code) < 1000:
-        #     print("=== PARSO TREE DEBUG ===")
-        #     def debug_print_tree(node, indent=0):
-        #         spaces = "  " * indent
-        #         if hasattr(node, 'type'):
-        #             if hasattr(node, 'value'):
-        #                 print(f"{spaces}{node.type}: '{node.value}'")
-        #             else:
-        #                 print(f"{spaces}{node.type}")
-        #             if hasattr(node, 'children'):  # Removed depth limit
-        #                 for child in node.children:
-        #                     debug_print_tree(child, indent + 1)
-        #     debug_print_tree(tree)
-        #     print("=== END DEBUG ===")
-
-        # Process the entire tree
-        process_node(tree)
-        
-        # Cache management
-        if len(_cache) >= _cache_size_limit:
-            _cache.pop(next(iter(_cache)))
-        _cache[code] = func_class_instances
-        
+    func_class_instances = {}
+    
+    if not code_text.strip():
         return func_class_instances
+
+    tokens = list(tokenize.generate_tokens(io.StringIO(code_text).readline))
+
+    for i, (tok_type, tok_str, *_ ) in enumerate(tokens):
+        # ---------- Class detection ----------
+        if tok_type == tokenize.NAME and tok_str == "class":
+            state = "class"
+            continue
+        elif state == "class" and tok_type == tokenize.NAME:
+            func_class_instances[tok_str] = 'class'
+            state = None
+
+        # ---------- Function detection ----------
+        if tok_type == tokenize.NAME and tok_str == "def":
+            state = "def"
+            continue
+        elif state == "def" and tok_type == tokenize.NAME:
+            func_class_instances[tok_str] = 'function'
+            state = None
+
+        # ---------- Imports ----------
+        # if tok_type == tokenize.NAME and tok_str == "import":
+        #     if state == "from":  # skip from-import
+        #         state = None
+        #         continue
+        #     else:  # plain import
+        #         state = "import"
+        #         continue
+
+        # elif tok_type == tokenize.NAME and tok_str == "from":
+        #     # Skip from-import entirely
+        #     state = "skip_from"
+        #     continue
+
+        # elif state == "import" and tok_type == tokenize.NAME:
+        #     func_class_instances[tok_str] = 'import'
+
+        # elif state == "from_import" and tok_type == tokenize.NAME:
+        #     # tok_str is the imported name (Y)
+        #     # current_from holds the module name parts ['X', ...]
+        #     module_name = ".".join(current_from)  
+        #     typ = classify_import(module_name, tok_str)
+        #     func_class_instances[tok_str] = typ
+
+
+
+        if tok_type == tokenize.NAME and tok_str == "from":
+                    state = "from"
+                    current_from = []
+                    continue
+
+        elif state == "from" and tok_type == tokenize.NAME and tok_str != "import":
+            current_from.append(tok_str)
+            continue
+
+        elif state == "from" and tok_type == tokenize.NAME and tok_str == "import":
+            state = "from_import"
+            continue
+
+        elif state == "from_import":
+            if tok_type == tokenize.NAME:
+                module_name = ".".join(current_from)
+                typ = classify_import(module_name, tok_str)
+                func_class_instances[tok_str] = typ
+            elif tok_type == tokenize.OP and tok_str == ",":
+                # multiple imports, just continue
+                pass
+            elif tok_type in (tokenize.NEWLINE, tokenize.ENDMARKER):
+                state = None
+            continue
+
+        elif tok_type == tokenize.NAME and tok_str == "import":
+            state = "import"
+            continue
+
+        elif state == "import":
+            if tok_type == tokenize.NAME:
+                func_class_instances[tok_str] = 'import'
+            elif tok_type == tokenize.OP and tok_str == ",":
+                pass  # multiple imports separated by commas
+            elif tok_type in (tokenize.NEWLINE, tokenize.ENDMARKER):
+                state = None
+            continue
+
+
+        # End of an import statement
+        if tok_type in (tokenize.NEWLINE, tokenize.ENDMARKER):
+            state = None
+
+        # ---------- Method calls ----------
+        if (
+            tok_type == tokenize.NAME
+            and prev
+            and prev[1] == "."
+            and i + 1 < len(tokens)
+            and tokens[i + 1][1] == "("  # ensure it's followed by '('
+        ):
+            func_class_instances[tok_str] = 'method'
+
+        prev = (tok_type, tok_str)
+
+    # tokens = tokenize.generate_tokens(io.StringIO(code_text).readline)
+
+    # for tok_type, tok_str, *_ in tokens:
+    #     # ---------- Class detection ----------
+    #     if tok_type == tokenize.NAME and tok_str == "class":
+    #         state = "class"
+    #         continue
+    #     elif state == "class" and tok_type == tokenize.NAME:
+    #         func_class_instances[tok_str] = 'class'
+    #         state = None
+
+    #     # ---------- Function detection ----------
+    #     if tok_type == tokenize.NAME and tok_str == "def":
+    #         state = "def"
+    #         continue
+    #     elif state == "def" and tok_type == tokenize.NAME:
+    #         func_class_instances[tok_str] = 'function'
+    #         state = None
+
+    #     # ---------- Imports ----------
+    #     if tok_type == tokenize.NAME and tok_str == "import":
+    #         if state == "from":  # skip from-import
+    #             state = None
+    #             continue
+    #         else:  # plain import
+    #             state = "import"
+    #             continue
+
+    #     elif tok_type == tokenize.NAME and tok_str == "from":
+    #         # Skip from-import entirely
+    #         state = "skip_from"
+    #         continue
+
+    #     elif state == "import" and tok_type == tokenize.NAME:
+    #         func_class_instances[tok_str] = 'import'
+
+    #     # End of an import statement
+    #     if tok_type in (tokenize.NEWLINE, tokenize.ENDMARKER):
+    #         state = None
+
+    #     # ---------- Method calls ----------
+    #     # if tok_type == tokenize.NAME and prev and prev[1] == ".":
+    #     #     func_class_instances[tok_str] = 'method'
+
+    #     if (
+    #         tok_type == tokenize.NAME
+    #         and prev
+    #         and prev[1] == "."
+    #         and i + 1 < len(tokens)
+    #         and tokens[i + 1][1] == "("  # ensure it's followed by '('
+    #     ):
+    #         func_class_instances[tok_str] = 'method'
+
+    #     prev = (tok_type, tok_str)
+
+    if len(_cache) >= _cache_size_limit:
+        _cache.pop(next(iter(_cache)))
+    _cache[code_text] = func_class_instances
+    
+        # return func_class_instances
+
+    return func_class_instances
+
+
+# import parso
+
+
+# import importlib
+# import inspect
+
+# _cache = {}
+# _cache_size_limit = 20
+
+# check_class = []
+
+# def classify_import(module_name, attr_name):
+#     try:
+#         mod = importlib.import_module(module_name)
+#         obj = getattr(mod, attr_name)
+#         if inspect.isclass(obj):
+#             return "class"
+#         elif inspect.isfunction(obj):
+#             return "function"
+#         else:
+#             return "variable"
+#     except Exception:
+#         return "import"
+
+# def list_classes_functions(code):
+#     try:
+#         if code in _cache:
+#             return _cache[code]
         
-    except Exception as e:
-        print(f"Parso analysis error: {e}")
-        return {}
+#         if len(code) > 100000:
+#             return {}
+
+#         func_class_instances = {}
+        
+#         if not code.strip():
+#             return func_class_instances
+        
+#         try:
+#             tree = parso.parse(code)
+#         except Exception:
+#             return {}
+        
+#         node_count = 0
+#         max_nodes = 10000
+        
+#         def process_node(node, in_class=False, current_scope="", depth=0):
+#             nonlocal node_count
+            
+#             # Safety checks
+#             if node_count > max_nodes or depth > 50:
+#                 return
+#             node_count += 1
+            
+#             node_type = node.type
+
+#             if node_type in ('funcdef', 'async_funcdef'):
+#                 func_name_node = node.children[1]
+#                 if hasattr(func_name_node, 'value'):
+#                     func_name = func_name_node.value
+#                     if in_class:
+#                         func_class_instances[func_name] = 'method'
+#                     else:
+#                         func_class_instances[func_name] = 'function'
+
+            
+#             elif node_type == 'classdef':
+#                 class_name_node = node.children[1]
+#                 if hasattr(class_name_node, 'value'):
+#                     class_name = class_name_node.value
+#                     func_class_instances[class_name] = 'class'
+
+#                 # Process all children inside the class with in_class=True
+#                 if hasattr(node, 'children'):
+#                     for child in node.children:
+#                         process_node(child, in_class=True, current_scope=class_name, depth=depth + 1)
+#                 return
+
+#             elif node_type == 'expr_stmt' and len(node.children) >= 3:
+#                 if (len(node.children) >= 3 and 
+#                     node.children[1].type == 'operator' and 
+#                     node.children[1].value == '='):
+                    
+#                     rhs = node.children[2]
+                    
+#                     if rhs.type == 'power' and len(rhs.children) >= 2:
+#                         has_call = False
+#                         for child in rhs.children:
+#                             if child.type == 'trailer' and len(child.children) >= 2:
+#                                 if (child.children[0].type == 'operator' and 
+#                                     child.children[0].value == '('):
+#                                     has_call = True
+#                                     break
+                        
+#                         if has_call:
+#                             first_child = rhs.children[0]
+#                             if first_child.type == 'name':
+#                                 func_name = first_child.value
+#                                 func_class_instances[func_name] = 'class'
+#                                 if current_scope:
+#                                     full_name = f"{current_scope}.{func_name}"
+#                                     func_class_instances[full_name] = 'class'
+            
+#             elif node_type == 'import_from':
+#                 module_parts = []
+#                 imported_names = []
+                
+#                 for child in node.children:
+#                     if child.type == 'dotted_as_names' or child.type == 'import_as_names':
+#                         for subchild in child.children:
+#                             if subchild.type == 'name':
+#                                 imported_names.append(subchild.value)
+#                             elif subchild.type == 'dotted_as_name' or subchild.type == 'import_as_name':
+#                                 for name_node in subchild.children:
+#                                     if name_node.type == 'name':
+#                                         imported_names.append(name_node.value)
+#                                         break
+#                     elif child.type == 'dotted_name':
+#                         # Extract module name
+#                         for subchild in child.children:
+#                             if subchild.type == 'name':
+#                                 module_parts.append(subchild.value)
+#                     elif child.type == 'name' and child.value not in ('from', 'import'):
+#                         if not module_parts:
+#                             module_parts.append(child.value)
+#                         else:
+#                             imported_names.append(child.value)
+                
+#                 module_name = '.'.join(module_parts)
+                
+#                 for import_name in imported_names:
+#                     if import_name and module_name:
+#                         type_ = classify_import(module_name, import_name)
+#                         func_class_instances[import_name] = type_
+            
+#             elif node_type == 'import_name':
+#                 for child in node.children:
+#                     if child.type == 'dotted_as_names':
+#                         for subchild in child.children:
+#                             if subchild.type == 'name':
+#                                 func_class_instances[subchild.value] = 'module'
+#                             elif subchild.type == 'dotted_as_name':
+#                                 for name_node in subchild.children:
+#                                     if name_node.type == 'name':
+#                                         func_class_instances[name_node.value] = 'module'
+#                                         break
+            
+#             elif node.type == 'trailer' and len(node.children) >= 2:
+#                 first = node.children[0]
+#                 second = node.children[1]
+
+#                 if first.type == 'operator' and first.value == '.' and second.type == 'name':
+#                     parent_children = getattr(node.parent, 'children', [])
+#                     try:
+#                         idx = parent_children.index(node)
+#                         if (idx + 1 < len(parent_children) and
+#                             parent_children[idx + 1].type == 'trailer' and
+#                             parent_children[idx + 1].children[0].value == '('):
+#                             # method_calls.append(second.value)
+#                             func_class_instances[second.value] = 'method'
+
+#                     except ValueError:
+#                         pass
+
+#             if hasattr(node, 'children'):
+#                 for child in node.children:
+#                     process_node(child, in_class, current_scope, depth + 1)
+        
+#         process_node(tree)
+        
+#         # Cache management
+#         if len(_cache) >= _cache_size_limit:
+#             _cache.pop(next(iter(_cache)))
+#         _cache[code] = func_class_instances
+        
+#         return func_class_instances
+        
+#     except Exception as e:
+#         print(f"Parso analysis error: {e}")
+#         return {}
 
 # import ast
 # import importlib

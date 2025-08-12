@@ -240,7 +240,7 @@ class MainTextShortcuts:
             cursor.setPosition(block.position())
             cursor.select(QTextCursor.SelectionType.BlockUnderCursor)
             cursor.removeSelectedText()
-            cursor.deleteChar()
+            # cursor.deleteChar()
 
         text_edit.setTextCursor(cursor)
         cursor.endEditBlock()

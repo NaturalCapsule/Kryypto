@@ -1,9 +1,9 @@
-import ast
+# import ast
 from PyQt6.QtGui import QSyntaxHighlighter, QTextCharFormat, QColor, QFont
 from PyQt6.QtCore import QRegularExpression, QRunnable, pyqtSignal, QObject, QThreadPool
 from config import *
 
-import ast
+# import ast
 import re
 from PyQt6.QtCore import QObject, QRunnable, QThreadPool, pyqtSignal, QTimer, QMutex
 from PyQt6.QtGui import QSyntaxHighlighter, QTextCharFormat, QColor, QFont
@@ -351,16 +351,16 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
 
         self.couting = 1
 
-    def set_code(self, code: str):
-        try:
-            tree = ast.parse(code)
-            self.function_args.clear()
-            for node in ast.walk(tree):
-                if isinstance(node, ast.FunctionDef):
-                    for arg in node.args.args:
-                        self.function_args.add(arg.arg)
-        except Exception:
-            self.function_args.clear()
+    # def set_code(self, code: str):
+    #     try:
+    #         tree = ast.parse(code)
+    #         self.function_args.clear()
+    #         for node in ast.walk(tree):
+    #             if isinstance(node, ast.FunctionDef):
+    #                 for arg in node.args.args:
+    #                     self.function_args.add(arg.arg)
+    #     except Exception:
+    #         self.function_args.clear()
 
 
     def get_calls(self, instances: dict):

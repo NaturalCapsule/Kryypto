@@ -2,6 +2,7 @@ import jedi
 import re
 import subprocess
 import os
+import uuid
 from datetime import datetime
 from PyQt6.QtCore import QThreadPool, QRectF, QTimer, Qt, QRect, Qt, QDir, QFileInfo, pyqtSignal, QProcess, QParallelAnimationGroup, QEasingCurve, QEvent, QPropertyAnimation
 from PyQt6.QtGui import QPainter, QPainterPath, QPixmap, QTextCursor, QKeyEvent, QPainter, QColor, QFont, QFontMetrics, QTextCursor, QColor, QFileSystemModel, QIcon, QStandardItemModel, QStandardItem
@@ -29,6 +30,39 @@ current_file_path = ''
 
 # layout = QVBoxLayout(central_widget)
 
+class WorkerSignals(QObject):
+    results = pyqtSignal(int, object)  # request_id, result_payload
+    error = pyqtSignal(Exception)
+
+
+class AutocompleteRunnable(QRunnable):
+    def __init__(self, code, line, column, request_id):
+        super().__init__()
+        self.signals = WorkerSignals()
+        self.code = code
+        self.line = line
+        self.column = column
+        self.request_id = request_id
+
+    def run(self):
+        try:
+            # Do heavy Jedi computation here only
+            script = jedi.Script(code=self.code, path=fr"{current_file_path}")
+            completions = script.complete(self.line, self.column)
+
+            payload = []
+            for c in completions[:30]:
+                payload.append({
+                    "name": c.name,
+                    "type": c.type,
+                    "description": c.description
+                })
+
+            # Send results back to main thread
+            self.signals.results.emit(self.request_id, payload)
+
+        except Exception as e:
+            self.signals.error.emit(e)
 
 class MainText(QPlainTextEdit):
     def __init__(self, parent, window, font_size):
@@ -48,9 +82,12 @@ class MainText(QPlainTextEdit):
         self.setContextMenuPolicy(Qt.ContextMenuPolicy.NoContextMenu)
 
         self.doc_panel = None
-        
+
         self.docstring_timer = QTimer()
         self.docstring_timer.setSingleShot(True)
+
+
+        ## CAUSING FREEZES WHEN CURSOR POSITION CHANGES
         self.docstring_timer.timeout.connect(self.update_docstring)
         self.cursorPositionChanged.connect(self.schedule_docstring_update)
 
@@ -63,7 +100,7 @@ class MainText(QPlainTextEdit):
 
         self.blink_timer = QTimer(self)
         self.blink_timer.timeout.connect(self.toggle_cursor)
-        self.blink_timer.start(200)
+        self.blink_timer.start(get_cursorBlinkingRate())
 
         self.line_number_area = ShowLines(self, self.font_size)
         self.blockCountChanged.connect(self.update_line_number_area_width)
@@ -418,44 +455,80 @@ class MainText(QPlainTextEdit):
             if cursor.hasSelection():
                 return
 
-            script = jedi.Script(code=code, path=fr"{current_file_path}")
-            completions = script.complete(line, column)
+            worker = AutocompleteRunnable(code, line, column, 1)
+            worker.signals.results.connect(self.on_autocomplete_results)
+            worker.signals.error.connect(self.on_autocomplete_error)
 
-            model = QStandardItemModel()
-            words = []
+            QThreadPool.globalInstance().start(worker)
+
+        #     script = jedi.Script(code=code, path=fr"{current_file_path}")
+        #     completions = script.complete(line, column)
+
+        #     model = QStandardItemModel()
+        #     words = []
             
-            for c in completions[:30]:
-                words.append(c.name)
-                item = QStandardItem()
-                item.setText(c.name)
+        #     for c in completions[:30]:
+        #         words.append(c.name)
+        #         item = QStandardItem()
+        #         item.setText(c.name)
                 
-                # Set icons based on type
-                if c.type == 'statement':
-                    item.setIcon(QIcon('icons/autocompleterIcons/variable.svg'))
-                elif c.type in ('class', 'module'):
-                    item.setIcon(QIcon('icons/autocompleterIcons/class.svg'))
-                elif c.type == 'function':
-                    item.setIcon(QIcon('icons/autocompleterIcons/function.svg'))
-                elif c.type == 'keyword':
-                    item.setIcon(QIcon('icons/autocompleterIcons/keyword.svg'))
+        #         if c.type == 'statement':
+        #             item.setIcon(QIcon('icons/autocompleterIcons/variable.svg'))
+        #         elif c.type in ('class', 'module'):
+        #             item.setIcon(QIcon('icons/autocompleterIcons/class.svg'))
+        #         elif c.type == 'function':
+        #             item.setIcon(QIcon('icons/autocompleterIcons/function.svg'))
+        #         elif c.type == 'keyword':
+        #             item.setIcon(QIcon('icons/autocompleterIcons/keyword.svg'))
                 
-                model.appendRow(item)
+        #         model.appendRow(item)
 
-            if words:
-                cursor.select(cursor.SelectionType.WordUnderCursor)
-                prefix = cursor.selectedText()
-                self.completer.setModel(model)
-                self.completer.setCompletionPrefix(prefix)
-                cr = self.cursorRect()
-                cr.setWidth(self.completer.popup().sizeHintForColumn(0) + 10)
-                self.completer.complete(cr)
-            else:
-                self.completer.popup().hide()
+        #     if words:
+        #         cursor.select(cursor.SelectionType.WordUnderCursor)
+        #         prefix = cursor.selectedText()
+        #         self.completer.setModel(model)
+        #         self.completer.setCompletionPrefix(prefix)
+        #         cr = self.cursorRect()
+        #         cr.setWidth(self.completer.popup().sizeHintForColumn(0) + 10)
+        #         self.completer.complete(cr)
+        #     else:
+        #         self.completer.popup().hide()
 
         except Exception as e:
             print("Autocomplete error:", e)
             self.completer.popup().hide()
 
+
+    def on_autocomplete_results(self, request_id, payload):
+        model = QStandardItemModel()
+
+        for item_data in payload:
+            item = QStandardItem()
+            item.setText(item_data["name"])
+
+            if item_data["type"] == 'statement':
+                item.setIcon(QIcon('icons/autocompleterIcons/variable.svg'))
+            elif item_data["type"] in ('class', 'module'):
+                item.setIcon(QIcon('icons/autocompleterIcons/class.svg'))
+            elif item_data["type"] == 'function':
+                item.setIcon(QIcon('icons/autocompleterIcons/function.svg'))
+            elif item_data["type"] == 'keyword':
+                item.setIcon(QIcon('icons/autocompleterIcons/keyword.svg'))
+
+            model.appendRow(item)
+
+        cursor = self.textCursor()
+        cursor.select(cursor.SelectionType.WordUnderCursor)
+        prefix = cursor.selectedText()
+
+        self.completer.setModel(model)
+        self.completer.setCompletionPrefix(prefix)
+        cr = self.cursorRect()
+        cr.setWidth(self.completer.popup().sizeHintForColumn(0) + 10)
+        self.completer.complete(cr)
+
+    def on_autocomplete_error(self, e):
+        print("Autocomplete error:", e)
 
     def line_number_area_width(self, font_metrics):
         digits = len(str(self.blockCount()))
@@ -691,12 +764,12 @@ class ShowDirectory(QDockWidget):
 
                     cursor = self.main_text.textCursor()
                     cursor.beginEditBlock()
-                    self.main_text.setUpdatesEnabled(False)
-                    self.main_text.blockSignals(True)
+                    # self.main_text.setUpdatesEnabled(False)
+                    # self.main_text.blockSignals(True)
                     self.main_text.setPlainText(file.read())
                     cursor.endEditBlock()
-                    self.main_text.setUpdatesEnabled(True)
-                    self.main_text.blockSignals(False)
+                    # self.main_text.setUpdatesEnabled(True)
+                    # self.main_text.blockSignals(False)
 
             except Exception as e:
                 pass
@@ -1010,7 +1083,6 @@ class ShowOpenedFile(QTabBar):
                     self.error_label.show()
                     if self.is_panel:
                         self.doc_panelstring = DocStringDock(self.parent_, True)
-                        # self.editor.doc_panel.dock
                         self.editor.doc_panel = self.doc_panelstring.doc_panel
                     self.is_panel = False
 
