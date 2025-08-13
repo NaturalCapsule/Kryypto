@@ -493,3 +493,9 @@ def setCustomTitleBar():
 
 def get_cursorBlinkingRate():
     return config.getint('Cursor', 'BlinkingRate')
+
+def showCompleter():
+    return config.getboolean('Python', 'ShowCompleter')
+    
+def showDocstringpanel():
+    return config.getboolean('Python', 'ShowDocStringPanel')

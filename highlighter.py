@@ -480,7 +480,6 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
                                 safe_class = re.escape(match.captured(1))
 
                                 pattern = QRegularExpression(rf'\b{safe_class}\b(?=\.)')
-                                print(safe_class)
                                 if not pattern.isValid():
                                     print(f"Invalid regex for: {safe_class}")
                                     continue

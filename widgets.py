@@ -2,7 +2,9 @@ import jedi
 import re
 import subprocess
 import os
-import uuid
+import inspect
+import importlib
+import builtins
 from datetime import datetime
 from PyQt6.QtCore import QThreadPool, QRectF, QTimer, Qt, QRect, Qt, QDir, QFileInfo, pyqtSignal, QProcess, QParallelAnimationGroup, QEasingCurve, QEvent, QPropertyAnimation
 from PyQt6.QtGui import QPainter, QPainterPath, QPixmap, QTextCursor, QKeyEvent, QPainter, QColor, QFont, QFontMetrics, QTextCursor, QColor, QFileSystemModel, QIcon, QStandardItemModel, QStandardItem
@@ -11,10 +13,12 @@ from lines import ShowLines
 from get_style import get_css_style
 from config import *
 # from config import get_fontFamily
+import parso
 
 from highlighter import *
 from show_errors import *
 from pygit import *
+
 
 central_widget = QWidget()
 central_widget.setObjectName('MainWindow')
@@ -31,13 +35,33 @@ current_file_path = ''
 # layout = QVBoxLayout(central_widget)
 
 class WorkerSignals(QObject):
-    results = pyqtSignal(int, object)  # request_id, result_payload
+    results = pyqtSignal(int, object)
     error = pyqtSignal(Exception)
 
+def is_cursor_in_string(text, cursor_pos):
+    before_cursor = text[:cursor_pos]
+
+    single_quotes = before_cursor.count("'") - before_cursor.count("\\'")
+    double_quotes = before_cursor.count('"') - before_cursor.count('\\"')
+    if single_quotes % 2 == 1 or double_quotes % 2 == 1:
+        return True
+
+    return False
+
+
+def is_cursor_in_parentheses(text, cursor_pos):
+    before_cursor = text[:cursor_pos]
+    parenthes = before_cursor.count("(") - before_cursor.count(')')
+
+    if parenthes % 2 == 1:
+        return True
+
+    return False
 
 class AutocompleteRunnable(QRunnable):
-    def __init__(self, code, line, column, request_id):
+    def __init__(self, editor, code, line, column, request_id):
         super().__init__()
+        self.editor = editor
         self.signals = WorkerSignals()
         self.code = code
         self.line = line
@@ -46,23 +70,76 @@ class AutocompleteRunnable(QRunnable):
 
     def run(self):
         try:
-            # Do heavy Jedi computation here only
-            script = jedi.Script(code=self.code, path=fr"{current_file_path}")
-            completions = script.complete(self.line, self.column)
+            cursor = self.editor.textCursor()
+            if not is_cursor_in_string(self.code, cursor.position()) or not is_cursor_in_parentheses(self.code, cursor.position()):
+                script = jedi.Script(code=self.code, path=fr"{current_file_path}")
+                completions = script.complete(self.line, self.column)
+            else:
+                completions = []
+
+            if not completions:
+                return
 
             payload = []
             for c in completions[:30]:
-                payload.append({
-                    "name": c.name,
-                    "type": c.type,
-                    "description": c.description
-                })
+                try:
+                    name = getattr(c, "name", None) or ""
+                    ctype = getattr(c, "type", None) or ""
+                    description = getattr(c, "description", None) or ""
 
-            # Send results back to main thread
+                    suffix = getattr(c, "suffix", None)
+                    if suffix:
+                        name += suffix
+
+                    payload.append({
+                        "name": name,
+                        "type": ctype,
+                        "description": description
+                    })
+                except Exception as inner_err:
+                    print(f"Skipped completion due to error: {inner_err}")
+                    continue
+
             self.signals.results.emit(self.request_id, payload)
 
         except Exception as e:
             self.signals.error.emit(e)
+
+class DocStringWorker(QObject):
+    result = pyqtSignal(str)
+
+class DocStringRunnable(QRunnable):
+    def __init__(self, code, line, column, cache):
+        super().__init__()
+        self.code = code
+        self.line = line
+        self.column = column
+        self.cache = cache
+        self.signal = DocStringWorker()
+
+    def run(self):
+        global current_file_path
+        try:
+            key = f"{self.line}:{self.column}"
+            if key in self.cache:
+                self.signal.result.emit(self.cache[key])
+                return
+
+
+            script = jedi.Script(code=self.code, path=current_file_path)
+            definitions = script.help(self.line, self.column)
+            result = definitions[0].docstring() if definitions else ""
+
+            if len(self.cache) > 20:
+                self.cache.clear()
+            self.cache[key] = result
+
+
+            self.signal.result.emit(result)
+        except Exception as e:
+            print("Docstring error:", e)
+            self.signal.result.emit("")
+
 
 class MainText(QPlainTextEdit):
     def __init__(self, parent, window, font_size):
@@ -88,8 +165,11 @@ class MainText(QPlainTextEdit):
 
 
         ## CAUSING FREEZES WHEN CURSOR POSITION CHANGES
-        self.docstring_timer.timeout.connect(self.update_docstring)
-        self.cursorPositionChanged.connect(self.schedule_docstring_update)
+        if showDocstringpanel():
+            self.docstring_timer.timeout.connect(self.update_docstring)
+            self.cursorPositionChanged.connect(self.schedule_docstring_update)
+        self._docstring_cache = {}
+
 
         self.finder = findingText(parent, self)
 
@@ -198,6 +278,43 @@ class MainText(QPlainTextEdit):
         if not self.textCursor().hasSelection():
             self.docstring_timer.start(150)
 
+
+    # def update_docstring(self):
+    #     cursor = self.textCursor()
+        
+    #     if cursor.hasSelection():
+    #         return
+            
+    #     current_position = cursor.position()
+        
+    #     if abs(current_position - self._last_docstring_position) < 3:
+    #         return
+            
+    #     line = cursor.blockNumber() + 1
+    #     column = cursor.positionInBlock()
+    #     code = self.toPlainText()
+
+    #     doc = self.get_definition_docstring(code, line, column)
+    #     doc = doc or ""
+        
+    #     self._last_docstring_position = current_position
+    #     self._last_docstring = doc
+
+
+    #     if self.doc_panel:
+    #         if doc == "":
+    #             self.doc_panel.hide()
+    #             if self.doc_panel.custom_title:
+    #                 self.doc_panel.custom_title.hide()
+    #                 self.doc_panel.dock.hide()
+    #         else:
+    #             self.doc_viewer = self.parse_docstring(doc)
+    #             self.doc_panel.setHtml(self.doc_viewer or "")
+    #             self.doc_panel.dock.show()
+    #             self.doc_panel.custom_title.show()
+    #             self.doc_panel.show()
+
+
     def update_docstring(self):
         cursor = self.textCursor()
         
@@ -213,12 +330,13 @@ class MainText(QPlainTextEdit):
         column = cursor.positionInBlock()
         code = self.toPlainText()
 
-        doc = self.get_definition_docstring(code, line, column)
-        doc = doc or ""
-        
-        self._last_docstring_position = current_position
+        worker = DocStringRunnable(code, line, column, self._docstring_cache)
+        worker.signal.result.connect(self.on_docstring_result)
+        QThreadPool.globalInstance().start(worker)
+
+    def on_docstring_result(self, doc):
+        self._last_docstring_position = self.textCursor().position()
         self._last_docstring = doc
-        
         if self.doc_panel:
             if doc == "":
                 self.doc_panel.hide()
@@ -232,28 +350,81 @@ class MainText(QPlainTextEdit):
                 self.doc_panel.custom_title.show()
                 self.doc_panel.show()
 
-    def get_definition_docstring(self, code, line, column):
-        global current_file_path
-        try:
-            if hasattr(self, '_docstring_cache'):
-                cache_key = f"{line}:{column}"
-                if cache_key in self._docstring_cache:
-                    return self._docstring_cache[cache_key]
-            else:
-                self._docstring_cache = {}
-            
-            script = jedi.Script(code=code, path=fr"{current_file_path}")
-            definitions = script.help(line, column)
 
-            result = definitions[0].docstring() if definitions else ""
+    # def get_definition_docstring(self, code, line, column):
+    #     global current_file_path
+        # try:
+        #     if hasattr(self, '_docstring_cache'):
+        #         cache_key = f"{line}:{column}"
+        #         if cache_key in self._docstring_cache:
+        #             return self._docstring_cache[cache_key]
+        #     else:
+        #         self._docstring_cache = {}
             
-            if len(self._docstring_cache) > 10:
-                self._docstring_cache.clear()
-            self._docstring_cache[f"{line}:{column}"] = result
+        #     script = jedi.Script(code=code, path=fr"{current_file_path}")
+        #     definitions = script.help(line, column)
+
+        #     result = definitions[0].docstring() if definitions else ""
             
-            return result
-        except Exception as e:
-            return ""
+        #     if len(self._docstring_cache) > 10:
+        #         self._docstring_cache.clear()
+        #     self._docstring_cache[f"{line}:{column}"] = result
+            
+        #     return result
+        # except Exception as e:
+        #     return ""
+
+
+        # lines = code.splitlines()
+        # if line < 1 or line > len(lines):
+        #     return ''
+        # text_line = lines[line - 1]
+
+        # # Find all words and dotted names
+        # pattern = re.compile(r'\b[\w\.]+\b')
+        # for match in pattern.finditer(text_line):
+        #     start, end = match.span()
+        #     if start <= column < end:
+        #         full_name = match.group()
+        #         break
+        # else:
+        #     return ''
+
+        # # Split into module and attr
+        # parts = full_name.split('.')
+        # if len(parts) == 1:
+        #     module_name = parts[0]
+        #     attr_name = None
+        # else:
+        #     module_name = '.'.join(parts[:-1])
+        #     attr_name = parts[-1]
+
+        # try:
+        #     mod = importlib.import_module(module_name)
+        #     if attr_name:
+        #         obj = getattr(mod, attr_name, None)
+        #         if obj:
+        #             return inspect.getdoc(obj) or ''
+        #         else:
+        #             return ''
+        #     else:
+        #         return inspect.getdoc(mod) or ''
+        # except Exception:
+        #     return ''
+
+
+
+
+        # worker = DocStringRunnable(self, self._docstring_chache, line, column, code)
+        # worker.signal.result.connect(self.update_docstring)
+        # QThreadPool.globalInstance().start(worker)
+
+        # worker = AutocompleteRunnable(self, code, line, column, 1)
+        # worker.signals.results.connect(self.on_autocomplete_results)
+        # worker.signals.error.connect(self.on_autocomplete_error)
+
+        # QThreadPool.globalInstance().start(worker)
+
 
     def keyPressEvent(self, event: QKeyEvent):
         global current_file_path
@@ -324,7 +495,7 @@ class MainText(QPlainTextEdit):
                 key in (Qt.Key.Key_Period, Qt.Key.Key_Underscore)):
             return
 
-        if self.show_completer:
+        if self.show_completer and showCompleter():
             self.handle_autocomplete()
 
     def toggle_comments(self):
@@ -446,20 +617,26 @@ class MainText(QPlainTextEdit):
         cursor.endEditBlock()
 
     def handle_autocomplete(self):
-        try:
-            code = self.toPlainText()
-            cursor = self.textCursor()
-            pos = cursor.position()
-            line, column = self.cursor_to_line_column(pos)
+        # try:
+        code = self.toPlainText()
+        cursor = self.textCursor()
+        pos = cursor.position()
+        line, column = self.cursor_to_line_column(pos)
 
-            if cursor.hasSelection():
-                return
+        if cursor.hasSelection():
+            return
 
-            worker = AutocompleteRunnable(code, line, column, 1)
-            worker.signals.results.connect(self.on_autocomplete_results)
-            worker.signals.error.connect(self.on_autocomplete_error)
+        worker = AutocompleteRunnable(self, code, line, column, 1)
+        worker.signals.results.connect(self.on_autocomplete_results)
+        worker.signals.error.connect(self.on_autocomplete_error)
 
-            QThreadPool.globalInstance().start(worker)
+        QThreadPool.globalInstance().start(worker)
+
+
+
+
+
+
 
         #     script = jedi.Script(code=code, path=fr"{current_file_path}")
         #     completions = script.complete(line, column)
@@ -494,9 +671,9 @@ class MainText(QPlainTextEdit):
         #     else:
         #         self.completer.popup().hide()
 
-        except Exception as e:
-            print("Autocomplete error:", e)
-            self.completer.popup().hide()
+        # except Exception as e:
+        #     print("Autocomplete error:", e)
+        #     self.completer.popup().hide()
 
 
     def on_autocomplete_results(self, request_id, payload):
@@ -927,7 +1104,8 @@ class ShowOpenedFile(QTabBar):
 
         self.setStyleSheet(get_css_style())
 
-        self.doc_panelstring = DocStringDock(self.parent_, False)
+        if showDocstringpanel():
+            self.doc_panelstring = DocStringDock(self.parent_, False)
 
         layout.addWidget(self)
 
@@ -1081,7 +1259,7 @@ class ShowOpenedFile(QTabBar):
                     self.editor_layout.addWidget(self.error_label)
 
                     self.error_label.show()
-                    if self.is_panel:
+                    if self.is_panel and showDocstringpanel():
                         self.doc_panelstring = DocStringDock(self.parent_, True)
                         self.editor.doc_panel = self.doc_panelstring.doc_panel
                     self.is_panel = False

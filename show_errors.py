@@ -14,6 +14,7 @@ from lark.exceptions import UnexpectedToken
 from threading import Thread
 from config import set_advancedHighlighting
 
+print('dskkjahhasdh')
 
 class AnalysisWorker(QRunnable):
     def __init__(self, code, callback, task_id):
