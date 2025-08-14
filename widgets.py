@@ -2,9 +2,6 @@ import jedi
 import re
 import subprocess
 import os
-import inspect
-import importlib
-import builtins
 from datetime import datetime
 from PyQt6.QtCore import QThreadPool, QRectF, QTimer, Qt, QRect, Qt, QDir, QFileInfo, pyqtSignal, QProcess, QParallelAnimationGroup, QEasingCurve, QEvent, QPropertyAnimation
 from PyQt6.QtGui import QPainter, QPainterPath, QPixmap, QTextCursor, QKeyEvent, QPainter, QColor, QFont, QFontMetrics, QTextCursor, QColor, QFileSystemModel, QIcon, QStandardItemModel, QStandardItem
@@ -12,8 +9,6 @@ from PyQt6.QtWidgets import QMessageBox, QFrame, QComboBox, QLabel, QPushButton,
 from lines import ShowLines
 from get_style import get_css_style
 from config import *
-# from config import get_fontFamily
-import parso
 
 from highlighter import *
 from show_errors import *
@@ -27,6 +22,11 @@ central_widget.setStyleSheet(get_css_style())
 error_label = QLabel("Ready")
 error_label.setObjectName("SyntaxChecker")
 error_label.setStyleSheet(get_css_style())
+
+nameErrorlabel = QLabel('Ready')
+nameErrorlabel.setObjectName('NameErrorChecker')
+nameErrorlabel.setStyleSheet(get_css_style())
+
 file_description = {}
 
 commenting = ''
@@ -182,6 +182,10 @@ class MainText(QPlainTextEdit):
         self.blink_timer.timeout.connect(self.toggle_cursor)
         self.blink_timer.start(get_cursorBlinkingRate())
 
+        # self.test_timer = QTimer()
+        # self.test_timer.timeout.connect(self.test)
+        # self.test_timer.start(100)
+
         self.line_number_area = ShowLines(self, self.font_size)
         self.blockCountChanged.connect(self.update_line_number_area_width)
         self.updateRequest.connect(self.update_line_number_area)
@@ -204,6 +208,17 @@ class MainText(QPlainTextEdit):
 
         self._last_docstring_position = -1
         self._last_docstring = ""
+
+    # def test(self):
+    #     try:
+    #         exec(self.toPlainText(), {})
+    #     except NameError as e:
+    #         tb = e.__traceback__
+    #         while tb.tb_next:
+    #             tb = tb.tb_next
+    #         print(f"NameError: on line {tb.tb_lineno}")
+    #     except SyntaxError as e:
+    #         pass
 
     def cursor_to_line_column(self, pos):
         text = self.toPlainText()
@@ -1081,7 +1096,7 @@ class CustomIcons(QFileIconProvider):
 
 
 class ShowOpenedFile(QTabBar):
-    def __init__(self, editor, layout, error_label, parent, welcome_page, editor_containter, editor_layout):
+    def __init__(self, editor, layout, error_label, parent, welcome_page, editor_containter, editor_layout, nameError):
     # def __init__(self, editor, layout, error_label, parent):
 
         super().__init__()
@@ -1098,6 +1113,7 @@ class ShowOpenedFile(QTabBar):
         self.editor = editor
         self.layout_ = layout
         self.error_label = error_label
+        self.nameErrorlabel = nameError
         self.parent_ = parent
         self.setObjectName('OpenedFiles')
         self.currentChanged.connect(self.track_tabs)
@@ -1255,10 +1271,16 @@ class ShowOpenedFile(QTabBar):
 
                     self.editor.show_completer = True
                     self.show_error.error_label = self.error_label
+                    self.show_error.nameErrorlabel = self.nameErrorlabel
+
                     self.layout_.addWidget(self.error_label)
+                    self.layout_.addWidget(self.nameErrorlabel)
                     self.editor_layout.addWidget(self.error_label)
+                    self.editor_layout.addWidget(self.nameErrorlabel)
 
                     self.error_label.show()
+                    self.nameErrorlabel.show()
+
                     if self.is_panel and showDocstringpanel():
                         self.doc_panelstring = DocStringDock(self.parent_, True)
                         self.editor.doc_panel = self.doc_panelstring.doc_panel
@@ -1283,6 +1305,8 @@ class ShowOpenedFile(QTabBar):
 
                     if self.error_label:
                         self.error_label.hide()
+                    if self.nameErrorlabel:
+                        self.nameErrorlabel.hide()
                     try:
 
                         if self.doc_panelstring:
@@ -1325,6 +1349,9 @@ class ShowOpenedFile(QTabBar):
 
                     if self.error_label:
                         self.error_label.hide()
+                    if self.nameErrorlabel:
+                        self.nameErrorlabel.hide()
+
                     try:
 
                         if self.doc_panelstring:
@@ -1364,6 +1391,10 @@ class ShowOpenedFile(QTabBar):
 
                     if self.error_label:
                         self.error_label.hide()
+
+                    if self.nameErrorlabel:
+                        self.nameErrorlabel.hide()
+
                     try:
 
                         if self.doc_panelstring:
@@ -1420,6 +1451,9 @@ class ShowOpenedFile(QTabBar):
 
                     if self.error_label:
                         self.error_label.hide()
+                    if self.nameErrorlabel:
+                        self.nameErrorlabel.hide()
+
                     try:
                         if self.doc_panelstring:
                             self.parent_.removeDockWidget(self.doc_panelstring)

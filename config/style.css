@@ -294,6 +294,10 @@
     color: white;
 }
 
+#NameErrorChecker {
+    color: white;
+}
+
 #NumberLines {
     font-family: "Maple-Mono";
     background-color: #1e1e2e;

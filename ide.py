@@ -111,7 +111,7 @@ class Kryypto(QMainWindow):
         self.tab_bar = widgets.ShowOpenedFile(
             self.main_text, content_layout, widgets.error_label, 
             self.inner_window, self.welcome_page, self.editor_containter, 
-            self.editor_layout
+            self.editor_layout, widgets.nameErrorlabel
         )
         
         content_layout.addWidget(self.tab_bar)

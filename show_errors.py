@@ -14,7 +14,6 @@ from lark.exceptions import UnexpectedToken
 from threading import Thread
 from config import set_advancedHighlighting
 
-print('dskkjahhasdh')
 
 class AnalysisWorker(QRunnable):
     def __init__(self, code, callback, task_id):
@@ -52,6 +51,7 @@ class ShowErrors(QObject):
         self.timer.timeout.connect(self.check_syntax)
         
         self.error_label = None
+        self.nameErrorlabel = None
         self.parent = parent
         self.highlighter = highlighter
         
@@ -72,6 +72,7 @@ class ShowErrors(QObject):
         # self.timer.start(300)
 
 
+
     def check_syntax(self):
         code = self.parent.toPlainText()
         
@@ -85,7 +86,7 @@ class ShowErrors(QObject):
             ast.parse(code)
 
             if self.error_label:
-                self.error_label.setText("✔️ No syntax errors")
+                self.error_label.setText("✔️ No SyntaxError")
 
 
             if set_advancedHighlighting():
@@ -113,8 +114,25 @@ class ShowErrors(QObject):
 
         except (SyntaxError, NameError) as e:
             if self.error_label:
-                self.error_label.setText(f"❌ Line {e.lineno}: {e.msg}")
+                self.error_label.setText(f"❌ SyntaxError Line: {e.lineno}: {e.msg}")
             self.underline_error(e.lineno, e.offset)
+
+        try:
+            exec(code, {})
+            self.nameErrorlabel.setText(f'✔️ No NameError')
+
+        except NameError as e:
+            tb = e.__traceback__
+            while tb.tb_next:
+                tb = tb.tb_next
+            # print(f"NameError: on line {tb.tb_lineno}")
+            if self.nameErrorlabel:
+                self.nameErrorlabel.setText(f'⚠️ NameError Line {tb.tb_lineno}')
+        except ModuleNotFoundError as e:
+            if self.nameErrorlabel:
+                self.nameErrorlabel.setText(f'⚠️ Module Not Found: {e.name}')
+        except (SyntaxError) as e:
+            pass
 
     @pyqtSlot(dict)
     def _update_highlighter(self, instances):

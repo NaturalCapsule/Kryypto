@@ -7,7 +7,6 @@ from pygit import open_file_dialog_again
 from config import *
 
 def reboot():
-    print('dwadswadw')
     python = sys.executable
     script = os.path.abspath(sys.argv[0])
     args = sys.argv[1:]
