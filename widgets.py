@@ -206,6 +206,7 @@ class MainText(QPlainTextEdit):
         self.completer.activated.connect(self.insert_completion)
         self.hide()
 
+
         self._last_docstring_position = -1
         self._last_docstring = ""
 
@@ -265,17 +266,41 @@ class MainText(QPlainTextEdit):
         self.cursor_visible = not self.cursor_visible
         self.viewport().update()
 
+
     def paintEvent(self, event):
         super().paintEvent(event)
+        self.paint_indent_guides(event)
+        self.paint_cursor(event) 
+
+
+
+    def paint_indent_guides(self, event):
+        painter = QPainter(self.viewport())
+        painter.setPen(QColor(200, 200, 200))
+
+        block = self.firstVisibleBlock()
+        top = self.blockBoundingGeometry(block).translated(self.contentOffset()).top()
+
+        while block.isValid():
+            text = block.text()
+            leading_spaces = len(text) - len(text.lstrip(' '))
+            for i in range(4, leading_spaces + 1, 4):
+                x = self.fontMetrics().horizontalAdvance(' ') * i
+                painter.drawLine(x, top, x, top + self.blockBoundingRect(block).height())
+            block = block.next()
+            top += self.blockBoundingRect(block).height()
+
+        painter.end()
+
+
+    def paint_cursor(self, event):
         if self.cursor_visible and self.hasFocus():
             painter = QPainter(self.viewport())
             painter.setPen(self.cursor_color)
             rect = self.cursorRect()
-            
-            # painter.fillRect(rect.left(), rect.top(), get_cursorWidth(), rect.height(), QColor("#f38ba8"))
             r, g, b = get_cursorColor()
             painter.fillRect(rect.left(), rect.top(), get_cursorWidth(), rect.height(), QColor(r, g, b))
-
+            painter.end()
 
     def insert_completion(self, completion):
         cursor = self.textCursor()
@@ -292,43 +317,6 @@ class MainText(QPlainTextEdit):
     def schedule_docstring_update(self):
         if not self.textCursor().hasSelection():
             self.docstring_timer.start(150)
-
-
-    # def update_docstring(self):
-    #     cursor = self.textCursor()
-        
-    #     if cursor.hasSelection():
-    #         return
-            
-    #     current_position = cursor.position()
-        
-    #     if abs(current_position - self._last_docstring_position) < 3:
-    #         return
-            
-    #     line = cursor.blockNumber() + 1
-    #     column = cursor.positionInBlock()
-    #     code = self.toPlainText()
-
-    #     doc = self.get_definition_docstring(code, line, column)
-    #     doc = doc or ""
-        
-    #     self._last_docstring_position = current_position
-    #     self._last_docstring = doc
-
-
-    #     if self.doc_panel:
-    #         if doc == "":
-    #             self.doc_panel.hide()
-    #             if self.doc_panel.custom_title:
-    #                 self.doc_panel.custom_title.hide()
-    #                 self.doc_panel.dock.hide()
-    #         else:
-    #             self.doc_viewer = self.parse_docstring(doc)
-    #             self.doc_panel.setHtml(self.doc_viewer or "")
-    #             self.doc_panel.dock.show()
-    #             self.doc_panel.custom_title.show()
-    #             self.doc_panel.show()
-
 
     def update_docstring(self):
         cursor = self.textCursor()
@@ -364,81 +352,6 @@ class MainText(QPlainTextEdit):
                 self.doc_panel.dock.show()
                 self.doc_panel.custom_title.show()
                 self.doc_panel.show()
-
-
-    # def get_definition_docstring(self, code, line, column):
-    #     global current_file_path
-        # try:
-        #     if hasattr(self, '_docstring_cache'):
-        #         cache_key = f"{line}:{column}"
-        #         if cache_key in self._docstring_cache:
-        #             return self._docstring_cache[cache_key]
-        #     else:
-        #         self._docstring_cache = {}
-            
-        #     script = jedi.Script(code=code, path=fr"{current_file_path}")
-        #     definitions = script.help(line, column)
-
-        #     result = definitions[0].docstring() if definitions else ""
-            
-        #     if len(self._docstring_cache) > 10:
-        #         self._docstring_cache.clear()
-        #     self._docstring_cache[f"{line}:{column}"] = result
-            
-        #     return result
-        # except Exception as e:
-        #     return ""
-
-
-        # lines = code.splitlines()
-        # if line < 1 or line > len(lines):
-        #     return ''
-        # text_line = lines[line - 1]
-
-        # # Find all words and dotted names
-        # pattern = re.compile(r'\b[\w\.]+\b')
-        # for match in pattern.finditer(text_line):
-        #     start, end = match.span()
-        #     if start <= column < end:
-        #         full_name = match.group()
-        #         break
-        # else:
-        #     return ''
-
-        # # Split into module and attr
-        # parts = full_name.split('.')
-        # if len(parts) == 1:
-        #     module_name = parts[0]
-        #     attr_name = None
-        # else:
-        #     module_name = '.'.join(parts[:-1])
-        #     attr_name = parts[-1]
-
-        # try:
-        #     mod = importlib.import_module(module_name)
-        #     if attr_name:
-        #         obj = getattr(mod, attr_name, None)
-        #         if obj:
-        #             return inspect.getdoc(obj) or ''
-        #         else:
-        #             return ''
-        #     else:
-        #         return inspect.getdoc(mod) or ''
-        # except Exception:
-        #     return ''
-
-
-
-
-        # worker = DocStringRunnable(self, self._docstring_chache, line, column, code)
-        # worker.signal.result.connect(self.update_docstring)
-        # QThreadPool.globalInstance().start(worker)
-
-        # worker = AutocompleteRunnable(self, code, line, column, 1)
-        # worker.signals.results.connect(self.on_autocomplete_results)
-        # worker.signals.error.connect(self.on_autocomplete_error)
-
-        # QThreadPool.globalInstance().start(worker)
 
 
     def keyPressEvent(self, event: QKeyEvent):
@@ -648,49 +561,6 @@ class MainText(QPlainTextEdit):
         QThreadPool.globalInstance().start(worker)
 
 
-
-
-
-
-
-        #     script = jedi.Script(code=code, path=fr"{current_file_path}")
-        #     completions = script.complete(line, column)
-
-        #     model = QStandardItemModel()
-        #     words = []
-            
-        #     for c in completions[:30]:
-        #         words.append(c.name)
-        #         item = QStandardItem()
-        #         item.setText(c.name)
-                
-        #         if c.type == 'statement':
-        #             item.setIcon(QIcon('icons/autocompleterIcons/variable.svg'))
-        #         elif c.type in ('class', 'module'):
-        #             item.setIcon(QIcon('icons/autocompleterIcons/class.svg'))
-        #         elif c.type == 'function':
-        #             item.setIcon(QIcon('icons/autocompleterIcons/function.svg'))
-        #         elif c.type == 'keyword':
-        #             item.setIcon(QIcon('icons/autocompleterIcons/keyword.svg'))
-                
-        #         model.appendRow(item)
-
-        #     if words:
-        #         cursor.select(cursor.SelectionType.WordUnderCursor)
-        #         prefix = cursor.selectedText()
-        #         self.completer.setModel(model)
-        #         self.completer.setCompletionPrefix(prefix)
-        #         cr = self.cursorRect()
-        #         cr.setWidth(self.completer.popup().sizeHintForColumn(0) + 10)
-        #         self.completer.complete(cr)
-        #     else:
-        #         self.completer.popup().hide()
-
-        # except Exception as e:
-        #     print("Autocomplete error:", e)
-        #     self.completer.popup().hide()
-
-
     def on_autocomplete_results(self, request_id, payload):
         model = QStandardItemModel()
 
@@ -746,6 +616,11 @@ class MainText(QPlainTextEdit):
     def line_number_area_paint_event(self, event, font_metrics):
         painter = QPainter(self.line_number_area)
         painter.fillRect(event.rect(), QColor(30, 30, 46))
+        font = QFont(get_fontFamily(), get_fontSize())
+        font.setStyleStrategy(QFont.StyleStrategy.PreferAntialias)
+        font.setPixelSize(get_fontSize())
+
+        painter.setFont(font)
 
         block = self.firstVisibleBlock()
         block_number = block.blockNumber()
@@ -773,8 +648,6 @@ class DocStringDock(QDockWidget):
         self.custom_title = QLabel("Doc")
         self.custom_title.setObjectName('DockTitles')
         self.custom_title.setStyleSheet(get_css_style())
-
-
 
         self.setTitleBarWidget(self.custom_title)
 

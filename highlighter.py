@@ -50,6 +50,11 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
         # ))
 
 
+        self.func_args_format = QTextCharFormat()
+        r, g, b = get_bracket()
+        self.func_args_format.setForeground(QColor(r, g, b))
+
+
         # self.comment_format = QTextCharFormat()
         # self.comment_format.setForeground(QColor(r, g, b))  
         # self.highlighting_rules.append((QRegularExpression('#[^\n]*'), self.comment_format, 'comment'))
@@ -599,7 +604,12 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
                             # self.setFormat(match.capturedStart(), match.capturedLength(), self.function_calls_format)
 
 
+                        elif type_name == 'args':
+                            self.setFormat(match.capturedStart(), match.capturedLength(), self.func_args_format)
+
+
                         used_ranges.add((match.capturedStart(), match.capturedStart() + match.capturedLength()))
+
 
             except RuntimeError:
                 pass
@@ -640,7 +650,6 @@ class ConfigSyntaxHighlighter(QSyntaxHighlighter):
         comment_format = QTextCharFormat()
         r, g, b = get_comment()
         comment_format.setForeground(QColor(r, g, b))
-        # comment_format.setFontItalic(True)
         self.highlighting_rules.append((QRegularExpression(';[^\n]*'), comment_format, 'comment'))
 
         r, g, b = get_string()
@@ -659,8 +668,6 @@ class ConfigSyntaxHighlighter(QSyntaxHighlighter):
         r, g, b = get_config_section()
         section_format = QTextCharFormat()
         section_format.setForeground(QColor(r, g, b))
-        # section_format.setFontWeight(QFont.Weight.Bold)
-        # section_format.setFontItalic(True)
 
         self.highlighting_rules.append((QRegularExpression('\[.*?\]'), section_format, 'section'))
 
@@ -668,21 +675,11 @@ class ConfigSyntaxHighlighter(QSyntaxHighlighter):
         variable_format = QTextCharFormat()
         variable_format.setForeground(QColor(r, g, b))  # Blue
 
-        # variable_format.setFontWeight(QFont.Weight.Bold)
-        # variable_format.setFontItalic(True)
-
+        self.highlighting_rules.append((QRegularExpression(r'^\s*[\w-]+(?=\s*=)'), variable_format, 'variable'))
         self.highlighting_rules.append((QRegularExpression('^\s*\w+(?=\s*=)'), variable_format, 'variable'))
         self.highlighting_rules.append((QRegularExpression('^\s*\w+(?=\s* )'), variable_format, 'variable'))
         self.highlighting_rules.append((QRegularExpression(r'\b\w+(?=\s*=)'), variable_format, 'variable'))
 
-
-        # for punctuation in ['#', '!', '@', '$', '%', '^', '&', '*', '-', '=', '+']:
-        #     punction_format = QTextCharFormat()
-        #     punction_format.setForeground(QColor(243, 139, 168))
-
-        #     escaped = QRegularExpression.escape(punctuation)
-        #     punction_regex = QRegularExpression(escaped)
-        #     self.highlighting_rules.append((punction_regex, punction_format, 'punctuation'))
 
         for bracket in ['(', ')', '{', '}', '[', ']']:
             bracket_format = QTextCharFormat()
@@ -691,34 +688,6 @@ class ConfigSyntaxHighlighter(QSyntaxHighlighter):
             escaped = QRegularExpression.escape(bracket)
             bracket_regex = QRegularExpression(escaped)
             self.highlighting_rules.append((bracket_regex, bracket_format, 'bracket'))
-
-
-
-        # string_format = QTextCharFormat()
-        # string_format.setForeground(QColor(166, 227, 161))
-
-        # self.highlighting_rules.append((QRegularExpression('"[^"\\\\]*(\\\\.[^"\\\\]*)*"'), string_format, 'string'))
-        # self.highlighting_rules.append((QRegularExpression("'[^'\\\\]*(\\\\.[^'\\\\]*)*'"), string_format, 'string'))
-
-
-
-        # variable_formar = QTextCharFormat()
-        # variable_formar.setForeground(QColor(0, 128, 0))  # Dark green
-        # assignment_format.setFontWeight(QFont.Weight.Bold)
-
-        # Regex explanation:
-        #   \b       = word boundary
-        #   \w+      = variable name
-        #   \s*=\s*  = equals with optional spaces
-        #   \w+      = class or identifier
-
-
-
-        #assignment_regex = QRegularExpression(r'\b(\w+)\s*=\s*')
-        # this works try it on..!!
-        # assignment_regex = QRegularExpression(r'\b(\w+)\s*=')
-        # variable_regex = QRegularExpression(r'\b(\w+)\s*=')
-        # self.highlighting_rules.append((variable_regex, variable_formar, 'variable'))
 
         if useItalic():
             comment_format.setFontItalic(True)
