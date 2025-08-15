@@ -3,8 +3,12 @@ from PyQt6.QtWidgets import QLabel, QWidget, QVBoxLayout, QApplication, QMainWin
 from PyQt6.QtGui import  QFont, QSurfaceFormat, QCloseEvent
 from titlebar import CustomTitleBar
 from PyQt6.QtCore import Qt, QPoint, QRect
+from multiprocessing import Process, Queue
+
+
 from settings import Setting
 from shortcuts import *
+from heavy import *
 
 from config import setCustomTitleBar
 from get_style import get_css_style
@@ -63,6 +67,7 @@ class Kryypto(QMainWindow):
     def setupWidgets(self):
         import widgets
         
+        
         central_widget = QWidget()
 
 
@@ -100,10 +105,20 @@ class Kryypto(QMainWindow):
 
         self.editor_containter = QWidget()
         self.editor_layout = QVBoxLayout(self.editor_containter)
-        
+
+
+        # code_queue = Queue()
+        # result_queue = Queue()
+
+        # p = Process(target=jedi_worker, args=(code_queue, result_queue, self.main_text))
+        # p.start()
+
+        # bridge = JediBridge(code_queue, result_queue)
+
         self.main_text = widgets.MainText(self.editor_layout, self.clipboard, self.font_size)
 
-        # self.main_text.completer.popup().setFont()
+
+
 
         self.welcome_page = widgets.WelcomeWidget()
         self.inner_window = QMainWindow()
@@ -280,6 +295,14 @@ class Kryypto(QMainWindow):
             pop_messagebox(self, event, self.tab_bar, True)
 
 if __name__ == '__main__':
+
+    # code_queue = Queue()
+    # result_queue = Queue()
+
+    # Start Jedi worker in another process
+    # p = Process(target=jedi_worker, args=(code_queue, result_queue))
+    # p.start()
+
     format = QSurfaceFormat()
     format.setRenderableType(QSurfaceFormat.RenderableType.OpenGL)
     format.setProfile(QSurfaceFormat.OpenGLContextProfile.CoreProfile)
@@ -288,6 +311,8 @@ if __name__ == '__main__':
     format.setDepthBufferSize(144)
     QSurfaceFormat.setDefaultFormat(format)
     app = QApplication(sys.argv)
+    # bridge = JediBridge(code_queue, result_queue)
+
     window = Kryypto(app.clipboard())
     window.show()
     sys.exit(app.exec())

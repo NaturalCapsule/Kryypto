@@ -2,11 +2,18 @@ import jedi
 import re
 import subprocess
 import os
+import importlib
+import inspect, ast
 from datetime import datetime
 from PyQt6.QtCore import QThreadPool, QRectF, QTimer, Qt, QRect, Qt, QDir, QFileInfo, pyqtSignal, QProcess, QParallelAnimationGroup, QEasingCurve, QEvent, QPropertyAnimation
 from PyQt6.QtGui import QPainter, QPainterPath, QPixmap, QTextCursor, QKeyEvent, QPainter, QColor, QFont, QFontMetrics, QTextCursor, QColor, QFileSystemModel, QIcon, QStandardItemModel, QStandardItem
 from PyQt6.QtWidgets import QMessageBox, QFrame, QComboBox, QLabel, QPushButton, QHBoxLayout, QLineEdit, QPlainTextEdit, QVBoxLayout, QWidget, QCompleter, QDockWidget, QTextEdit, QTreeView, QFileIconProvider, QTabBar
 from lines import ShowLines
+from multiprocessing import Process, Queue
+from heavy import *
+
+
+
 from get_style import get_css_style
 from config import *
 
@@ -67,6 +74,7 @@ class AutocompleteRunnable(QRunnable):
         self.line = line
         self.column = column
         self.request_id = request_id
+        self.setAutoDelete(True)
 
     def run(self):
         try:
@@ -105,40 +113,90 @@ class AutocompleteRunnable(QRunnable):
         except Exception as e:
             self.signals.error.emit(e)
 
-class DocStringWorker(QObject):
-    result = pyqtSignal(str)
-
-class DocStringRunnable(QRunnable):
-    def __init__(self, code, line, column, cache):
-        super().__init__()
-        self.code = code
-        self.line = line
-        self.column = column
-        self.cache = cache
-        self.signal = DocStringWorker()
-
-    def run(self):
-        global current_file_path
-        try:
-            key = f"{self.line}:{self.column}"
-            if key in self.cache:
-                self.signal.result.emit(self.cache[key])
-                return
 
 
-            script = jedi.Script(code=self.code, path=current_file_path)
-            definitions = script.help(self.line, self.column)
-            result = definitions[0].docstring() if definitions else ""
+# def jedi_worker(code_queue, result_queue, line, column):
+#     while True:
+#         code = code_queue.get()
+#         print("dswad")
+#         if code == "__EXIT__":
+#             break
+#         try:
 
-            if len(self.cache) > 20:
-                self.cache.clear()
-            self.cache[key] = result
+
+#             script = jedi.Script(code=code, path=current_file_path)
+#             definitions = script.help(line, column)
+#             result = definitions[0].docstring() if definitions else ""
+
+#             result_queue.put(result)
+#         except Exception as e:
+#             result_queue.put([str(e)])
 
 
-            self.signal.result.emit(result)
-        except Exception as e:
-            print("Docstring error:", e)
-            self.signal.result.emit("")
+# # -------------------------
+# # PyQt Main Application
+# # -------------------------
+# class JediBridge(QObject):
+#     result_ready = pyqtSignal(list)
+
+#     def __init__(self, code_queue, result_queue):
+#         super().__init__()
+#         self.code_queue = code_queue
+#         self.result_queue = result_queue
+#         self.timer = QTimer()
+#         self.timer.timeout.connect(self.check_results)
+#         self.timer.start(100)  # check every 100ms
+
+#     def request_docstring(self, code):
+#         self.code_queue.put(code)
+
+#     def check_results(self):
+#         while not self.result_queue.empty():
+#             results = self.result_queue.get()
+#             self.result_ready.emit(results)
+
+# class DocStringWorker(QObject):
+#     result = pyqtSignal(str)
+
+# class DocStringRunnable(QRunnable):
+#     def __init__(self, code, line, column, cache, selected_text):
+#         super().__init__()
+#         self.code = code
+#         self.line = line
+#         self.column = column
+#         self.cache = cache
+#         self.signal = DocStringWorker()
+#         self.selected_text = selected_text()
+#         self.setAutoDelete(True)
+
+
+
+#     def run(self):
+#         global current_file_path
+#         try:
+
+#             if self.selected_text:
+#                 return
+
+#             key = f"{self.line}:{self.column}"
+#             if key in self.cache:
+#                 self.signal.result.emit(self.cache[key])
+#                 return
+
+
+#             script = jedi.Script(code=self.code, path=current_file_path)
+#             definitions = script.help(self.line, self.column)
+#             result = definitions[0].docstring() if definitions else ""
+
+#             if len(self.cache) > 20:
+#                 self.cache.clear()
+#             self.cache[key] = result
+
+
+#             self.signal.result.emit(result)
+#         except Exception as e:
+#             print("Docstring error:", e)
+#             self.signal.result.emit("")
 
 
 class MainText(QPlainTextEdit):
@@ -148,6 +206,19 @@ class MainText(QPlainTextEdit):
         global commenting
         self.clipboard = window
         self.setCursorWidth(0)
+
+        if showDocstringpanel():
+            self.jediBridge()
+
+        # code_queue = Queue()
+        # result_queue = Queue()
+
+        # p = Process(target=jedi_worker, args=(code_queue, result_queue))
+        # p.start()
+
+        # bridge = JediBridge(code_queue, result_queue)
+        # self.jedi_bridge = bridge
+
 
         self.font__ = QFont(get_fontFamily(), get_fontSize())
         self.font__.setStyleStrategy(QFont.StyleStrategy.PreferAntialias)
@@ -165,9 +236,9 @@ class MainText(QPlainTextEdit):
 
 
         ## CAUSING FREEZES WHEN CURSOR POSITION CHANGES
-        if showDocstringpanel():
-            self.docstring_timer.timeout.connect(self.update_docstring)
-            self.cursorPositionChanged.connect(self.schedule_docstring_update)
+        # if showDocstringpanel():
+        #     self.docstring_timer.timeout.connect(self.update_docstring)
+        #     self.cursorPositionChanged.connect(self.schedule_docstring_update)
         self._docstring_cache = {}
 
 
@@ -182,13 +253,14 @@ class MainText(QPlainTextEdit):
         self.blink_timer.timeout.connect(self.toggle_cursor)
         self.blink_timer.start(get_cursorBlinkingRate())
 
-        # self.test_timer = QTimer()
-        # self.test_timer.timeout.connect(self.test)
-        # self.test_timer.start(100)
 
         self.line_number_area = ShowLines(self, self.font_size)
         self.blockCountChanged.connect(self.update_line_number_area_width)
         self.updateRequest.connect(self.update_line_number_area)
+        if showDocstringpanel():
+            self.cursorPositionChanged.connect(self.on_text_change)
+            self.jedi_bridge.result_ready.connect(self.on_docstring_result)
+
         self.update_line_number_area_width(0)
         
         self.setObjectName('Editor')
@@ -205,6 +277,8 @@ class MainText(QPlainTextEdit):
         self.completer.setCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
         self.completer.activated.connect(self.insert_completion)
         self.hide()
+
+
 
 
         self._last_docstring_position = -1
@@ -227,6 +301,46 @@ class MainText(QPlainTextEdit):
         line = len(lines) if lines else 1
         column = len(lines[-1]) if lines else 0
         return line, column
+
+    def jediBridge(self):
+        code_queue = Queue()
+        result_queue = Queue()
+
+        p = Process(target=jedi_worker, args=(code_queue, result_queue))
+        p.start()
+
+        bridge = JediBridge(code_queue, result_queue)
+        self.jedi_bridge = bridge
+
+    # def on_text_change(self):
+    #     code = self.toPlainText()
+    #     self.jedi_bridge.request_docstring(code)
+
+    def on_text_change(self):
+        code = self.toPlainText()
+        cursor = self.textCursor()
+        line = cursor.blockNumber() + 1
+        column = cursor.positionInBlock()
+        self.jedi_bridge.request_docstring((code, line, column))
+
+    # def update_docs(self, docs):
+    #     self.doc_label.setText("\n".join(docs))
+
+    def on_docstring_result(self, doc):
+        self._last_docstring_position = self.textCursor().position()
+        self._last_docstring = doc
+        if self.doc_panel:
+            if doc == "":
+                self.doc_panel.hide()
+                if self.doc_panel.custom_title:
+                    self.doc_panel.custom_title.hide()
+                    self.doc_panel.dock.hide()
+            else:
+                self.doc_viewer = self.parse_docstring(doc)
+                self.doc_panel.setHtml(self.doc_viewer or "")
+                self.doc_panel.dock.show()
+                self.doc_panel.custom_title.show()
+                self.doc_panel.show()
 
 
     def parse_docstring(self, doc: str):
@@ -318,24 +432,24 @@ class MainText(QPlainTextEdit):
         if not self.textCursor().hasSelection():
             self.docstring_timer.start(150)
 
-    def update_docstring(self):
-        cursor = self.textCursor()
+    # def update_docstring(self):
+    #     cursor = self.textCursor()
         
-        if cursor.hasSelection():
-            return
+    #     if cursor.hasSelection():
+    #         return
             
-        current_position = cursor.position()
+    #     current_position = cursor.position()
         
-        if abs(current_position - self._last_docstring_position) < 3:
-            return
+    #     if abs(current_position - self._last_docstring_position) < 3:
+    #         return
             
-        line = cursor.blockNumber() + 1
-        column = cursor.positionInBlock()
-        code = self.toPlainText()
+    #     line = cursor.blockNumber() + 1
+    #     column = cursor.positionInBlock()
+    #     code = self.toPlainText()
 
-        worker = DocStringRunnable(code, line, column, self._docstring_cache)
-        worker.signal.result.connect(self.on_docstring_result)
-        QThreadPool.globalInstance().start(worker)
+    #     worker = DocStringRunnable(code, line, column, self._docstring_cache, cursor.hasSelection)
+    #     worker.signal.result.connect(self.on_docstring_result)
+    #     QThreadPool.globalInstance().start(worker)
 
     def on_docstring_result(self, doc):
         self._last_docstring_position = self.textCursor().position()

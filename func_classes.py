@@ -105,7 +105,6 @@ def list_classes_functions(code_text):
                 state = None
             continue
 
-        # Handle "import ..."
         elif tok_type == tokenize.NAME and tok_str == "import":
             state = "import"
             continue

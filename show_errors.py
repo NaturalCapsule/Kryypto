@@ -125,13 +125,14 @@ class ShowErrors(QObject):
             tb = e.__traceback__
             while tb.tb_next:
                 tb = tb.tb_next
-            # print(f"NameError: on line {tb.tb_lineno}")
             if self.nameErrorlabel:
                 self.nameErrorlabel.setText(f'⚠️ NameError Line {tb.tb_lineno}')
         except ModuleNotFoundError as e:
             if self.nameErrorlabel:
                 self.nameErrorlabel.setText(f'⚠️ Module Not Found: {e.name}')
-        except (SyntaxError) as e:
+        except Exception as e:
+        # except (SyntaxError) as e:
+
             pass
 
     @pyqtSlot(dict)
