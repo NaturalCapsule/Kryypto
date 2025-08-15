@@ -10,6 +10,34 @@ from PyQt6.QtGui import QSyntaxHighlighter, QTextCharFormat, QColor, QFont
 from PyQt6.QtWidgets import QApplication
 
 
+# class SyntaxBridge(QObject):
+#     result_ready = pyqtSignal(dict)
+
+#     def __init__(self, code_queue, result_queue):
+#         super().__init__()
+#         self.code_queue = code_queue
+#         self.result_queue = result_queue
+#         self.timer = QTimer()
+#         self.timer.timeout.connect(self.check_results)
+#         self.timer.start(100)
+
+#     def request_docstring(self, code_pos_tuple):
+#         self.code_queue.put(code_pos_tuple)
+
+#     def check_results(self):
+#         while not self.result_queue.empty():
+#             results = self.result_queue.get()
+#             self.result_ready.emit(results)
+
+
+# def syntax_worker(code_queue, result_queue):
+#     while True:
+#         code = code_queue.get()
+
+#         instances = list_classes_functions(code)
+#         result_queue.put(instances)
+
+
 
 class PythonSyntaxHighlighter(QSyntaxHighlighter):
     def __init__(self,use_highlighter ,parent=None):

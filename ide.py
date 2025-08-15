@@ -88,12 +88,6 @@ class Kryypto(QMainWindow):
             central_widget.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
             central_widget.setMouseTracking(True)
 
-
-        # if setCustomTitleBar():
-
-        #     self.title_bar = CustomTitleBar(self)
-        #     main_layout.addWidget(self.title_bar)
-
         content_area = QWidget()
         content_area.setMouseTracking(True)
         content_area.setObjectName('MainWindow')
@@ -288,8 +282,9 @@ class Kryypto(QMainWindow):
         self.settings.setValue('Window Position', self.pos())
         self.settings.setValue('Opened Directory', folder_path_)
 
-        if hasattr(self.tab_bar, 'show_error') and hasattr(self.tab_bar.show_error, 'cleanup'):
-            self.tab_bar.show_error.cleanup()
+        if hasattr(self.tab_bar, 'show_error') and hasattr(self.tab_bar.show_error, 'code_queue'):
+            # self.tab_bar.show_error.cleanup()
+            self.tab_bar.show_error.code_queue.put('__EXIT__')
 
         if self.tab_bar.is_save_file_needed():
             pop_messagebox(self, event, self.tab_bar, True)

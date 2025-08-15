@@ -13,7 +13,6 @@ from multiprocessing import Process, Queue
 from heavy import *
 
 
-
 from get_style import get_css_style
 from config import *
 
@@ -41,9 +40,9 @@ current_file_path = ''
 
 # layout = QVBoxLayout(central_widget)
 
-class WorkerSignals(QObject):
-    results = pyqtSignal(int, object)
-    error = pyqtSignal(Exception)
+# class WorkerSignals(QObject):
+#     results = pyqtSignal(int, object)
+#     error = pyqtSignal(Exception)
 
 # def is_cursor_in_string(text, cursor_pos):
 #     before_cursor = text[:cursor_pos]
@@ -135,14 +134,14 @@ class MainText(QPlainTextEdit):
         # self.jedi_bridge = bridge
 
 
-        self.code_queue = Queue()
-        self.result_queue = Queue()
+        self.code_queue_ = Queue()
+        self.result_queue_ = Queue()
 
-        self.jediCompletetion_process = Process(target=jedi_completion, args=(self.code_queue, self.result_queue, current_file_path))
+        self.jediCompletetion_process = Process(target=jedi_completion, args=(self.code_queue_, self.result_queue_, current_file_path))
         self.jediCompletetion_process.start()
 
-        bridge = JediBridgeCompletion(self.code_queue, self.result_queue)
-        self.jedi_completion_bridge = bridge
+        bridge_ = JediBridgeCompletion(self.code_queue_, self.result_queue_)
+        self.jedi_completion_bridge = bridge_
         self.jedi_completion_bridge.result_ready.connect(self.on_autocomplete_results)
 
 
@@ -160,11 +159,6 @@ class MainText(QPlainTextEdit):
         self.docstring_timer = QTimer()
         self.docstring_timer.setSingleShot(True)
 
-
-        ## CAUSING FREEZES WHEN CURSOR POSITION CHANGES
-        # if showDocstringpanel():
-        #     self.docstring_timer.timeout.connect(self.update_docstring)
-        #     self.cursorPositionChanged.connect(self.schedule_docstring_update)
         self._docstring_cache = {}
 
 
@@ -578,23 +572,13 @@ class MainText(QPlainTextEdit):
         if cursor.hasSelection():
             return
 
-        # code_queue = Queue()
-        # result_queue = Queue()
-
-        # p = Process(target=jedi_completion, args=(code_queue, result_queue, current_file_path))
-        # p.start()
-
-        # bridge = JediBridgeCompletion(code_queue, result_queue)
-        # self.jedi_completion_bridge = bridge
-        # self.jedi_completion_bridge.result_ready.connect(self.on_autocomplete_results)
-
-        self.code_queue.put((code, line, column))
-
+        self.code_queue_.put((code, line, column))
         # worker = AutocompleteRunnable(self, code, line, column, 1)
         # worker.signals.results.connect(self.on_autocomplete_results)
         # worker.signals.error.connect(self.on_autocomplete_error)
 
         # QThreadPool.globalInstance().start(worker)
+
 
 
     def on_autocomplete_results(self, payload):

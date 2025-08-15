@@ -8,12 +8,14 @@ import json, commentjson
 from PyQt6.QtGui import QTextCursor, QColor, QTextCharFormat, QTextCursor, QColor
 from PyQt6.QtCore import QThreadPool, QTimer, QRunnable, pyqtSlot, pyqtSignal, QObject, QThread, QMutex, QMutexLocker, Q_ARG
 from PyQt6.QtWidgets import QApplication
-
-from func_classes import list_classes_functions
 from lark.exceptions import UnexpectedToken
 from threading import Thread
-from config import set_advancedHighlighting
+from multiprocessing import Process, Queue
 
+
+from func_classes import list_classes_functions
+from config import set_advancedHighlighting
+# from heavy import SyntaxBridge, syntax_worker
 
 class AnalysisWorker(QRunnable):
     def __init__(self, code, callback, task_id):
@@ -42,6 +44,7 @@ class AnalysisWorker(QRunnable):
 
 
 class ShowErrors(QObject):
+# class ShowErrors:
     def __init__(self, parent, highlighter):
         super().__init__()
         parent.textChanged.connect(self.schedule_check)
@@ -49,29 +52,39 @@ class ShowErrors(QObject):
         self.timer = QTimer()
         self.timer.setSingleShot(True)
         self.timer.timeout.connect(self.check_syntax)
-        
+
+
+        # self.code_queue = Queue()
+        # self.result_queue = Queue()
+
+        # self.syntax_processor = Process(target=syntax_worker, args=(self.code_queue, self.result_queue))
+        # self.syntax_processor.start()
+
+        # bridge = SyntaxBridge(self.code_queue, self.result_queue)
+        # self.syntax_bridge = bridge
+
+        # self.syntax_bridge.result_ready.connect(self.analyze_code)
+
+
         self.error_label = None
         self.nameErrorlabel = None
         self.parent = parent
         self.highlighter = highlighter
         
-        self.thread_pool = QThreadPool()
-        self.thread_pool.setMaxThreadCount(1)
+        # self.thread_pool = QThreadPool()
+        # self.thread_pool.setMaxThreadCount(1)
         
-        self._current_code = ""
-        self._last_instances = {}
-        self._use_background = True
-        self._use_sync_fallback = False
-        self._current_task_id = 0
-        self._max_file_size = 50000
-        self._sync_threshold = 500
+        # self._current_code = ""
+        # self._last_instances = {}
+        # self._use_background = True
+        # self._use_sync_fallback = False
+        # self._current_task_id = 0
+        # self._max_file_size = 50000
+        # self._sync_threshold = 500
 
     def schedule_check(self):
         self.timer.stop()
         self.timer.start(800)
-        # self.timer.start(300)
-
-
 
     def check_syntax(self):
         code = self.parent.toPlainText()
@@ -91,22 +104,23 @@ class ShowErrors(QObject):
 
             if set_advancedHighlighting():
                 
-                if self._use_sync_fallback:
-                    instances = list_classes_functions(code)
-                    self._update_highlighter(instances)
-                else:
-                    if len(code.strip()) < self._sync_threshold:
-                        instances = list_classes_functions(code)
-                        self._update_highlighter(instances)
-                    else:
-                        if self._use_background:
-                            # Cancel previous task
-                            self._current_task_id += 1
-                            worker = AnalysisWorker(code, self, self._current_task_id)
-                            self.thread_pool.start(worker)
-                        else:
-                            instances = list_classes_functions(code)
-                            self._update_highlighter(instances)
+
+                # if self._use_sync_fallback:
+                #     instances = list_classes_functions(code)
+                #     self._update_highlighter(instances)
+                # else:
+                #     if len(code.strip()) < self._sync_threshold:
+                #         instances = list_classes_functions(code)
+                #         self._update_highlighter(instances)
+                #     else:
+                #         if self._use_background:
+                #             # Cancel previous task
+                #             self._current_task_id += 1
+                #             worker = AnalysisWorker(code, self, self._current_task_id)
+                #             self.thread_pool.start(worker)
+                #         else:
+                #             instances = list_classes_functions(code)
+                #             self._update_highlighter(instances)
 
         except (SyntaxError, NameError) as e:
             if self.error_label:
@@ -127,19 +141,18 @@ class ShowErrors(QObject):
             if self.nameErrorlabel:
                 self.nameErrorlabel.setText(f'⚠️ Module Not Found: {e.name}')
         except Exception as e:
-        # except (SyntaxError) as e:
 
             pass
 
-    @pyqtSlot(dict)
-    def _update_highlighter(self, instances):
-        try:
-            if instances and isinstance(instances, dict):
-                if instances != self._last_instances:
-                    self.analyze_code(instances)
-                    self._last_instances = instances
-        except Exception as e:
-            print(f"Error in update highlighter: {e}")
+    # @pyqtSlot(dict)
+    # def _update_highlighter(self, instances):
+    #     try:
+    #         if instances and isinstance(instances, dict):
+    #             if instances != self._last_instances:
+    #                 self.analyze_code(instances)
+    #                 self._last_instances = instances
+    #     except Exception as e:
+    #         print(f"Error in update highlighter: {e}")
 
     def clear_error_highlighting(self):
         cursor = self.parent.textCursor()
@@ -177,19 +190,19 @@ class ShowErrors(QObject):
         except Exception as e:
             print(f"Error in analyze_code: {e}")
         
-    def cleanup(self):
-        self._current_task_id += 1
-        self.thread_pool.waitForDone(500)
+    # def cleanup(self):
+    #     self._current_task_id += 1
+    #     self.thread_pool.waitForDone(500)
     
-    def enable_sync_fallback(self):
-        self._use_sync_fallback = True
-        self._use_background = False
+    # def enable_sync_fallback(self):
+    #     self._use_sync_fallback = True
+    #     self._use_background = False
         
-    def set_max_file_size(self, size):
-        self._max_file_size = size
+    # def set_max_file_size(self, size):
+    #     self._max_file_size = size
 
-    def set_sync_threshold(self, threshold):
-        self._sync_threshold = threshold
+    # def set_sync_threshold(self, threshold):
+    #     self._sync_threshold = threshold
 
 class ShowJsonErrors:
     def __init__(self, parent, highlighter, file_path, use_jsonc):
