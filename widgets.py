@@ -45,158 +45,73 @@ class WorkerSignals(QObject):
     results = pyqtSignal(int, object)
     error = pyqtSignal(Exception)
 
-def is_cursor_in_string(text, cursor_pos):
-    before_cursor = text[:cursor_pos]
+# def is_cursor_in_string(text, cursor_pos):
+#     before_cursor = text[:cursor_pos]
 
-    single_quotes = before_cursor.count("'") - before_cursor.count("\\'")
-    double_quotes = before_cursor.count('"') - before_cursor.count('\\"')
-    if single_quotes % 2 == 1 or double_quotes % 2 == 1:
-        return True
+#     single_quotes = before_cursor.count("'") - before_cursor.count("\\'")
+#     double_quotes = before_cursor.count('"') - before_cursor.count('\\"')
+#     if single_quotes % 2 == 1 or double_quotes % 2 == 1:
+#         return True
 
-    return False
-
-
-def is_cursor_in_parentheses(text, cursor_pos):
-    before_cursor = text[:cursor_pos]
-    parenthes = before_cursor.count("(") - before_cursor.count(')')
-
-    if parenthes % 2 == 1:
-        return True
-
-    return False
-
-class AutocompleteRunnable(QRunnable):
-    def __init__(self, editor, code, line, column, request_id):
-        super().__init__()
-        self.editor = editor
-        self.signals = WorkerSignals()
-        self.code = code
-        self.line = line
-        self.column = column
-        self.request_id = request_id
-        self.setAutoDelete(True)
-
-    def run(self):
-        try:
-            cursor = self.editor.textCursor()
-            if not is_cursor_in_string(self.code, cursor.position()) or not is_cursor_in_parentheses(self.code, cursor.position()):
-                script = jedi.Script(code=self.code, path=fr"{current_file_path}")
-                completions = script.complete(self.line, self.column)
-            else:
-                completions = []
-
-            if not completions:
-                return
-
-            payload = []
-            for c in completions[:30]:
-                try:
-                    name = getattr(c, "name", None) or ""
-                    ctype = getattr(c, "type", None) or ""
-                    description = getattr(c, "description", None) or ""
-
-                    suffix = getattr(c, "suffix", None)
-                    if suffix:
-                        name += suffix
-
-                    payload.append({
-                        "name": name,
-                        "type": ctype,
-                        "description": description
-                    })
-                except Exception as inner_err:
-                    print(f"Skipped completion due to error: {inner_err}")
-                    continue
-
-            self.signals.results.emit(self.request_id, payload)
-
-        except Exception as e:
-            self.signals.error.emit(e)
+#     return False
 
 
+# def is_cursor_in_parentheses(text, cursor_pos):
+#     before_cursor = text[:cursor_pos]
+#     parenthes = before_cursor.count("(") - before_cursor.count(')')
 
-# def jedi_worker(code_queue, result_queue, line, column):
-#     while True:
-#         code = code_queue.get()
-#         print("dswad")
-#         if code == "__EXIT__":
-#             break
-#         try:
+#     if parenthes % 2 == 1:
+#         return True
 
+#     return False
 
-#             script = jedi.Script(code=code, path=current_file_path)
-#             definitions = script.help(line, column)
-#             result = definitions[0].docstring() if definitions else ""
-
-#             result_queue.put(result)
-#         except Exception as e:
-#             result_queue.put([str(e)])
-
-
-# # -------------------------
-# # PyQt Main Application
-# # -------------------------
-# class JediBridge(QObject):
-#     result_ready = pyqtSignal(list)
-
-#     def __init__(self, code_queue, result_queue):
+# class AutocompleteRunnable(QRunnable):
+#     def __init__(self, editor, code, line, column, request_id):
 #         super().__init__()
-#         self.code_queue = code_queue
-#         self.result_queue = result_queue
-#         self.timer = QTimer()
-#         self.timer.timeout.connect(self.check_results)
-#         self.timer.start(100)  # check every 100ms
-
-#     def request_docstring(self, code):
-#         self.code_queue.put(code)
-
-#     def check_results(self):
-#         while not self.result_queue.empty():
-#             results = self.result_queue.get()
-#             self.result_ready.emit(results)
-
-# class DocStringWorker(QObject):
-#     result = pyqtSignal(str)
-
-# class DocStringRunnable(QRunnable):
-#     def __init__(self, code, line, column, cache, selected_text):
-#         super().__init__()
+#         self.editor = editor
+#         self.signals = WorkerSignals()
 #         self.code = code
 #         self.line = line
 #         self.column = column
-#         self.cache = cache
-#         self.signal = DocStringWorker()
-#         self.selected_text = selected_text()
+#         self.request_id = request_id
 #         self.setAutoDelete(True)
 
-
-
 #     def run(self):
-#         global current_file_path
 #         try:
+#             cursor = self.editor.textCursor()
+#             if not is_cursor_in_string(self.code, cursor.position()) or not is_cursor_in_parentheses(self.code, cursor.position()):
+#                 script = jedi.Script(code=self.code, path=fr"{current_file_path}")
+#                 completions = script.complete(self.line, self.column)
+#             else:
+#                 completions = []
 
-#             if self.selected_text:
+#             if not completions:
 #                 return
 
-#             key = f"{self.line}:{self.column}"
-#             if key in self.cache:
-#                 self.signal.result.emit(self.cache[key])
-#                 return
+#             payload = []
+#             for c in completions[:30]:
+#                 try:
+#                     name = getattr(c, "name", None) or ""
+#                     ctype = getattr(c, "type", None) or ""
+#                     description = getattr(c, "description", None) or ""
 
+#                     suffix = getattr(c, "suffix", None)
+#                     if suffix:
+#                         name += suffix
 
-#             script = jedi.Script(code=self.code, path=current_file_path)
-#             definitions = script.help(self.line, self.column)
-#             result = definitions[0].docstring() if definitions else ""
+#                     payload.append({
+#                         "name": name,
+#                         "type": ctype,
+#                         "description": description
+#                     })
+#                 except Exception as inner_err:
+#                     print(f"Skipped completion due to error: {inner_err}")
+#                     continue
 
-#             if len(self.cache) > 20:
-#                 self.cache.clear()
-#             self.cache[key] = result
+#             self.signals.results.emit(self.request_id, payload)
 
-
-#             self.signal.result.emit(result)
 #         except Exception as e:
-#             print("Docstring error:", e)
-#             self.signal.result.emit("")
+#             self.signals.error.emit(e)
 
 
 class MainText(QPlainTextEdit):
@@ -218,6 +133,17 @@ class MainText(QPlainTextEdit):
 
         # bridge = JediBridge(code_queue, result_queue)
         # self.jedi_bridge = bridge
+
+
+        self.code_queue = Queue()
+        self.result_queue = Queue()
+
+        self.jediCompletetion_process = Process(target=jedi_completion, args=(self.code_queue, self.result_queue, current_file_path))
+        self.jediCompletetion_process.start()
+
+        bridge = JediBridgeCompletion(self.code_queue, self.result_queue)
+        self.jedi_completion_bridge = bridge
+        self.jedi_completion_bridge.result_ready.connect(self.on_autocomplete_results)
 
 
         self.font__ = QFont(get_fontFamily(), get_fontSize())
@@ -261,6 +187,9 @@ class MainText(QPlainTextEdit):
             self.cursorPositionChanged.connect(self.on_text_change)
             self.jedi_bridge.result_ready.connect(self.on_docstring_result)
 
+        # if showCompleter():
+            # self.jedi_completion_bridge.result_ready.connect(self.on_autocomplete_results)
+
         self.update_line_number_area_width(0)
         
         self.setObjectName('Editor')
@@ -301,6 +230,7 @@ class MainText(QPlainTextEdit):
         line = len(lines) if lines else 1
         column = len(lines[-1]) if lines else 0
         return line, column
+
 
     def jediBridge(self):
         code_queue = Queue()
@@ -431,25 +361,6 @@ class MainText(QPlainTextEdit):
     def schedule_docstring_update(self):
         if not self.textCursor().hasSelection():
             self.docstring_timer.start(150)
-
-    # def update_docstring(self):
-    #     cursor = self.textCursor()
-        
-    #     if cursor.hasSelection():
-    #         return
-            
-    #     current_position = cursor.position()
-        
-    #     if abs(current_position - self._last_docstring_position) < 3:
-    #         return
-            
-    #     line = cursor.blockNumber() + 1
-    #     column = cursor.positionInBlock()
-    #     code = self.toPlainText()
-
-    #     worker = DocStringRunnable(code, line, column, self._docstring_cache, cursor.hasSelection)
-    #     worker.signal.result.connect(self.on_docstring_result)
-    #     QThreadPool.globalInstance().start(worker)
 
     def on_docstring_result(self, doc):
         self._last_docstring_position = self.textCursor().position()
@@ -659,7 +570,6 @@ class MainText(QPlainTextEdit):
         cursor.endEditBlock()
 
     def handle_autocomplete(self):
-        # try:
         code = self.toPlainText()
         cursor = self.textCursor()
         pos = cursor.position()
@@ -668,14 +578,26 @@ class MainText(QPlainTextEdit):
         if cursor.hasSelection():
             return
 
-        worker = AutocompleteRunnable(self, code, line, column, 1)
-        worker.signals.results.connect(self.on_autocomplete_results)
-        worker.signals.error.connect(self.on_autocomplete_error)
+        # code_queue = Queue()
+        # result_queue = Queue()
 
-        QThreadPool.globalInstance().start(worker)
+        # p = Process(target=jedi_completion, args=(code_queue, result_queue, current_file_path))
+        # p.start()
+
+        # bridge = JediBridgeCompletion(code_queue, result_queue)
+        # self.jedi_completion_bridge = bridge
+        # self.jedi_completion_bridge.result_ready.connect(self.on_autocomplete_results)
+
+        self.code_queue.put((code, line, column))
+
+        # worker = AutocompleteRunnable(self, code, line, column, 1)
+        # worker.signals.results.connect(self.on_autocomplete_results)
+        # worker.signals.error.connect(self.on_autocomplete_error)
+
+        # QThreadPool.globalInstance().start(worker)
 
 
-    def on_autocomplete_results(self, request_id, payload):
+    def on_autocomplete_results(self, payload):
         model = QStandardItemModel()
 
         for item_data in payload:

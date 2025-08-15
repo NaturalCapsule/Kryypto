@@ -90,10 +90,6 @@ class ShowErrors(QObject):
 
 
             if set_advancedHighlighting():
-                # if len(code) > self._max_file_size:
-                #     if self.error_label:
-                #         self.error_label.setText("⚠️ File too large for syntax highlighting")
-                #     return
                 
                 if self._use_sync_fallback:
                     instances = list_classes_functions(code)

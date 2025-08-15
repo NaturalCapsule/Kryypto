@@ -11,8 +11,6 @@ from PyQt6.QtWidgets import QApplication
 
 
 
-
-
 class PythonSyntaxHighlighter(QSyntaxHighlighter):
     def __init__(self,use_highlighter ,parent=None):
         super().__init__(parent)
