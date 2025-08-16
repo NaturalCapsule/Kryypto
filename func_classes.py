@@ -22,161 +22,272 @@ import tokenize
 _cache = {}
 _cache_size_limit = 1000
 
-def list_classes_functions(code_text):
+# def list_classes_functions(code_text):
 
-    check_imports = set()
-    if code_text in _cache:
-        return _cache[code_text]
+#     check_imports = set()
+#     if code_text in _cache:
+#         return _cache[code_text]
+
+#     func_class_instances = {}
+
+#     if not code_text.strip():
+#         return func_class_instances
+
+#     tokens = list(tokenize.generate_tokens(io.StringIO(code_text).readline))
+#     state = None
+
+#     collecting_args = False
+#     current_func = None
+#     args = []
+#     prev = None
+
+#     for i, (tok_type, tok_str, *_ ) in enumerate(tokens):
+
+#         if tok_type == tokenize.NAME and tok_str == "class":
+#             state = "class"
+#             continue
+#         elif state == "class" and tok_type == tokenize.NAME:
+#             func_class_instances[tok_str] = 'class'
+#             state = None
+#             continue
+
+#         if tok_type == tokenize.NAME and tok_str == "def":
+#             state = "def"
+#             continue
+
+
+#         # Handle "from ... import ..."
+#         if tok_type == tokenize.NAME and tok_str == "from":
+#             state = "from"
+#             current_from = []
+#             continue
+
+#         elif state == "from" and tok_type == tokenize.NAME and tok_str != "import":
+#             current_from.append(tok_str)
+#             check_imports.add(tok_str)
+#             continue
+
+#         elif state == "from" and tok_type == tokenize.NAME and tok_str == "import":
+#             state = "from_import"
+#             continue
+
+#         elif state == "from_import":
+#             if tok_type == tokenize.NAME:
+#                 module_name = ".".join(current_from)
+#                 typ = classify_import(module_name, tok_str)
+#                 check_imports.add(tok_str)
+
+#                 func_class_instances[tok_str] = typ
+#             elif tok_type == tokenize.OP and tok_str == ",":
+#                 pass
+#             elif tok_type in (tokenize.NEWLINE, tokenize.ENDMARKER):
+#                 state = None
+#             continue
+
+#         elif tok_type == tokenize.NAME and tok_str == "import":
+#             state = "import"
+#             continue
+
+#         elif state == "import":
+#             if tok_type == tokenize.NAME:
+#                 check_imports.add(tok_str)
+
+#                 func_class_instances[tok_str] = 'import'
+#             elif tok_type == tokenize.OP and tok_str == ",":
+#                 pass
+#             elif tok_type in (tokenize.NEWLINE, tokenize.ENDMARKER):
+#                 state = None
+#             continue
+
+
+
+#         if tok_type in (tokenize.NEWLINE, tokenize.ENDMARKER):
+#             state = None
+
+#         if (
+#             tok_type == tokenize.NAME
+#             and prev
+#             and prev[1] == "."
+#             and i + 1 < len(tokens)
+#             and tokens[i + 1][1] == "("
+#         ):
+#             check_imports.add(tok_str)
+
+#             func_class_instances[tok_str] = 'method'
+
+
+
+#         prev = (tok_type, tok_str)
+
+
+#         if state == "def" and tok_type == tokenize.NAME:
+#             current_func = tok_str
+
+#             func_class_instances[current_func] = 'function'
+#             args = []
+#             collecting_args = False
+#             state = None
+#             continue
+
+#         if current_func and tok_str == "(":
+#             collecting_args = True
+#             continue
+
+#         if current_func and tok_str == ")":
+#             if args:
+#                 for arg in args:
+#                     if arg not in check_imports:
+#                         func_class_instances[arg] = 'args'
+#             current_func = None
+#             args = []
+#             collecting_args = False
+#             continue
+
+#         # Append argument names
+#         if collecting_args and tok_type == tokenize.NAME:
+#             if tok_str not in check_imports:
+#                 args.append(tok_str)
+
+
+#     if len(_cache) >= _cache_size_limit:
+#         _cache.pop(next(iter(_cache)))
+#     _cache[code_text] = func_class_instances
+    
+#     return func_class_instances
+
+
+
+
+
+
+
+
+
+
+
+def list_classes_functions(code_text: str):
+    if not code_text or not code_text.strip():
+        return {}
 
     func_class_instances = {}
-
-    if not code_text.strip():
-        return func_class_instances
-
-    tokens = list(tokenize.generate_tokens(io.StringIO(code_text).readline))
     state = None
-
-    collecting_args = False
     current_func = None
+    collecting_args = False
     args = []
     prev = None
 
-    for i, (tok_type, tok_str, *_ ) in enumerate(tokens):
+    # Keep a small set just to avoid double-tagging obvious imports/calls
+    seen = set()
 
+    tokens = tokenize.generate_tokens(io.StringIO(code_text).readline)
+
+    for i, (tok_type, tok_str, *_ ) in enumerate(tokens):
+        # ---------- class ----------
         if tok_type == tokenize.NAME and tok_str == "class":
             state = "class"
             continue
         elif state == "class" and tok_type == tokenize.NAME:
-            func_class_instances[tok_str] = 'class'
+            func_class_instances[tok_str] = "class"
             state = None
             continue
 
+        # ---------- def ----------
         if tok_type == tokenize.NAME and tok_str == "def":
             state = "def"
             continue
-        # elif state == "def" and tok_type == tokenize.NAME:
-        #     current_func = tok_str
-        #     func_class_instances[current_func] = 'function'
-        #     args = []
-        #     collecting_args = False
-        #     state = None
-        #     continue
+        elif state == "def" and tok_type == tokenize.NAME:
+            current_func = tok_str
+            func_class_instances[current_func] = "function"
+            args = []
+            collecting_args = False
+            state = None
+            continue
 
-        # if current_func and tok_str == "(":
-        #     collecting_args = True
-        #     continue
+        # ---------- args collection ----------
+        if current_func and tok_str == "(":
+            collecting_args = True
+            continue
+        if current_func and tok_str == ")":
+            if args:
+                for a in args:
+                    if a not in seen:
+                        func_class_instances[a] = "args"
+            current_func = None
+            collecting_args = False
+            args = []
+            continue
+        if collecting_args and tok_type == tokenize.NAME:
+            args.append(tok_str)
+            continue
 
-        # if current_func and tok_str == ")":
-        #     if args:
-        #         for arg in args:
-        #             func_class_instances[arg] = 'args'
-        #     current_func = None
-        #     args = []
-        #     collecting_args = False
-        #     continue
-
-        # # Append argument names
-        # if collecting_args and tok_type == tokenize.NAME:
-        #     args.append(tok_str)
-
-        # Handle "from ... import ..."
+        # ---------- imports (static, no importlib) ----------
         if tok_type == tokenize.NAME and tok_str == "from":
             state = "from"
             current_from = []
             continue
-
         elif state == "from" and tok_type == tokenize.NAME and tok_str != "import":
             current_from.append(tok_str)
-            check_imports.add(tok_str)
             continue
-
         elif state == "from" and tok_type == tokenize.NAME and tok_str == "import":
             state = "from_import"
             continue
-
         elif state == "from_import":
             if tok_type == tokenize.NAME:
-                module_name = ".".join(current_from)
-                typ = classify_import(module_name, tok_str)
-                check_imports.add(tok_str)
+                # typ = classify_import(tok_str)  # heuristic only
+                try:
+                    mod = importlib.import_module(tok_str)
+                    # obj = getattr(mod, attr_name)
 
-                func_class_instances[tok_str] = typ
-            elif tok_type == tokenize.OP and tok_str == ",":
-                pass
+
+                    if inspect.isclass(mod):
+                        func_class_instances[tok_str] = 'class'
+                        # return "class"
+                    elif inspect.isfunction(mod):
+                        func_class_instances[tok_str] = 'function'
+                        # return "function"
+                except Exception:
+                    func_class_instances[tok_str] = 'import'
+                    # return "import"
+
+
+
+                # func_class_instances[tok_str] = typ
+
+                seen.add(tok_str)
             elif tok_type in (tokenize.NEWLINE, tokenize.ENDMARKER):
                 state = None
             continue
 
-        elif tok_type == tokenize.NAME and tok_str == "import":
+        if tok_type == tokenize.NAME and tok_str == "import":
             state = "import"
             continue
-
         elif state == "import":
             if tok_type == tokenize.NAME:
-                check_imports.add(tok_str)
-
-                func_class_instances[tok_str] = 'import'
-            elif tok_type == tokenize.OP and tok_str == ",":
-                pass
+                # we don’t try to decide function vs class here
+                func_class_instances[tok_str] = "import"
+                seen.add(tok_str)
             elif tok_type in (tokenize.NEWLINE, tokenize.ENDMARKER):
                 state = None
             continue
 
-
-
-        if tok_type in (tokenize.NEWLINE, tokenize.ENDMARKER):
-            state = None
-
+        # ---------- method calls (foo.bar(...)) ----------
         if (
             tok_type == tokenize.NAME
             and prev
+            and prev[0] == tokenize.OP
             and prev[1] == "."
-            and i + 1 < len(tokens)
-            and tokens[i + 1][1] == "("
         ):
-            check_imports.add(tok_str)
+            func_class_instances[tok_str] = "method"
 
-            func_class_instances[tok_str] = 'method'
-
-
+        # reset on newline
+        if tok_type in (tokenize.NEWLINE, tokenize.ENDMARKER):
+            state = None
 
         prev = (tok_type, tok_str)
 
-
-        if state == "def" and tok_type == tokenize.NAME:
-            current_func = tok_str
-
-            func_class_instances[current_func] = 'function'
-            args = []
-            collecting_args = False
-            state = None
-            continue
-
-        if current_func and tok_str == "(":
-            collecting_args = True
-            continue
-
-        if current_func and tok_str == ")":
-            if args:
-                for arg in args:
-                    if arg not in check_imports:
-                        func_class_instances[arg] = 'args'
-            current_func = None
-            args = []
-            collecting_args = False
-            continue
-
-        # Append argument names
-        if collecting_args and tok_type == tokenize.NAME:
-            if tok_str not in check_imports:
-                args.append(tok_str)
-
-
-    if len(_cache) >= _cache_size_limit:
-        _cache.pop(next(iter(_cache)))
-    _cache[code_text] = func_class_instances
-    
     return func_class_instances
+
+
 
 
 # import tokenize

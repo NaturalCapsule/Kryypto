@@ -1,7 +1,10 @@
 import jedi
 from PyQt6.QtCore import QObject, QTimer, pyqtSignal
 from func_classes import list_classes_functions
+from queue import Empty
 
+_cache = {}
+_cache_size_limit = 1000
 
 # def is_cursor_in_string(text, cursor_pos):
 #     before_cursor = text[:cursor_pos]
@@ -158,7 +161,7 @@ class SyntaxBridge(QObject):
         self.result_queue = result_queue
         self.timer = QTimer()
         self.timer.timeout.connect(self.check_results)
-        self.timer.start(100)
+        self.timer.start(900)
 
     def request_docstring(self, code_pos_tuple):
         self.code_queue.put(code_pos_tuple)
@@ -170,8 +173,24 @@ class SyntaxBridge(QObject):
 
 
 def syntax_worker(code_queue, result_queue):
+    # while True:
+    #     code = code_queue.get()
+
+    #     instances = list_classes_functions(code)
+    #     result_queue.put(instances)
     while True:
         code = code_queue.get()
+        if code == "__EXIT__":
+            break
+
+        # Drain queue to the latest code snapshot
+        while True:
+            try:
+                code = code_queue.get_nowait()
+                if code == "__EXIT__":
+                    return
+            except Empty:
+                break
 
         instances = list_classes_functions(code)
         result_queue.put(instances)

@@ -282,9 +282,11 @@ class Kryypto(QMainWindow):
         self.settings.setValue('Window Position', self.pos())
         self.settings.setValue('Opened Directory', folder_path_)
 
-        if hasattr(self.tab_bar, 'show_error') and hasattr(self.tab_bar.show_error, 'code_queue'):
+        if (hasattr(self.tab_bar, 'show_error') and hasattr(self.tab_bar.show_error, 'code_queue')):
             # self.tab_bar.show_error.cleanup()
-            self.tab_bar.show_error.code_queue.put('__EXIT__')
+            self.tab_bar.show_error._code_queue.put('__EXIT__')
+            self.main_text.code_queue_.put('__EXIT__')
+            self.main_text.code_queue.put('__EXIT__')
 
         if self.tab_bar.is_save_file_needed():
             pop_messagebox(self, event, self.tab_bar, True)

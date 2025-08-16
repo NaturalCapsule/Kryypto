@@ -181,9 +181,6 @@ class MainText(QPlainTextEdit):
             self.cursorPositionChanged.connect(self.on_text_change)
             self.jedi_bridge.result_ready.connect(self.on_docstring_result)
 
-        # if showCompleter():
-            # self.jedi_completion_bridge.result_ready.connect(self.on_autocomplete_results)
-
         self.update_line_number_area_width(0)
         
         self.setObjectName('Editor')
@@ -207,17 +204,6 @@ class MainText(QPlainTextEdit):
         self._last_docstring_position = -1
         self._last_docstring = ""
 
-    # def test(self):
-    #     try:
-    #         exec(self.toPlainText(), {})
-    #     except NameError as e:
-    #         tb = e.__traceback__
-    #         while tb.tb_next:
-    #             tb = tb.tb_next
-    #         print(f"NameError: on line {tb.tb_lineno}")
-    #     except SyntaxError as e:
-    #         pass
-
     def cursor_to_line_column(self, pos):
         text = self.toPlainText()
         lines = text[:pos].splitlines()
@@ -227,13 +213,13 @@ class MainText(QPlainTextEdit):
 
 
     def jediBridge(self):
-        code_queue = Queue()
-        result_queue = Queue()
+        self.code_queue = Queue()
+        self.result_queue = Queue()
 
-        p = Process(target=jedi_worker, args=(code_queue, result_queue))
+        p = Process(target=jedi_worker, args=(self.code_queue, self.result_queue))
         p.start()
 
-        bridge = JediBridge(code_queue, result_queue)
+        bridge = JediBridge(self.code_queue, self.result_queue)
         self.jedi_bridge = bridge
 
     # def on_text_change(self):

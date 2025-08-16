@@ -9,7 +9,6 @@ from PyQt6.QtCore import QObject, QRunnable, QThreadPool, pyqtSignal, QTimer, QM
 from PyQt6.QtGui import QSyntaxHighlighter, QTextCharFormat, QColor, QFont
 from PyQt6.QtWidgets import QApplication
 
-
 # class SyntaxBridge(QObject):
 #     result_ready = pyqtSignal(dict)
 
