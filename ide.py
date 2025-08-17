@@ -100,16 +100,7 @@ class Kryypto(QMainWindow):
         self.editor_containter = QWidget()
         self.editor_layout = QVBoxLayout(self.editor_containter)
 
-
-        # code_queue = Queue()
-        # result_queue = Queue()
-
-        # p = Process(target=jedi_worker, args=(code_queue, result_queue, self.main_text))
-        # p.start()
-
-        # bridge = JediBridge(code_queue, result_queue)
-
-        self.main_text = widgets.MainText(self.editor_layout, self.clipboard, self.font_size)
+        self.main_text = widgets.MainText(self.editor_layout, self.clipboard, self.font_size, self)
 
 
 
@@ -149,7 +140,7 @@ class Kryypto(QMainWindow):
 
         FileDockShortcut(
             self.inner_window, self.show_files, self.show_files.file_viewer, 
-            self.main_text, widgets.file_description, self.tab_bar
+            self.main_text, widgets.file_description, self.tab_bar, self
         )
 
         main_layout.addWidget(content_area)

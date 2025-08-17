@@ -2,8 +2,10 @@ import re
 import sys, os
 from PyQt6.QtGui import QFont, QShortcut, QKeySequence, QTextCursor, QFontMetrics
 from PyQt6.QtCore import QProcess, QCoreApplication
+
 from config import get_fontFamily, write_config
 from pygit import open_file_dialog_again
+from animations import *
 from config import *
 
 def reboot():
@@ -104,7 +106,7 @@ class MainTextShortcuts:
 
         hide_show_gitpanel = QShortcut(QKeySequence(Hide_Show_gitpanel()), bawky_parent_)
         # hide_show_gitpanel = QShortcut(QKeySequence("Ctrl+G"), bawky_parent_)
-        hide_show_gitpanel.activated.connect(lambda: self.hide_show_gitpanel(git_panel, parent))
+        hide_show_gitpanel.activated.connect(lambda: self.hide_show_gitpanel(git_panel, parent, bawky_parent_))
 
         select_folder = QShortcut(QKeySequence(SelectFolder()), bawky_parent_)
         # select_folder = QShortcut(QKeySequence("Ctrl+I"), bawky_parent_)
@@ -341,7 +343,7 @@ class MainTextShortcuts:
         # self.terminal.termEmulator.terminal.setFont(QFont(get_fontFamily(), self.font_size))
         self.terminal.termEmulator.terminal.setFont(font)
 
-        
+
         self.lines.setFont(font)
         self.lines.font_metrics = QFontMetrics(font)
         # self.show_files.file_viewer.setFont(QFont(get_fontFamily(), self.font_size))
@@ -399,22 +401,40 @@ class MainTextShortcuts:
             current_index = tab.currentIndex() - 1
             tab.setCurrentIndex(current_index)
 
-    def hide_show_gitpanel(self, git_panel, parent):
-        if git_panel.isVisible():
-            git_panel.hide()
-            parent.setFocus()
+    def hide_show_gitpanel(self, git_panel, parent, window):
+
+        if git_panel.maximumHeight() == 0:
+            # animatePanel(git_panel, window, show=True, sub_widget = [git_panel.commit, git_panel.insertions, git_panel.deletion, git_panel.active_branch_name, git_panel.remote_url, git_panel.users_profile, git_panel.user_username, git_panel.show_changes, git_panel.header_changes, git_panel.commit_info, git_panel.latest_commit, git_panel.last_commit, git_panel.repo_info, git_panel.untracked_files, git_panel.untracked_header, git_panel.repo_name])
+            animatePanel(git_panel, window, show=True, sub_widget = [git_panel.commit, git_panel.active_branch_name, git_panel.remote_url, git_panel.users_profile, git_panel.user_username, git_panel.show_changes, git_panel.header_changes, git_panel.commit_info, git_panel.latest_commit, git_panel.last_commit, git_panel.repo_info, git_panel.untracked_files, git_panel.untracked_header, git_panel.repo_name])
+
+            # # git_panel.show()
+
         else:
-            git_panel.show()
+            animatePanel(git_panel, window, show=False)
+            animatePanel(git_panel, window, show=False, sub_widget = [git_panel.commit, git_panel.insertions, git_panel.deletion, git_panel.active_branch_name, git_panel.remote_url, git_panel.users_profile, git_panel.user_username, git_panel.show_changes, git_panel.header_changes, git_panel.commit_info, git_panel.latest_commit, git_panel.last_commit, git_panel.repo_info, git_panel.untracked_files, git_panel.untracked_header, git_panel.repo_name])
+
+            # git_panel.hide()
+
 
     def hide_show_terminal(self, bawky_parent, main_text):
         if self.terminal:
-            if self.terminal.isVisible():
-                self.terminal.hide()
-                main_text.setFocus()
-            else:
-                self.terminal.show()
-                self.terminal.termEmulator.terminal.show()
+            # if self.terminal.isVisible():
+            #     self.terminal.hide()
+            #     main_text.setFocus()
+            # else:
+            #     self.terminal.show()
+            #     self.terminal.termEmulator.terminal.show()
+            #     self.terminal.termEmulator.terminal.setFocus()
+            if self.terminal.maximumHeight() == 0:
+                animatePanel(self.terminal, bawky_parent, show=True, sub_widget = [self.terminal.termEmulator.terminal])
                 self.terminal.termEmulator.terminal.setFocus()
+
+            else:
+                animatePanel(self.terminal, bawky_parent, show=False)
+                main_text.setFocus()
+
+
+
 
         else:
             from widgets import TerminalDock
@@ -430,27 +450,62 @@ class MainTextShortcuts:
             self.terminal = None
 
 class FileDockShortcut:
-    def __init__(self, parent, file_dock, file_view, main_text, file_description, opened_tabs):
+    def __init__(self, parent, file_dock, file_view, main_text, file_description, opened_tabs, window):
 
         self.file_view = file_view
         self.main_text = main_text
         self.file_description = file_description
         self.opened_tabs = opened_tabs
+        # self.file_dock = file_dock
 
         show_hide_file_dock = QShortcut(QKeySequence(Hide_Show_viewer()), parent)
-        show_hide_file_dock.activated.connect(lambda: self.showHideFile(file_dock))
+        show_hide_file_dock.activated.connect(lambda: self.showHideFile(file_dock, window))
     
         save_file = QShortcut(QKeySequence(SaveCurrentFile()), parent)
         save_file.activated.connect(self.save_file)
 
-    def showHideFile(self, file_dock):
-        if file_dock.isVisible():
-            file_dock.hide()
+    def showHideFile(self, file_dock, window):
+    # def showHideFile(self):
+
+        # if file_dock.isVisible():
+        #     file_dock.hide()
+        #     self.main_text.setFocus()
+
+        # else:
+        #     file_dock.show()
+        #     self.file_view.setFocus()
+
+
+        # if file_dock.maximumHeight() == 0:
+        #     animatePanel(file_dock, show=True)
+        #     file_dock.setMaximumHeight(150)
+        #     file_dock.show()
+        #     self.file_view.show()
+        #     self.file_view.setFocus()
+
+        # else:
+        #     animatePanel(file_dock, show=False)
+        #     file_dock.setMaximumHeight(0)
+        #     file_dock.hide()
+        #     self.file_view.hide()
+        #     self.main_text.setFocus()
+
+
+        if file_dock.maximumHeight() == 0:
+            animatePanel(file_dock, window, show=True)
+            # file_dock.show()
+            # self.file_view.show()
+            self.file_view.setFocus()
+        else:
+            animatePanel(file_dock, window, show=False)
+            # hide when animation finishes
+            # animations[file_dock].
+            # animations[file_dock].finished.connect(lambda: file_dock.hide())
+            # file_dock.hide()
+            # self.file_view.hide()
             self.main_text.setFocus()
 
-        else:
-            file_dock.show()
-            self.file_view.setFocus()
+
 
 
     def save_file(self):

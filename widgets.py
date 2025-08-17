@@ -1,19 +1,19 @@
-import jedi
+## ADD MORE SHORTCUTS TO ShortCuts class!
+## CHECK ShowOpenedFiles class
+
 import re
 import subprocess
 import os
-import importlib
-import inspect, ast
 from datetime import datetime
-from PyQt6.QtCore import QThreadPool, QRectF, QTimer, Qt, QRect, Qt, QDir, QFileInfo, pyqtSignal, QProcess, QParallelAnimationGroup, QEasingCurve, QEvent, QPropertyAnimation
-from PyQt6.QtGui import QPainter, QPainterPath, QPixmap, QTextCursor, QKeyEvent, QPainter, QColor, QFont, QFontMetrics, QTextCursor, QColor, QFileSystemModel, QIcon, QStandardItemModel, QStandardItem
+from PyQt6.QtCore import QThreadPool, QRectF, QTimer, Qt, QRect, Qt, QFileInfo, pyqtSignal, QProcess
+from PyQt6.QtGui import QPainter, QPainterPath, QPixmap, QTextCursor, QKeyEvent, QPainter, QColor, QFont, QTextCursor, QColor, QFileSystemModel, QIcon, QStandardItemModel, QStandardItem
 from PyQt6.QtWidgets import QMessageBox, QFrame, QComboBox, QLabel, QPushButton, QHBoxLayout, QLineEdit, QPlainTextEdit, QVBoxLayout, QWidget, QCompleter, QDockWidget, QTextEdit, QTreeView, QFileIconProvider, QTabBar
 from lines import ShowLines
 from multiprocessing import Process, Queue
 from heavy import *
 
-
 from get_style import get_css_style
+from animations import *
 from config import *
 
 from highlighter import *
@@ -40,98 +40,19 @@ current_file_path = ''
 
 # layout = QVBoxLayout(central_widget)
 
-# class WorkerSignals(QObject):
-#     results = pyqtSignal(int, object)
-#     error = pyqtSignal(Exception)
-
-# def is_cursor_in_string(text, cursor_pos):
-#     before_cursor = text[:cursor_pos]
-
-#     single_quotes = before_cursor.count("'") - before_cursor.count("\\'")
-#     double_quotes = before_cursor.count('"') - before_cursor.count('\\"')
-#     if single_quotes % 2 == 1 or double_quotes % 2 == 1:
-#         return True
-
-#     return False
-
-
-# def is_cursor_in_parentheses(text, cursor_pos):
-#     before_cursor = text[:cursor_pos]
-#     parenthes = before_cursor.count("(") - before_cursor.count(')')
-
-#     if parenthes % 2 == 1:
-#         return True
-
-#     return False
-
-# class AutocompleteRunnable(QRunnable):
-#     def __init__(self, editor, code, line, column, request_id):
-#         super().__init__()
-#         self.editor = editor
-#         self.signals = WorkerSignals()
-#         self.code = code
-#         self.line = line
-#         self.column = column
-#         self.request_id = request_id
-#         self.setAutoDelete(True)
-
-#     def run(self):
-#         try:
-#             cursor = self.editor.textCursor()
-#             if not is_cursor_in_string(self.code, cursor.position()) or not is_cursor_in_parentheses(self.code, cursor.position()):
-#                 script = jedi.Script(code=self.code, path=fr"{current_file_path}")
-#                 completions = script.complete(self.line, self.column)
-#             else:
-#                 completions = []
-
-#             if not completions:
-#                 return
-
-#             payload = []
-#             for c in completions[:30]:
-#                 try:
-#                     name = getattr(c, "name", None) or ""
-#                     ctype = getattr(c, "type", None) or ""
-#                     description = getattr(c, "description", None) or ""
-
-#                     suffix = getattr(c, "suffix", None)
-#                     if suffix:
-#                         name += suffix
-
-#                     payload.append({
-#                         "name": name,
-#                         "type": ctype,
-#                         "description": description
-#                     })
-#                 except Exception as inner_err:
-#                     print(f"Skipped completion due to error: {inner_err}")
-#                     continue
-
-#             self.signals.results.emit(self.request_id, payload)
-
-#         except Exception as e:
-#             self.signals.error.emit(e)
 
 
 class MainText(QPlainTextEdit):
-    def __init__(self, parent, window, font_size):
+    def __init__(self, parent, window, font_size, window_):
         super().__init__()
         self.font_size = font_size
         global commenting
         self.clipboard = window
+        self.window = window_
         self.setCursorWidth(0)
 
         if showDocstringpanel():
             self.jediBridge()
-
-        # code_queue = Queue()
-        # result_queue = Queue()
-
-        # p = Process(target=jedi_worker, args=(code_queue, result_queue))
-        # p.start()
-
-        # bridge = JediBridge(code_queue, result_queue)
-        # self.jedi_bridge = bridge
 
 
         self.code_queue_ = Queue()
@@ -233,25 +154,6 @@ class MainText(QPlainTextEdit):
         column = cursor.positionInBlock()
         self.jedi_bridge.request_docstring((code, line, column))
 
-    # def update_docs(self, docs):
-    #     self.doc_label.setText("\n".join(docs))
-
-    def on_docstring_result(self, doc):
-        self._last_docstring_position = self.textCursor().position()
-        self._last_docstring = doc
-        if self.doc_panel:
-            if doc == "":
-                self.doc_panel.hide()
-                if self.doc_panel.custom_title:
-                    self.doc_panel.custom_title.hide()
-                    self.doc_panel.dock.hide()
-            else:
-                self.doc_viewer = self.parse_docstring(doc)
-                self.doc_panel.setHtml(self.doc_viewer or "")
-                self.doc_panel.dock.show()
-                self.doc_panel.custom_title.show()
-                self.doc_panel.show()
-
 
     def parse_docstring(self, doc: str):
         lines = doc.strip().splitlines()
@@ -343,20 +245,42 @@ class MainText(QPlainTextEdit):
             self.docstring_timer.start(150)
 
     def on_docstring_result(self, doc):
+        # self._last_docstring_position = self.textCursor().position()
+        # self._last_docstring = doc
+        # if self.doc_panel:
+        #     if doc == "":
+        #         self.doc_panel.hide()
+        #         if self.doc_panel.custom_title:
+        #             self.doc_panel.custom_title.hide()
+        #             self.doc_panel.dock.hide()
+        #     else:
+        #         self.doc_viewer = self.parse_docstring(doc)
+        #         self.doc_panel.setHtml(self.doc_viewer or "")
+        #         self.doc_panel.dock.show()
+        #         self.doc_panel.custom_title.show()
+        #         self.doc_panel.show()
+
         self._last_docstring_position = self.textCursor().position()
         self._last_docstring = doc
         if self.doc_panel:
             if doc == "":
-                self.doc_panel.hide()
+                animatePanel(self.doc_panel.dock, self.window, False)
+                # self.doc_panel.hide()
                 if self.doc_panel.custom_title:
-                    self.doc_panel.custom_title.hide()
-                    self.doc_panel.dock.hide()
+                #     self.doc_panel.custom_title.hide()
+                #     self.doc_panel.dock.hide()
+                    animatePanel(self.doc_panel.custom_title, self.window, False)
+                    animatePanel(self.doc_panel, self.window, False)
+
             else:
                 self.doc_viewer = self.parse_docstring(doc)
                 self.doc_panel.setHtml(self.doc_viewer or "")
-                self.doc_panel.dock.show()
-                self.doc_panel.custom_title.show()
-                self.doc_panel.show()
+                animatePanel(self.doc_panel.dock, self.window, True)
+                # self.doc_panel.dock.show()
+                # self.doc_panel.custom_title.show()
+                # self.doc_panel.show()
+                animatePanel(self.doc_panel.custom_title, self.window, True)
+                animatePanel(self.doc_panel, self.window, True)
 
 
     def keyPressEvent(self, event: QKeyEvent):
@@ -660,7 +584,6 @@ class DocStringDock(QDockWidget):
 
         if use:
             self.clearFocus()
-
             self.doc_panel = QTextEdit()
             self.doc_panel.dock = self
             self.doc_panel.custom_title = self.custom_title
@@ -684,6 +607,7 @@ class DocStringDock(QDockWidget):
             self.setObjectName("Docks")
 
             self.setStyleSheet(get_css_style())
+            self.setMaximumHeight(0)
 
 class ShowDirectory(QDockWidget):
     def __init__(self, main_text, opened_tabs):
@@ -703,8 +627,14 @@ class ShowDirectory(QDockWidget):
         self.opened_tabs = opened_tabs
 
         global file_description
-        self.hbox = QHBoxLayout()
 
+        self.container = QWidget()
+
+        # self.hbox = QHBoxLayout(container)
+        self.hbox = QVBoxLayout(self.container)
+
+        self.hbox.setContentsMargins(0, 0, 0, 0)
+        self.hbox.setSpacing(0)
 
         self.new_file_input = QLineEdit(self)
         self.new_file_input.setPlaceholderText('Name new file')
@@ -738,7 +668,11 @@ class ShowDirectory(QDockWidget):
 
         # self.file_viewer.hide()
         # self.file_viewer.clearFocus()
+
+
         self.hide()
+        self.setMaximumHeight(0)
+
 
         self.hbox.addWidget(self.new_file_input)
         self.hbox.addWidget(self.new_folder_input)
@@ -761,15 +695,15 @@ class ShowDirectory(QDockWidget):
         self.file_viewer.setColumnHidden(2, True)
         self.file_viewer.setColumnHidden(3, True)
 
-        
+
         self.setObjectName('Docks')
         self.file_viewer.setStyleSheet(get_css_style())
 
 
-        self.setWidget(self.file_viewer)
+        # self.setWidget(self.file_viewer)
+        self.setWidget(self.container)
+
         self.setFeatures(QDockWidget.DockWidgetFeature.DockWidgetMovable)
-        # parent.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self)
-        # parent.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self)
 
         self.setStyleSheet(get_css_style())
         self.file_viewer.clicked.connect(self.set_file)
@@ -1376,9 +1310,6 @@ class ShowOpenedFile(QTabBar):
                     file.write(self.editor.toPlainText())
 
 
-
-
-
 class TerminalEmulator(QWidget):
     command_input = pyqtSignal(str)
 
@@ -1628,6 +1559,7 @@ class TerminalDock(QDockWidget):
         self.setObjectName('Docks')
         self.setStyleSheet(get_css_style())
         self.clearFocus()
+        self.setMaximumHeight(0)
         self.hide()
 
         self.termEmulator = TerminalEmulator(self)
@@ -1918,6 +1850,7 @@ class GitDock(QDockWidget):
         # parent.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self)
 
         self.hide()
+        self.setMaximumHeight(0)
 
         self.checking()
 
@@ -2045,7 +1978,7 @@ class GitDock(QDockWidget):
         image_layout.setContentsMargins(0, 0, 0, 0)
         self.image_container.setLayout(image_layout)
 
-        self.layout_.addWidget(self.image_container)
+        self.layout_.addWidget(self.image_container, alignment = Qt.AlignmentFlag.AlignHCenter)
 
         self.custom_title = QLabel("Git Panel")
         self.custom_title.setObjectName('DockTitles')
@@ -2103,13 +2036,14 @@ class GitDock(QDockWidget):
         self.thread_pool.start(worker)
 
     def update_ui(self, commit_msg, branch, total, get_latest_commit_time, file_changes, untracked_files):
-        if self.isVisible() and is_init():
+        # if self.isVisible() and is_init():
+        if self.maximumHeight() != 0 and is_init():
 
             if not is_init():
 
 
                 if self.users_profile.isVisible():
-                    self.layout_.addWidget(self.image_container, alignment = Qt.AlignmentFlag.AlignHCenter)
+                    # self.layout_.addWidget(self.image_container, alignment = Qt.AlignmentFlag.AlignHCenter)
                     self.layout_.removeWidget(self.image_container)
 
                     self.no_repo_img.show()
@@ -2127,6 +2061,7 @@ class GitDock(QDockWidget):
                     self.header_changes.hide()
                     self.show_changes.hide()
                     self.users_profile.hide()
+                    self.repo_info.hide()
 
 
             else:
