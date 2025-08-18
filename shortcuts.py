@@ -1,15 +1,20 @@
 import re
-import sys, os
+import sys
+import os
+
 from PyQt6.QtGui import QFont, QShortcut, QKeySequence, QTextCursor, QFontMetrics
 from PyQt6.QtCore import QProcess, QCoreApplication
 
 from config import get_fontFamily, write_config
 from pygit import open_file_dialog_again
+
 from animations import *
 from config import *
 
 def reboot():
-    python = sys.executable
+    # python = sys.executable
+    python = getInterpreter()
+    print(python)
     script = os.path.abspath(sys.argv[0])
     args = sys.argv[1:]
 
@@ -188,9 +193,12 @@ class MainTextShortcuts:
                     self.terminal.show()
                     self.terminal.termEmulator.terminal.show()
                     self.terminal.termEmulator.terminal.setFocus()
-                    self.terminal.termEmulator.run_command(fr"{sys.executable} {path}")
-
-
+                    # self.terminal.termEmulator.run_command(fr"{sys.executable} {path}")
+                    if ' ' in path:
+                        # path = f""{path}""
+                        self.terminal.termEmulator.run_command(fr"{getInterpreter()} '{path}'")
+                    else:
+                        self.terminal.termEmulator.run_command(fr"{getInterpreter()} {path}")
 
                 else:
                     from widgets import TerminalDock
@@ -198,7 +206,15 @@ class MainTextShortcuts:
                     self.terminal = TerminalDock(bawky_parent)
                     self.terminal.show()
                     self.terminal.termEmulator.terminal.setFocus()
-                    self.terminal.termEmulator.run_command(fr"{sys.executable} {path}")
+
+                    if ' ' in path:
+                        # path = f""{path}""
+                        self.terminal.termEmulator.run_command(fr"{getInterpreter()} '{path}'")
+                    else:
+                        self.terminal.termEmulator.run_command(fr"{getInterpreter()} {path}")
+
+
+                    # self.terminal.termEmulator.run_command(fr"{sys.executable} {path}")
 
                 break
 

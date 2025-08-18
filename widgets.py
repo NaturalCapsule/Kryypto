@@ -1,18 +1,17 @@
-## ADD MORE SHORTCUTS TO ShortCuts class!
-## CHECK ShowOpenedFiles class
-
 import re
 import subprocess
 import os
+
 from datetime import datetime
-from PyQt6.QtCore import QThreadPool, QRectF, QTimer, Qt, QRect, Qt, QFileInfo, pyqtSignal, QProcess
+from PyQt6.QtCore import QThreadPool, QRectF, QTimer, Qt, QRect, QFileInfo, pyqtSignal, QProcess
 from PyQt6.QtGui import QPainter, QPainterPath, QPixmap, QTextCursor, QKeyEvent, QPainter, QColor, QFont, QTextCursor, QColor, QFileSystemModel, QIcon, QStandardItemModel, QStandardItem
 from PyQt6.QtWidgets import QMessageBox, QFrame, QComboBox, QLabel, QPushButton, QHBoxLayout, QLineEdit, QPlainTextEdit, QVBoxLayout, QWidget, QCompleter, QDockWidget, QTextEdit, QTreeView, QFileIconProvider, QTabBar
 from lines import ShowLines
 from multiprocessing import Process, Queue
-from heavy import *
 
 from get_style import get_css_style
+
+from heavy import *
 from animations import *
 from config import *
 
@@ -245,21 +244,6 @@ class MainText(QPlainTextEdit):
             self.docstring_timer.start(150)
 
     def on_docstring_result(self, doc):
-        # self._last_docstring_position = self.textCursor().position()
-        # self._last_docstring = doc
-        # if self.doc_panel:
-        #     if doc == "":
-        #         self.doc_panel.hide()
-        #         if self.doc_panel.custom_title:
-        #             self.doc_panel.custom_title.hide()
-        #             self.doc_panel.dock.hide()
-        #     else:
-        #         self.doc_viewer = self.parse_docstring(doc)
-        #         self.doc_panel.setHtml(self.doc_viewer or "")
-        #         self.doc_panel.dock.show()
-        #         self.doc_panel.custom_title.show()
-        #         self.doc_panel.show()
-
         self._last_docstring_position = self.textCursor().position()
         self._last_docstring = doc
         if self.doc_panel:
@@ -333,13 +317,17 @@ class MainText(QPlainTextEdit):
             return
 
         if key == Qt.Key.Key_F and event.modifiers() & Qt.KeyboardModifier.ControlModifier:
-            if self.finder.isVisible():
-                self.finder.hide()
-                self.setFocus()
-            else:
-                self.finder.show()
+            if self.finder.maximumHeight() == 0:
+                animatePanel(self.finder, self.window, show=True)
                 self.finder.setFocus()
-            return
+            else:
+                animatePanel(self.finder, self.window, show=False)
+        #     if self.finder.isVisible():
+        #         self.finder.hide()
+                self.setFocus()
+        #     else:
+        #         self.finder.show()
+        #     return
 
         if key in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
             self.handle_enter()
@@ -1575,7 +1563,6 @@ class TerminalDock(QDockWidget):
         self.setTitleBarWidget(self.custom_title)
 
         self.setFeatures(QDockWidget.DockWidgetFeature.DockWidgetMovable)
-        # parent.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, self)
 
 
 class findingText(QLineEdit):
@@ -1591,6 +1578,7 @@ class findingText(QLineEdit):
         self.setFixedWidth(250)
 
         self.hide()
+        self.setMaximumHeight(0)
 
         self.textChanged.connect(lambda: self.changed(main_text))
         self.returnPressed.connect(lambda: self.find_next(main_text))
@@ -1600,8 +1588,11 @@ class findingText(QLineEdit):
     def keyPressEvent(self, event):
         key = event.key()
         if key == Qt.Key.Key_Escape:
-            self.hide()
+            # self.hide()
+            animatePanel(self, self.main_text.window, show=False)
             self.main_text.setFocus()
+
+
         super().keyPressEvent(event)
 
     def find_next(self, main_text):
@@ -1641,6 +1632,7 @@ class GotoBlock(QLineEdit):
 
     def keyPressEvent(self, event):
         if event.key() == Qt.Key.Key_Escape:
+            # animatePanel(self, self.main_text.window, False)
             self.deleteLater()
             self.main_text.setFocus()
         else:
@@ -1721,7 +1713,11 @@ class WelcomeWidget(QWidget):
         line = QFrame()
         line.setFrameShape(QFrame.Shape.HLine)
         line.setFrameShadow(QFrame.Shadow.Sunken)
-        line.setStyleSheet("color: gray;")
+        # line.setStyleSheet("color: gray;")
+        line.setStyleSheet(get_css_style())
+
+        line.setObjectName("horizontalLines")
+
 
 
         self.setLayout(self._layout)
@@ -1759,7 +1755,16 @@ class ListShortCuts(QWidget):
         self.layout_.setContentsMargins(0, 0, 0, 0)
         self.setLayout(self.layout_)
 
+        line = QFrame()
+        line.setFrameShape(QFrame.Shape.HLine)
+        line.setFrameShadow(QFrame.Shadow.Sunken)
+        # line.setStyleSheet("color: gray;background-color: gray;margin-left: 10px;margin-right: 10px")
+        line.setStyleSheet(get_css_style())
 
+        line.setObjectName("horizontalLines")
+
+
+        self.layout_.addWidget(line)
 
         shortcut_1 = QLabel(f'Save Current File: <span style="background-color: #2d2d2d">{SaveCurrentFile()}</span>')
         # shortcut_1 = QLabel('Save Current File: <span style="background-color: #2d2d2d">Ctrl + S</span>')

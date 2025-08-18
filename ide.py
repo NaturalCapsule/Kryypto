@@ -1,9 +1,9 @@
 import sys
-from PyQt6.QtWidgets import QLabel, QWidget, QVBoxLayout, QApplication, QMainWindow
-from PyQt6.QtGui import  QFont, QSurfaceFormat, QCloseEvent
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QApplication, QMainWindow
+from PyQt6.QtGui import  QSurfaceFormat, QCloseEvent
 from titlebar import CustomTitleBar
 from PyQt6.QtCore import Qt, QPoint, QRect
-from multiprocessing import Process, Queue
+# from multiprocessing import Process, Queue
 
 
 from settings import Setting

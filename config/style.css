@@ -183,6 +183,14 @@
 }
 
 
+#horizontalLines {
+    color: gray;
+    background-color: gray;
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+
 #DirectoryViewer:hover::item{
     background-color: #3a3a3a;
     color: white;

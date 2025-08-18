@@ -4,7 +4,6 @@ from PyQt6.QtWidgets import (
 )
 # from BlurWindow.blurWindow import blur
 from PyQt6.QtCore import Qt, QPoint, QTimer
-import sys
 from get_style import get_css_style
 from PyQt6.QtGui import QMouseEvent
 

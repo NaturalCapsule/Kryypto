@@ -1,4 +1,5 @@
 from configparser import ConfigParser
+import sys
 
 config = ConfigParser()
 config.read('config/configuration.cfg')
@@ -409,3 +410,11 @@ def showCompleter():
     
 def showDocstringpanel():
     return config.getboolean('Python', 'ShowDocStringPanel')
+
+def getInterpreter():
+    con = config.get('Python', 'pythoninterpreter')
+    if con and con.lower() != 'none':
+
+        return con
+    else:
+        return sys.executable
