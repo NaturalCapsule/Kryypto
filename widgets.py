@@ -779,6 +779,9 @@ class ShowDirectory(QDockWidget):
             except Exception as e:
                 pass
 
+
+        ############ ADD THIS TO LISTSHORTCUTS
+
         if key == Qt.Key.Key_F and event.modifiers() & Qt.KeyboardModifier.ControlModifier:
             self.new_file_input.show()
             self.new_file_input.setFocus()
@@ -800,6 +803,8 @@ class ShowDirectory(QDockWidget):
             self.new_folder_input.hide()
 
         super().keyPressEvent(event)
+        ############ ADD THIS TO LISTSHORTCUTS
+
 
     def remove_file(self):
         model = self.file_viewer.model()
@@ -1754,6 +1759,8 @@ class ListShortCuts(QWidget):
         self.layout_.setContentsMargins(0, 0, 0, 0)
         self.setLayout(self.layout_)
 
+
+
         shortcut_1 = QLabel(f'Save Current File: <span style="background-color: #2d2d2d">{SaveCurrentFile()}</span>')
         # shortcut_1 = QLabel('Save Current File: <span style="background-color: #2d2d2d">Ctrl + S</span>')
         shortcut_2 = QLabel(f'Show/Hide Directory Viewer: <span style="background-color: #2d2d2d">{Hide_Show_viewer()}</span>')
@@ -1795,18 +1802,26 @@ class ListShortCuts(QWidget):
         shortcut_22 = QLabel(f'Minimize: <span style="background-color: #2d2d2d">{Minimize()}</span>')
         shortcut_23 = QLabel(f'Restart: <span style="background-color: #2d2d2d">{Reboot()}</span>')
         shortcut_24 = QLabel(f'Maximize: <span style="background-color: #2d2d2d">{Maximize()}</span>')
+        shortcut_25 = QLabel(f'Make New File: <span style="background-color: #2d2d2d">Ctrl + F</span>')
+        shortcut_26 = QLabel(f'Make New Folder: <span style="background-color: #2d2d2d">Ctrl + D</span>')
+        shortcut_27 = QLabel(f'Remove Hovered File: <span style="background-color: #2d2d2d">Ctrl + K</span>')
+        shortcut_28 = QLabel(f'Remove Hovered Folder: <span style="background-color: #2d2d2d">Ctrl + J</span>')
 
         self.left_column = QVBoxLayout()
         self.right_column = QVBoxLayout()
         self.left_column.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.right_column.setAlignment(Qt.AlignmentFlag.AlignTop)
 
-        for shortcut in [shortcut_1, shortcut_2, shortcut_3, shortcut_4, shortcut_5, shortcut_6, shortcut_7, shortcut_8, shortcut_9, shortcut_19, shortcut_21, shortcut_23]:
+        # for shortcut in [shortcut_1, shortcut_2, shortcut_3, shortcut_4, shortcut_5, shortcut_6, shortcut_7, shortcut_8, shortcut_9, shortcut_19, shortcut_21, shortcut_23]:
+        for shortcut in [shortcut_1, shortcut_2, shortcut_3, shortcut_4, shortcut_5, shortcut_6, shortcut_25, shortcut_28 ,shortcut_7, shortcut_8, shortcut_9, shortcut_19, shortcut_21, shortcut_23]:
+
             shortcut.setObjectName('ShortCutTexts')
             shortcut.setStyleSheet(get_css_style())
             self.left_column.addWidget(shortcut)
 
-        for shortcut in [shortcut_10, shortcut_11, shortcut_12, shortcut_13, shortcut_14, shortcut_15, shortcut_16, shortcut_17, shortcut_18, shortcut_20, shortcut_22, shortcut_24]:
+        # for shortcut in [shortcut_10, shortcut_11, shortcut_12, shortcut_13, shortcut_14, shortcut_15, shortcut_16, shortcut_17, shortcut_18, shortcut_20, shortcut_22, shortcut_24]:
+        for shortcut in [shortcut_10, shortcut_11, shortcut_12, shortcut_13, shortcut_14, shortcut_15, shortcut_26, shortcut_27 ,shortcut_16, shortcut_17, shortcut_18, shortcut_20, shortcut_22, shortcut_24]:
+
             shortcut.setObjectName('ShortCutTexts')
             shortcut.setStyleSheet(get_css_style())
             self.right_column.addWidget(shortcut)
@@ -1820,6 +1835,7 @@ class ListShortCuts(QWidget):
         self.layout_.addLayout(self.h_layout)
 
         self.hide()
+        self.setMaximumHeight(0)
 
 class GitDock(QDockWidget):
     def __init__(self, parent):

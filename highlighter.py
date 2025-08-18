@@ -283,8 +283,6 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
             "type", "vars", "zip"
         ]
 
-
-
         for builtin in builtins:
             pattern = QRegularExpression(f'\\b{builtin}\\b')
             self.highlighting_rules.append((pattern, builtin_format, 'builtins'))
@@ -381,6 +379,7 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
             function_format.setFontItalic(True)
             self.comment_format.setFontItalic(True)
             builtin_format.setFontItalic(True)
+            self.func_args_format.setFontItalic(True)
 
         self.couting = 1
 
