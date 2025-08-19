@@ -15,7 +15,6 @@ from get_style import get_css_style
 from heavy import *
 from animations import *
 from config import *
-
 from highlighter import *
 from show_errors import *
 from pygit import *
@@ -1896,6 +1895,8 @@ class GitDock(QDockWidget):
 
 
     def _layout(self):
+        # self.layout_.removeWidget(self.image_container)
+
         self.layout_.addWidget(self.users_profile)
         self.layout_.addWidget(self.user_username)
         self.layout_.addStretch()
@@ -2018,7 +2019,7 @@ class GitDock(QDockWidget):
         image_layout.setContentsMargins(0, 0, 0, 0)
         self.image_container.setLayout(image_layout)
 
-        self.layout_.addWidget(self.image_container, alignment = Qt.AlignmentFlag.AlignHCenter)
+        # self.layout_.addWidget(self.image_container, alignment = Qt.AlignmentFlag.AlignHCenter)
 
         self.custom_title = QLabel("Git Panel")
         self.custom_title.setObjectName('DockTitles')
@@ -2058,7 +2059,7 @@ class GitDock(QDockWidget):
 
         return rounded
 
-    def changes(self, file_changes):
+    def changes(self, file_changes: dict):
         text = ""
         for file, info in file_changes.items():
             if info['insertions'] != 0 or info['deletions'] != 0:
@@ -2079,52 +2080,52 @@ class GitDock(QDockWidget):
         # if self.isVisible() and is_init():
         if self.maximumHeight() != 0 and is_init():
 
-            if not is_init():
+            # if not is_init():
 
 
-                if self.users_profile.isVisible():
-                    # self.layout_.addWidget(self.image_container, alignment = Qt.AlignmentFlag.AlignHCenter)
-                    self.layout_.removeWidget(self.image_container)
+                # if self.users_profile.isVisible():
+                #     self.layout_.addWidget(self.image_container, alignment = Qt.AlignmentFlag.AlignHCenter)
+                #     # self.layout_.removeWidget(self.image_container)
 
-                    self.no_repo_img.show()
-                    self.no_repo_text.show()
-                    self.repo_name.hide()
-                    self.commit.hide()
-                    self.remote_url.hide()
-                    self.user_username.hide()
-                    self.latest_commit.hide()
-                    self.last_commit.hide()
-                    self.commit_info.hide()
-                    self.active_branch_name.hide()
-                    self.untracked_files.hide()
-                    self.untracked_header.hide()
-                    self.header_changes.hide()
-                    self.show_changes.hide()
-                    self.users_profile.hide()
-                    self.repo_info.hide()
+                #     self.no_repo_img.show()
+                #     self.no_repo_text.show()
+                #     self.repo_name.hide()
+                #     self.commit.hide()
+                #     self.remote_url.hide()
+                #     self.user_username.hide()
+                #     self.latest_commit.hide()
+                #     self.last_commit.hide()
+                #     self.commit_info.hide()
+                #     self.active_branch_name.hide()
+                #     self.untracked_files.hide()
+                #     self.untracked_header.hide()
+                #     self.header_changes.hide()
+                #     self.show_changes.hide()
+                #     self.users_profile.hide()
+                #     self.repo_info.hide()
 
 
-            else:
-                if not self.users_profile.isVisible():
-                    self.layout_.removeWidget(self.image_container)
-                    self.no_repo_img.hide()
-                    self.no_repo_text.hide()
-                    self.repo_name.show()
-                    self.commit.show()
-                    self.active_branch_name.show()
-                    self.remote_url.show()
-                    self.repo_info.show()
-                    self.latest_commit.show()
-                    self.user_username.show()
-                    self.last_commit.show()
-                    self.commit_info.show()
-                    self.active_branch_name.show()
-                    self.untracked_files.show()
-                    self.untracked_header.show()
-                    self.header_changes.show()
-                    self.show_changes.show()
-                    self.users_profile.show()
-                    self._layout()
+            # else:
+            if not self.users_profile.isVisible():
+                self.layout_.removeWidget(self.image_container)
+                self.no_repo_img.hide()
+                self.no_repo_text.hide()
+                self.repo_name.show()
+                self.commit.show()
+                self.active_branch_name.show()
+                self.remote_url.show()
+                self.repo_info.show()
+                self.latest_commit.show()
+                self.user_username.show()
+                self.last_commit.show()
+                self.commit_info.show()
+                self.active_branch_name.show()
+                self.untracked_files.show()
+                self.untracked_header.show()
+                self.header_changes.show()
+                self.show_changes.show()
+                self.users_profile.show()
+                self._layout()
 
             self.changes(file_changes)
 
@@ -2134,6 +2135,28 @@ class GitDock(QDockWidget):
             self.active_branch_name.setText(f"Branch: <code>{branch}</code>")
             self.commit.setText(f"↳ Total Commits: {str(total)}")
             self.last_commit.setText(f"↳ Last Committed: {get_latest_commit_time}")
+
+        elif not is_init():
+            if self.users_profile.isVisible():
+                self.layout_.addWidget(self.image_container, alignment = Qt.AlignmentFlag.AlignHCenter)
+                # self.layout_.removeWidget(self.image_container)
+
+                self.no_repo_img.show()
+                self.no_repo_text.show()
+                self.repo_name.hide()
+                self.commit.hide()
+                self.remote_url.hide()
+                self.user_username.hide()
+                self.latest_commit.hide()
+                self.last_commit.hide()
+                self.commit_info.hide()
+                self.active_branch_name.hide()
+                self.untracked_files.hide()
+                self.untracked_header.hide()
+                self.header_changes.hide()
+                self.show_changes.hide()
+                self.users_profile.hide()
+                self.repo_info.hide()
 
 
     def checking(self):
