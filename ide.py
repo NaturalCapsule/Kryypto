@@ -14,6 +14,7 @@ from config import setCustomTitleBar
 from get_style import get_css_style
 from pygit import open_file_dialog, folder_path_
 from config import get_fontSize
+from check_version import checkUpdate
 
 class Kryypto(QMainWindow):
     def __init__(self, clipboard):
@@ -33,6 +34,8 @@ class Kryypto(QMainWindow):
         self.setupUI()
         self.setupWidgets()
         self.addDocks()
+
+
 
     def addDocks(self):
         self.inner_window.setWindowFlags(Qt.WindowType.FramelessWindowHint)
@@ -67,6 +70,18 @@ class Kryypto(QMainWindow):
     def setupWidgets(self):
         import widgets
         
+        is_update = checkUpdate()
+
+        # if checkUpdate():
+        if is_update:
+            widgets.MessageBox(
+                f"'An update for "
+                f"<a href='{is_update}'>Kryypto</a>"
+                " has been released go download it!",
+                # link=True
+                link=is_update
+
+            )
         
         central_widget = QWidget()
 

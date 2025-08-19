@@ -2228,11 +2228,11 @@ class MessageBox(QMessageBox):
         self.setObjectName('MessageBox')
         self.setStyleSheet(get_css_style())
 
-        save_file = QPushButton(self)
-        save_file.setText('Ok')
+        ok_button = QPushButton(self)
+        ok_button.setText('Ok')
 
-        save_file.setObjectName('MessageBoxSave')
-        save_file.setStyleSheet(get_css_style())
+        ok_button.setObjectName('MessageBoxSave')
+        ok_button.setStyleSheet(get_css_style())
 
         cancel = QPushButton(self)
         cancel.setText('Cancel')
@@ -2247,23 +2247,16 @@ class MessageBox(QMessageBox):
         self.setIconPixmap(scaled_pixmap)
 
 
-        self.addButton(save_file, QMessageBox.ButtonRole.YesRole)
+        self.addButton(ok_button, QMessageBox.ButtonRole.YesRole)
         self.addButton(cancel, QMessageBox.ButtonRole.RejectRole)
 
 
-
-        # if link:
-        #     self.setTextFormat(Qt.TextFormat.RichText)
-        #     self.setTextInteractionFlags(Qt.TextInteractionFlag.TextBrowserInteraction)
-
-        #     label = self.findChild(QLabel)
-        #     if label:
-        #         label.setStyleSheet("color: white;background-color: white")
-        #         label.setOpenExternalLinks(False)
-        #         label.linkActivated.connect(self.open_link)
-
         self.exec()
 
+
+        if link:
+            if self.clickedButton() == ok_button:
+                webbrowser.open(link)
 
     def open_link(self, url):
         webbrowser.open(url.toString())

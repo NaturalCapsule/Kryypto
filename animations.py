@@ -37,7 +37,9 @@ def animatePanel(parent, window, show=True, sub_widget: list = None):
             MessageBox(
                 f"'{getType()}' is not a valid animation, please check: "
                 "<a href='https://doc.qt.io/qtforpython-6/PySide6/QtCore/QEasingCurve.html'>Qt Docs</a>",
-                link=True
+                # link=True
+                link='https://doc.qt.io/qtforpython-6/PySide6/QtCore/QEasingCurve.html'
+
             )
 
             count += 1
