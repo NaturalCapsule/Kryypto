@@ -1,6 +1,7 @@
 import re
 import subprocess
 import os
+import webbrowser
 
 from datetime import datetime
 from PyQt6.QtCore import QThreadPool, QRectF, QTimer, Qt, QRect, QFileInfo, pyqtSignal, QProcess
@@ -49,7 +50,6 @@ class MainText(QPlainTextEdit):
         self.clipboard = window
         self.window = window_
         self.setCursorWidth(0)
-
         if showDocstringpanel():
             self.jediBridge()
 
@@ -2188,12 +2188,19 @@ class GitDock(QDockWidget):
 
 
 class MessageBox(QMessageBox):
-    def __init__(self, text):
+    def __init__(self, text, link = None):
         super().__init__()
 
         self.setWindowFlag(Qt.WindowType.FramelessWindowHint)
         self.setText(text)
+        if link:
+            self.setTextFormat(Qt.TextFormat.RichText)
+            self.setTextInteractionFlags(Qt.TextInteractionFlag.TextBrowserInteraction)
 
+            label = self.findChild(QLabel)
+            if label:
+                label.setOpenExternalLinks(False)
+                label.linkActivated.connect(self.open_link)
 
         self.setObjectName('MessageBox')
         self.setStyleSheet(get_css_style())
@@ -2220,7 +2227,23 @@ class MessageBox(QMessageBox):
         self.addButton(save_file, QMessageBox.ButtonRole.YesRole)
         self.addButton(cancel, QMessageBox.ButtonRole.RejectRole)
 
+
+
+        # if link:
+        #     self.setTextFormat(Qt.TextFormat.RichText)
+        #     self.setTextInteractionFlags(Qt.TextInteractionFlag.TextBrowserInteraction)
+
+        #     label = self.findChild(QLabel)
+        #     if label:
+        #         label.setStyleSheet("color: white;background-color: white")
+        #         label.setOpenExternalLinks(False)
+        #         label.linkActivated.connect(self.open_link)
+
         self.exec()
+
+
+    def open_link(self, url):
+        webbrowser.open(url.toString())
 
 
 

@@ -8,6 +8,7 @@ def animatePanel(parent, window, show=True, sub_widget: list = None):
     from widgets import MessageBox
 
     global count
+
     start_height = parent.maximumHeight()
     end_height = window.size().height() if show else 0
 
@@ -33,7 +34,12 @@ def animatePanel(parent, window, show=True, sub_widget: list = None):
     else:
         anim.setEasingCurve(QEasingCurve.Type.BezierSpline)
         if count == 0:
-            MessageBox(f"'{getType()}' is not a valid animation, please check: PyQt6 QEasingCurve.Type")
+            MessageBox(
+                f"'{getType()}' is not a valid animation, please check: "
+                "<a href='https://doc.qt.io/qtforpython-6/PySide6/QtCore/QEasingCurve.html'>Qt Docs</a>",
+                link=True
+            )
+
             count += 1
 
     # group = QParallelAnimationGroup()
