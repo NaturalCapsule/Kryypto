@@ -202,7 +202,6 @@ def get_markdown_equal():
     return int(r), int(g), int(b)
 
 
-
 def get_markdown_line():
     con = config.get('MarkDown', 'line')
     r, g, b = con.split(',')
@@ -245,8 +244,6 @@ def get_markdown_italicBold():
     con = config.get('MarkDown', 'italicBold')
     r, g, b = con.split(',')
     return int(r), int(g), int(b)
-
-
 
 def get_markdown_italic():
     con = config.get('MarkDown', 'italic')
@@ -418,3 +415,9 @@ def getInterpreter():
         return con
     else:
         return sys.executable
+    
+def getDuration():
+    return config.getint('Animation', 'duration')
+
+def getType():
+    return config.get('Animation', 'type')

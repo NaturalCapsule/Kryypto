@@ -142,10 +142,6 @@ class MainText(QPlainTextEdit):
         bridge = JediBridge(self.code_queue, self.result_queue)
         self.jedi_bridge = bridge
 
-    # def on_text_change(self):
-    #     code = self.toPlainText()
-    #     self.jedi_bridge.request_docstring(code)
-
     def on_text_change(self):
         code = self.toPlainText()
         cursor = self.textCursor()
@@ -199,21 +195,45 @@ class MainText(QPlainTextEdit):
 
 
 
+    # def paint_indent_guides(self, event):
+    #     painter = QPainter(self.viewport())
+    #     painter.setPen(QColor(200, 200, 200))
+
+    #     block = self.firstVisibleBlock()
+    #     top = self.blockBoundingGeometry(block).translated(self.contentOffset()).top()
+
+    #     while block.isValid():
+    #         text = block.text()
+    #         leading_spaces = len(text) - len(text.lstrip(' '))
+    #         for i in range(4, leading_spaces + 1, 4):
+    #             x = self.fontMetrics().horizontalAdvance(' ') * i
+    #             painter.drawLine(x, top, x, top + self.blockBoundingRect(block).height())
+    #         block = block.next()
+    #         top += self.blockBoundingRect(block).height()
+
+    #     painter.end()
+
+
     def paint_indent_guides(self, event):
         painter = QPainter(self.viewport())
-        painter.setPen(QColor(200, 200, 200))
+        painter.setPen(QColor(100, 100, 100))
 
         block = self.firstVisibleBlock()
         top = self.blockBoundingGeometry(block).translated(self.contentOffset()).top()
+        line_height = self.fontMetrics().height()
+        space_width = self.fontMetrics().horizontalAdvance(' ')
 
         while block.isValid():
             text = block.text()
             leading_spaces = len(text) - len(text.lstrip(' '))
-            for i in range(4, leading_spaces + 1, 4):
-                x = self.fontMetrics().horizontalAdvance(' ') * i
-                painter.drawLine(x, top, x, top + self.blockBoundingRect(block).height())
+
+            for col in range(4, leading_spaces + 1, 4):
+                if col <= len(text) and text[col - 1] == ' ':
+                    x = space_width * col
+                    painter.drawLine(x, top, x, top + line_height)
+
             block = block.next()
-            top += self.blockBoundingRect(block).height()
+            top += line_height
 
         painter.end()
 
@@ -1860,7 +1880,6 @@ class GitDock(QDockWidget):
 
         self.labels()
         # self._layout()
-        
 
         self.setWidget(content_widget)
         content_widget.setLayout(self.layout_)
