@@ -2261,9 +2261,6 @@ class MessageBox(QMessageBox):
     def open_link(self, url):
         webbrowser.open(url.toString())
 
-
-
-
 def pop_messagebox(parent, event, tab_bar, use_events):
     box = QMessageBox(parent)
 
@@ -2308,7 +2305,6 @@ def pop_messagebox(parent, event, tab_bar, use_events):
 
     if use_events:
         if box.clickedButton() == save_file:
-            # self.tab_bar.save_current_file()
             tab_bar.save_current_file()
 
             event.accept()

@@ -2,7 +2,7 @@ import requests
 
 from packaging import version
 
-APP_VERSION = "0.0.0"
+APP_VERSION = "1.0.0"
 VERSION_URL = "https://raw.githubusercontent.com/NaturalCapsule/IDE/main/version/version.json"
 
 def checkUpdate():
