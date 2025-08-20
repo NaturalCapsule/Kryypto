@@ -78,19 +78,6 @@ class CustomTitleBar(QWidget):
         self.start = QPoint(0, 0)
         self.pressing = False
 
-        self.check_timer = QTimer()
-        self.check_timer.timeout.connect(self.check_fullscreen)
-        self.check_timer.start(100)
-
-        # self.check_fullscreen()
-
-    def check_fullscreen(self):
-        if self.parent.isMaximized():
-            self.max_button.setText('❐')
-        else:
-            self.max_button.setText('□')
-
-
 
     def toggle_maximize(self):
         if self.parent:

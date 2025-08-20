@@ -58,10 +58,7 @@
 #AutoCompleter {
     background-color: #1e1e2e;
     color: #ffffff;
-    /* font-size: 19px; */
-    /* selection-background-color: rgba(255, 255, 255, 0.5); */
     selection-background-color: white;
-
     selection-color: white;
     border: 2px solid #F38BA8;
     border-radius: 10px;
@@ -105,19 +102,8 @@
     color: #ffffff;
 }
 
-/* #TitleBarBG {
-    background-color: rgba(255, 255, 255, 0.7);
-    border-radius: 0px;
-} */
-
 #TitleBarBG {
     background-color: rgba(30,30,46, 200);
-    /* background-color: rgba(255, 255, 255, 200); */
-
-    /* background-color: rgba(255, 255, 255, 200); */
-    /* background-color: #1e1e2e; */
-
-
     border: none;
     border-radius: 0px;
 }

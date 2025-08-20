@@ -408,13 +408,21 @@ def showCompleter():
 def showDocstringpanel():
     return config.getboolean('Python', 'ShowDocStringPanel')
 
+
+def is_frozen():
+    return getattr(sys, "frozen", False)
+
 def getInterpreter():
     con = config.get('Python', 'pythoninterpreter')
     if con and con.lower() != 'none':
-
         return con
     else:
-        return sys.executable
+        if is_frozen():
+            # running inside exe
+            # return actual python path if needed, or None
+            return None
+        else:
+            return sys.executable
     
 def getDuration():
     return config.getint('Animation', 'duration')

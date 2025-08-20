@@ -53,11 +53,6 @@ class Kryypto(QMainWindow):
         pixmap = QPixmap('icons/app/icon.ico')
 
         pixmap = pixmap.scaled(256, 256)
-        # pixmap = pixmap.scaled(1024, 1024, Qt.AspectRatioMode.KeepAspectRatio)
-
-
-
-        # self.setWindowIcon(QIcon('icons/app/icon.ico'))
         self.setWindowIcon(QIcon(pixmap))
 
         self.setMouseTracking(True)
@@ -95,13 +90,6 @@ class Kryypto(QMainWindow):
             )
         
         central_widget = QWidget()
-
-
-        # if setCustomTitleBar():
-        #     self.title_bar = CustomTitleBar(self)
-        #     main_layout.addWidget(self.title_bar)
-        #     central_widget.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
-        #     central_widget.setMouseTracking(True)
 
 
         main_layout = QVBoxLayout(central_widget)
@@ -161,6 +149,7 @@ class Kryypto(QMainWindow):
             widgets.error_label, self.clipboard, self.editor_layout, 
             self.terminal, self, self.tab_bar, widgets.file_description, 
             self.list_shortcuts, self.git_panel, self.font_size, self.main_text.line_number_area, self.show_files
+
         )
 
 
@@ -300,7 +289,6 @@ class Kryypto(QMainWindow):
         self.settings.setValue('Opened Directory', folder_path_)
 
         if (hasattr(self.tab_bar, 'show_error') and hasattr(self.tab_bar.show_error, 'code_queue')):
-            # self.tab_bar.show_error.cleanup()
             self.tab_bar.show_error._code_queue.put('__EXIT__')
             self.main_text.code_queue_.put('__EXIT__')
             self.main_text.code_queue.put('__EXIT__')
@@ -308,25 +296,15 @@ class Kryypto(QMainWindow):
         if self.tab_bar.is_save_file_needed():
             pop_messagebox(self, event, self.tab_bar, True)
 
-if __name__ == '__main__':
+format = QSurfaceFormat()
+format.setRenderableType(QSurfaceFormat.RenderableType.OpenGL)
+format.setProfile(QSurfaceFormat.OpenGLContextProfile.CoreProfile)
+format.setVersion(3, 3)
+format.setSwapBehavior(QSurfaceFormat.SwapBehavior.DoubleBuffer)
+format.setDepthBufferSize(144)
+QSurfaceFormat.setDefaultFormat(format)
+app = QApplication(sys.argv)
 
-    # code_queue = Queue()
-    # result_queue = Queue()
-
-    # Start Jedi worker in another process
-    # p = Process(target=jedi_worker, args=(code_queue, result_queue))
-    # p.start()
-
-    format = QSurfaceFormat()
-    format.setRenderableType(QSurfaceFormat.RenderableType.OpenGL)
-    format.setProfile(QSurfaceFormat.OpenGLContextProfile.CoreProfile)
-    format.setVersion(3, 3)
-    format.setSwapBehavior(QSurfaceFormat.SwapBehavior.DoubleBuffer)
-    format.setDepthBufferSize(144)
-    QSurfaceFormat.setDefaultFormat(format)
-    app = QApplication(sys.argv)
-    # bridge = JediBridge(code_queue, result_queue)
-
-    window = Kryypto(app.clipboard())
-    window.show()
-    sys.exit(app.exec())
+window = Kryypto(app.clipboard())
+window.show()
+sys.exit(app.exec())

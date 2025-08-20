@@ -12,13 +12,8 @@ def checkUpdate():
         latest = data['Version']
         url = data['URL']
         if version.parse(latest) > version.parse(APP_VERSION):
-            # print("UPDATE KYYPTO")
             return url
         else:
-            # print("Up to date!")
             return None
     except Exception as e:
         print(e)
-
-
-checkUpdate()

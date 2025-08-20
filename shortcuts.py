@@ -12,20 +12,20 @@ from animations import *
 from config import *
 
 def reboot():
-    # python = sys.executable
     python = getInterpreter()
-    print(python)
+    if python is None:
+        return
+
     script = os.path.abspath(sys.argv[0])
     args = sys.argv[1:]
-
     QProcess.startDetached(python, [script] + args)
-
     QCoreApplication.quit()
 
 class MainTextShortcuts:
+    # def __init__(self, parent, completer, tab, error_label, clipboard, bawky_parent, bawky_parent_, opened_tabs, file_desc, list_shortcuts, font_size, lines, show_files):
     def __init__(self, parent, completer, tab, error_label, clipboard, bawky_parent, term, bawky_parent_, opened_tabs, file_desc, list_shortcuts, git_panel, font_size, lines, show_files):
         self.font_size = font_size
-        self.terminal = term
+        # self.terminal = term
         self.lines = lines
         self.show_files = show_files
 
@@ -82,11 +82,9 @@ class MainTextShortcuts:
 
 
         hide_show_term = QShortcut(QKeySequence(Hide_Show_term()), bawky_parent_)
-        # hide_show_term = QShortcut(QKeySequence("Ctrl+T"), bawky_parent_)
         hide_show_term.activated.connect(lambda: self.hide_show_terminal(bawky_parent_, parent))
 
         kill_term = QShortcut(QKeySequence(KillTerminalSession()), parent)
-        # kill_term = QShortcut(QKeySequence("Ctrl+Shift+G"), parent)
         kill_term.activated.connect(self.kill_terminal)
 
         run_file = QShortcut(QKeySequence(RunCurrentPythonFile()), parent)
@@ -106,9 +104,8 @@ class MainTextShortcuts:
         # hide_show_shortcuts = QShortcut(QKeySequence("Ctrl+L"), bawky_parent_)
         hide_show_shortcuts.activated.connect(lambda: self.hide_show_shortcuts(bawky_parent_, list_shortcuts))
 
-        hide_show_gitpanel = QShortcut(QKeySequence(Hide_Show_gitpanel()), bawky_parent_)
-        # hide_show_gitpanel = QShortcut(QKeySequence("Ctrl+G"), bawky_parent_)
-        hide_show_gitpanel.activated.connect(lambda: self.hide_show_gitpanel(git_panel, parent, bawky_parent_))
+        # hide_show_gitpanel = QShortcut(QKeySequence(Hide_Show_gitpanel()), bawky_parent_)
+        # hide_show_gitpanel.activated.connect(lambda: self.hide_show_gitpanel(git_panel, parent, bawky_parent_))
 
         select_folder = QShortcut(QKeySequence(SelectFolder()), bawky_parent_)
         # select_folder = QShortcut(QKeySequence("Ctrl+I"), bawky_parent_)
