@@ -418,8 +418,6 @@ def getInterpreter():
         return con
     else:
         if is_frozen():
-            # running inside exe
-            # return actual python path if needed, or None
             return None
         else:
             return sys.executable
@@ -429,3 +427,23 @@ def getDuration():
 
 def getType():
     return config.get('Animation', 'type')
+
+
+def get_IndentlineColor():
+    con = config.get('Editor', 'IndentLineGuideColor')
+    r, g, b = con.split(',')
+    return int(r), int(g), int(b)
+
+def showIndentLine():
+    return config.getboolean('Editor', 'ShowIndentLineGuide')
+
+def get_lineareacolor():
+    con = config.get('Editor', 'LineNumberColorArea')
+    r, g, b = con.split(',')
+    return int(r), int(g), int(b)
+
+
+def get_linenumbercolor():
+    con = config.get('Editor', 'LineNumberColor')
+    r, g, b = con.split(',')
+    return int(r), int(g), int(b)

@@ -4,6 +4,7 @@ from PyQt6.QtGui import  QSurfaceFormat, QCloseEvent, QIcon, QPixmap
 from titlebar import CustomTitleBar
 from PyQt6.QtCore import Qt, QPoint, QRect
 # from multiprocessing import Process, Queue
+from multiprocessing import freeze_support, active_children
 
 
 from settings import Setting
@@ -293,18 +294,24 @@ class Kryypto(QMainWindow):
             self.main_text.code_queue_.put('__EXIT__')
             self.main_text.code_queue.put('__EXIT__')
 
+        for p in active_children():
+            if p.is_alive():
+                p.terminate()
+
         if self.tab_bar.is_save_file_needed():
             pop_messagebox(self, event, self.tab_bar, True)
 
-format = QSurfaceFormat()
-format.setRenderableType(QSurfaceFormat.RenderableType.OpenGL)
-format.setProfile(QSurfaceFormat.OpenGLContextProfile.CoreProfile)
-format.setVersion(3, 3)
-format.setSwapBehavior(QSurfaceFormat.SwapBehavior.DoubleBuffer)
-format.setDepthBufferSize(144)
-QSurfaceFormat.setDefaultFormat(format)
-app = QApplication(sys.argv)
+if __name__ == "__main__":
+    freeze_support()
+    format = QSurfaceFormat()
+    format.setRenderableType(QSurfaceFormat.RenderableType.OpenGL)
+    format.setProfile(QSurfaceFormat.OpenGLContextProfile.CoreProfile)
+    format.setVersion(3, 3)
+    format.setSwapBehavior(QSurfaceFormat.SwapBehavior.DoubleBuffer)
+    format.setDepthBufferSize(144)
+    QSurfaceFormat.setDefaultFormat(format)
+    app = QApplication(sys.argv)
 
-window = Kryypto(app.clipboard())
-window.show()
-sys.exit(app.exec())
+    window = Kryypto(app.clipboard())
+    window.show()
+    sys.exit(app.exec())

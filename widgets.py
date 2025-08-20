@@ -93,9 +93,11 @@ class MainText(QPlainTextEdit):
         self.blink_timer.start(get_cursorBlinkingRate())
 
 
+
         self.line_number_area = ShowLines(self, self.font_size)
         self.blockCountChanged.connect(self.update_line_number_area_width)
         self.updateRequest.connect(self.update_line_number_area)
+
         if showDocstringpanel():
             self.cursorPositionChanged.connect(self.on_text_change)
             self.jedi_bridge.result_ready.connect(self.on_docstring_result)
@@ -189,33 +191,16 @@ class MainText(QPlainTextEdit):
 
     def paintEvent(self, event):
         super().paintEvent(event)
-        self.paint_indent_guides(event)
+        if showIndentLine():
+            self.paint_indent_guides(event)
         self.paint_cursor(event) 
-
-
-
-    # def paint_indent_guides(self, event):
-    #     painter = QPainter(self.viewport())
-    #     painter.setPen(QColor(200, 200, 200))
-
-    #     block = self.firstVisibleBlock()
-    #     top = self.blockBoundingGeometry(block).translated(self.contentOffset()).top()
-
-    #     while block.isValid():
-    #         text = block.text()
-    #         leading_spaces = len(text) - len(text.lstrip(' '))
-    #         for i in range(4, leading_spaces + 1, 4):
-    #             x = self.fontMetrics().horizontalAdvance(' ') * i
-    #             painter.drawLine(x, top, x, top + self.blockBoundingRect(block).height())
-    #         block = block.next()
-    #         top += self.blockBoundingRect(block).height()
-
-    #     painter.end()
 
 
     def paint_indent_guides(self, event):
         painter = QPainter(self.viewport())
-        painter.setPen(QColor(100, 100, 100))
+        r, g, b = get_IndentlineColor()
+        painter.setPen(QColor(r, g, b))
+
 
         block = self.firstVisibleBlock()
         top = self.blockBoundingGeometry(block).translated(self.contentOffset()).top()
@@ -552,7 +537,12 @@ class MainText(QPlainTextEdit):
 
     def line_number_area_paint_event(self, event, font_metrics):
         painter = QPainter(self.line_number_area)
-        painter.fillRect(event.rect(), QColor(30, 30, 46))
+        # painter.fillRect(event.rect(), QColor(30, 30, 46))
+
+        r, g, b = get_lineareacolor()
+
+        painter.fillRect(event.rect(), QColor(r, g, b))
+
         font = QFont(get_fontFamily(), get_fontSize())
         font.setStyleStrategy(QFont.StyleStrategy.PreferAntialias)
         font.setPixelSize(get_fontSize())
@@ -567,7 +557,10 @@ class MainText(QPlainTextEdit):
         while block.isValid() and top <= event.rect().bottom():
             if block.isVisible() and bottom >= event.rect().top():
                 number = str(block_number + 1)
-                painter.setPen(QColor(160, 160, 160))
+                # painter.setPen(QColor(160, 160, 160))
+                r, g, b = get_linenumbercolor()
+                painter.setPen(QColor(r, g, b))
+
                 painter.drawText(
                     0, top, self.line_number_area.width() - 5, font_metrics.height(),
                     Qt.AlignmentFlag.AlignRight, number
@@ -1878,7 +1871,7 @@ class GitDock(QDockWidget):
         self.gitTimers()
 
         self.labels()
-        # self._layout()
+        self._layout()
 
         self.setWidget(content_widget)
         content_widget.setLayout(self.layout_)
@@ -1895,8 +1888,6 @@ class GitDock(QDockWidget):
 
 
     def _layout(self):
-        # self.layout_.removeWidget(self.image_container)
-
         self.layout_.addWidget(self.users_profile)
         self.layout_.addWidget(self.user_username)
         self.layout_.addStretch()
@@ -1911,8 +1902,8 @@ class GitDock(QDockWidget):
         self.layout_.addWidget(self.untracked_files)
         self.layout_.addWidget(self.header_changes)
         self.layout_.addWidget(self.show_changes)
-        self.layout_.addStretch()
-        self.layout_.addStretch()
+        # self.layout_.addStretch()
+        # self.layout_.addStretch()
         self.layout_.addStretch()
 
         self.layout_.addWidget(self.repo_info)
@@ -2125,7 +2116,6 @@ class GitDock(QDockWidget):
                 self.header_changes.show()
                 self.show_changes.show()
                 self.users_profile.show()
-                self._layout()
 
             self.changes(file_changes)
 
@@ -2139,7 +2129,6 @@ class GitDock(QDockWidget):
         elif not is_init():
             if self.users_profile.isVisible():
                 self.layout_.addWidget(self.image_container, alignment = Qt.AlignmentFlag.AlignHCenter)
-                # self.layout_.removeWidget(self.image_container)
 
                 self.no_repo_img.show()
                 self.no_repo_text.show()
@@ -2202,7 +2191,6 @@ class GitDock(QDockWidget):
                 self.header_changes.show()
                 self.show_changes.show()
                 self.users_profile.show()
-                self._layout()
 
     def gitTimers(self):
         self.timer = QTimer()

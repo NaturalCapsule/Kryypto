@@ -2,6 +2,7 @@ import jedi
 from PyQt6.QtCore import QObject, QTimer, pyqtSignal
 from func_classes import list_classes_functions
 from queue import Empty
+import queue
 
 _cache = {}
 _cache_size_limit = 1000
@@ -29,7 +30,13 @@ _cache_size_limit = 1000
 
 def jedi_worker(code_queue, result_queue):
     while True:
-        item = code_queue.get()
+        try:
+            item = code_queue.get(timeout = 1)
+        except queue.Empty:
+            continue
+
+
+        # item = code_queue.get()
         if item == "__EXIT__":
             break
         code, line, column = item
@@ -82,7 +89,11 @@ def jedi_worker(code_queue, result_queue):
 
 def jedi_completion(code_queue, result_queue, current_file):
     while True:
-        item = code_queue.get()
+        try:
+            item = code_queue.get(timeout = 1)
+        except queue.Empty:
+            continue
+
         if item == "__EXIT__":
             break
 
@@ -173,17 +184,16 @@ class SyntaxBridge(QObject):
 
 
 def syntax_worker(code_queue, result_queue):
-    # while True:
-    #     code = code_queue.get()
-
-    #     instances = list_classes_functions(code)
-    #     result_queue.put(instances)
     while True:
-        code = code_queue.get()
-        if code == "__EXIT__":
-            break
+        try:
+            code = code_queue.get(timeout = 1)
+        except queue.Empty:
+            continue
 
-        # Drain queue to the latest code snapshot
+        # code = code_queue.get()
+        # if code == "__EXIT__":
+        #     break
+
         while True:
             try:
                 code = code_queue.get_nowait()

@@ -32,20 +32,11 @@ class CustomTitleBar(QWidget):
         layout.setContentsMargins(10, 0, 10, 0)
         layout.setSpacing(0)
         
-        self.icon = QLabel()
-
-
-        pixmap = QPixmap('icons/app/icon.ico')
-        pixmap = pixmap.scaled(98, 98, Qt.AspectRatioMode.KeepAspectRatio)
-
-
-        self.icon.setPixmap(pixmap)
 
         self.title_label = QLabel("Kryypto")
         # self.title_label.setPixmap(QPixmap('icons/app/icon.ico'))
         self.title_label.setObjectName('TitleBarName')
         self.title_label.setStyleSheet(get_css_style())
-        layout.addWidget(self.icon)
         layout.addWidget(self.title_label)
         layout.addStretch()
 

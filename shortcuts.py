@@ -12,64 +12,54 @@ from animations import *
 from config import *
 
 def reboot():
-    python = getInterpreter()
-    if python is None:
-        return
-
-    script = os.path.abspath(sys.argv[0])
-    args = sys.argv[1:]
-    QProcess.startDetached(python, [script] + args)
+    if getattr(sys, 'frozen', False):
+        exe = sys.executable  # path to kryypto.exe
+        QProcess.startDetached(exe, sys.argv[1:])
+    else:
+        python = sys.executable
+        script = os.path.abspath(sys.argv[0])
+        QProcess.startDetached(python, [script] + sys.argv[1:])
+    
     QCoreApplication.quit()
 
 class MainTextShortcuts:
-    # def __init__(self, parent, completer, tab, error_label, clipboard, bawky_parent, bawky_parent_, opened_tabs, file_desc, list_shortcuts, font_size, lines, show_files):
     def __init__(self, parent, completer, tab, error_label, clipboard, bawky_parent, term, bawky_parent_, opened_tabs, file_desc, list_shortcuts, git_panel, font_size, lines, show_files):
         self.font_size = font_size
-        # self.terminal = term
+        self.terminal = term
         self.lines = lines
         self.show_files = show_files
 
 
 
-        # delete_line = QShortcut(QKeySequence("Ctrl+Shift+K"), parent)
         delete_line = QShortcut(QKeySequence(DeleteLine()), parent)
-
         delete_line.activated.connect(lambda: self.remove_current_line(parent))
 
         new_line = QShortcut(QKeySequence(newLine()), parent)
-        # new_line = QShortcut(QKeySequence("Ctrl+Return"), parent)
-
         new_line.activated.connect(lambda: self.goto_next_block(parent))
 
         increase_font = QShortcut(QKeySequence(IncreaseFont()), parent)
-        # increase_font = QShortcut(QKeySequence("Ctrl+="), parent)
         increase_font.activated.connect(lambda: self.increase_font(parent, opened_tabs))
 
         reduce_font = QShortcut(QKeySequence(DecreaseFont()), parent)
-        # reduce_font = QShortcut(QKeySequence("Ctrl+-"), parent)
         reduce_font.activated.connect(lambda: self.reduce_font(parent, opened_tabs))
 
         show_completer = QShortcut(QKeySequence("Ctrl+Space"), parent)
         show_completer.activated.connect(lambda: self.pressed(completer))
 
-        # indent_line = QShortcut(QKeySequence("Ctrl+]"), parent)
         indent_line = QShortcut(QKeySequence(IndentCurrentLine()), parent)
         indent_line.activated.connect(lambda: self.add_indentation(parent))
 
         remove_indent = QShortcut(QKeySequence(removeIndentCurrent()), parent)
-        # remove_indent = QShortcut(QKeySequence("Ctrl+["), parent)
         remove_indent.activated.connect(lambda: self.remove_indentation(parent))
 
         remove_current_tab = QShortcut(QKeySequence(RemoveCurrentTab()), parent)
-        # remove_current_tab = QShortcut(QKeySequence("Ctrl+Shift+R"), parent)
         remove_current_tab.activated.connect(lambda: self.remove_tab_(tab, file_desc))
 
-        # move_tab_right = QShortcut(QKeySequence("Ctrl+Shift+T"), parent)
+
         move_tab_right = QShortcut(QKeySequence(MoveTabRight()), parent)
         move_tab_right.activated.connect(lambda: self.move_tab_right(tab))
 
         move_tab_left = QShortcut(QKeySequence(MoveTabLeft()), parent)
-        # move_tab_left = QShortcut(QKeySequence("Ctrl+Shift+E"), parent)
         move_tab_left.activated.connect(lambda: self.move_tab_left(tab))
 
         get_error_text = QShortcut(QKeySequence("Ctrl+Shift+C"), parent)
@@ -77,7 +67,6 @@ class MainTextShortcuts:
 
 
         goto_block = QShortcut(QKeySequence(GotoBlock_()), parent)
-        # goto_block = QShortcut(QKeySequence("Ctrl+Shift+H"), parent)
         goto_block.activated.connect(lambda: self.goto_block_(parent, bawky_parent))
 
 
@@ -88,35 +77,28 @@ class MainTextShortcuts:
         kill_term.activated.connect(self.kill_terminal)
 
         run_file = QShortcut(QKeySequence(RunCurrentPythonFile()), parent)
-        # run_file = QShortcut(QKeySequence("Ctrl+N"), parent)
         run_file.activated.connect(lambda: self.run_current_file(opened_tabs, file_desc, bawky_parent_, parent))
 
         open_css_file = QShortcut(QKeySequence(OpenStyleFile()), bawky_parent_)
-        # open_css_file = QShortcut(QKeySequence("Ctrl+Shift+S"), bawky_parent_)
         open_css_file.activated.connect(lambda: self.open_css(opened_tabs, file_desc, bawky_parent_, parent))
 
         open_config_file = QShortcut(QKeySequence(OpenConfigFile()), bawky_parent_)
-        # open_config_file = QShortcut(QKeySequence("Ctrl+Shift+O"), bawky_parent_)
         open_config_file.activated.connect(lambda: self.open_config(opened_tabs, file_desc, bawky_parent_, parent))
 
 
         hide_show_shortcuts = QShortcut(QKeySequence(Show_Hide_Shortcuts()), bawky_parent_)
-        # hide_show_shortcuts = QShortcut(QKeySequence("Ctrl+L"), bawky_parent_)
         hide_show_shortcuts.activated.connect(lambda: self.hide_show_shortcuts(bawky_parent_, list_shortcuts))
 
-        # hide_show_gitpanel = QShortcut(QKeySequence(Hide_Show_gitpanel()), bawky_parent_)
-        # hide_show_gitpanel.activated.connect(lambda: self.hide_show_gitpanel(git_panel, parent, bawky_parent_))
+        hide_show_gitpanel = QShortcut(QKeySequence(Hide_Show_gitpanel()), bawky_parent_)
+        hide_show_gitpanel.activated.connect(lambda: self.hide_show_gitpanel(git_panel, parent, bawky_parent_))
 
         select_folder = QShortcut(QKeySequence(SelectFolder()), bawky_parent_)
-        # select_folder = QShortcut(QKeySequence("Ctrl+I"), bawky_parent_)
         select_folder.activated.connect(lambda: self.show_folderGUI(bawky_parent_))
 
         maximze = QShortcut(QKeySequence(Maximize()), bawky_parent_)
-        # maximze = QShortcut(QKeySequence("Ctrl+M"), bawky_parent_)
         maximze.activated.connect(lambda: self.max_(bawky_parent_))
 
         minimize = QShortcut(QKeySequence(Minimize()), bawky_parent_)
-        # maximze = QShortcut(QKeySequence("Ctrl+M"), bawky_parent_)
         minimize.activated.connect(lambda: self.min_(bawky_parent_))
 
 
