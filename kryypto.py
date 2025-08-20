@@ -1,6 +1,6 @@
 import sys
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QApplication, QMainWindow
-from PyQt6.QtGui import  QSurfaceFormat, QCloseEvent
+from PyQt6.QtGui import  QSurfaceFormat, QCloseEvent, QIcon, QPixmap
 from titlebar import CustomTitleBar
 from PyQt6.QtCore import Qt, QPoint, QRect
 # from multiprocessing import Process, Queue
@@ -49,6 +49,17 @@ class Kryypto(QMainWindow):
 
     def setupUI(self):
         self.setWindowTitle("Kryypto")
+
+        pixmap = QPixmap('icons/app/icon.ico')
+
+        pixmap = pixmap.scaled(256, 256)
+        # pixmap = pixmap.scaled(1024, 1024, Qt.AspectRatioMode.KeepAspectRatio)
+
+
+
+        # self.setWindowIcon(QIcon('icons/app/icon.ico'))
+        self.setWindowIcon(QIcon(pixmap))
+
         self.setMouseTracking(True)
         self.setObjectName("MainWindow")
         self.setStyleSheet(get_css_style())

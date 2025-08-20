@@ -2242,7 +2242,6 @@ class MessageBox(QMessageBox):
 
         pixmap = QPixmap('icons/messagebox/warning.png')
         pixmap.size()
-        # file
         scaled_pixmap = pixmap.scaled(98, 98, aspectRatioMode=Qt.AspectRatioMode.KeepAspectRatio, transformMode=Qt.TransformationMode.SmoothTransformation)
         self.setIconPixmap(scaled_pixmap)
 
