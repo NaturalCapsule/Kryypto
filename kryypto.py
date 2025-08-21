@@ -1,10 +1,18 @@
 import sys
+import os
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QApplication, QMainWindow
 from PyQt6.QtGui import  QSurfaceFormat, QCloseEvent, QIcon, QPixmap
 from titlebar import CustomTitleBar
-from PyQt6.QtCore import Qt, QPoint, QRect
+from PyQt6.QtCore import Qt, QPoint, QRect, QCoreApplication
 # from multiprocessing import Process, Queue
 from multiprocessing import freeze_support, active_children
+
+if getattr(sys, 'frozen', False):
+    # Running from PyInstaller onefile exe
+    base_path = sys._MEIPASS  # Temp folder (_MEIxxxxx)
+    plugin_path = os.path.join(base_path, "PyQt6", "Qt6", "plugins")
+    QCoreApplication.addLibraryPath(plugin_path)
+
 
 
 from settings import Setting
@@ -20,11 +28,25 @@ from check_version import checkUpdate
 class Kryypto(QMainWindow):
     def __init__(self, clipboard):
         super().__init__()
+        from widgets import MessageBox
         self.clipboard = clipboard
         self.settings = Setting()
         self.opened_directory = open_file_dialog(self, True)
         self.font_size = 12
+        self.new_user_count = 0
+        self.settings.setValue('NewUser', self.new_user_count)
+
+        try:
+            self.new_user_count = self.settings.value('NewUser')
+
+        except Exception:
+            self.new_user_count = 0
+
         self.settings.setValue('Font Size', get_fontSize())
+        self.settings.setValue('NewUser', self.new_user_count)
+
+
+
         self.settingUP_settings()
 
         self.resize_margin = 20
@@ -36,6 +58,15 @@ class Kryypto(QMainWindow):
         self.setupWidgets()
         self.addDocks()
 
+        try:
+            if self.settings.value('NewUser') == 0:
+                self.new_user_count += 1
+                self.settings.setValue('NewUser', self.new_user_count)
+
+                MessageBox(f'Welcome to Kryypto!\n\nbefore you get started please open the configuration file by pressing {OpenConfigFile()} after this Message Box, go to [Python]\npythoninterpreter\nand put your python.exe.\n\nIf you dont know where it is you can open CMD and type: which python\nthis will give you the python interpreter path!', add_buttons=True)
+
+        except Exception:
+            self.settings.setValue('NewUser', self.new_user_count)
 
 
     def addDocks(self):

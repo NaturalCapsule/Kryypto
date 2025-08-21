@@ -1,6 +1,8 @@
 import re
 import sys
 import os
+import time
+import subprocess
 
 from PyQt6.QtGui import QFont, QShortcut, QKeySequence, QTextCursor, QFontMetrics
 from PyQt6.QtCore import QProcess, QCoreApplication
@@ -13,14 +15,27 @@ from config import *
 
 def reboot():
     if getattr(sys, 'frozen', False):
-        exe = sys.executable  # path to kryypto.exe
-        QProcess.startDetached(exe, sys.argv[1:])
+
+        # exe = sys.executable  
+        # args = sys.argv[1:]
+        # DETACHED_PROCESS = 0x00000008
+        # subprocess.Popen(
+        #     [exe] + args,
+        #     creationflags=DETACHED_PROCESS
+        # )
+
+        # time.sleep(0.2)
+
+        # os._exit(0)
+
+        print("Error")
+
     else:
         python = sys.executable
         script = os.path.abspath(sys.argv[0])
         QProcess.startDetached(python, [script] + sys.argv[1:])
     
-    QCoreApplication.quit()
+        QCoreApplication.quit()
 
 class MainTextShortcuts:
     def __init__(self, parent, completer, tab, error_label, clipboard, bawky_parent, term, bawky_parent_, opened_tabs, file_desc, list_shortcuts, git_panel, font_size, lines, show_files):

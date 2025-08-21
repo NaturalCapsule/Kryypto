@@ -3,6 +3,9 @@ import subprocess
 import os
 import webbrowser
 
+
+import PyQt6
+
 from datetime import datetime
 from PyQt6.QtCore import QThreadPool, QRectF, QTimer, Qt, QRect, QFileInfo, pyqtSignal, QProcess
 from PyQt6.QtGui import QPainter, QPainterPath, QPixmap, QTextCursor, QKeyEvent, QPainter, QColor, QFont, QTextCursor, QColor, QFileSystemModel, QIcon, QStandardItemModel, QStandardItem
@@ -44,6 +47,7 @@ current_file_path = ''
 class MainText(QPlainTextEdit):
     def __init__(self, parent, window, font_size, window_):
         super().__init__()
+        print(sys.executable)
         self.font_size = font_size
         global commenting
         self.clipboard = window
@@ -1363,7 +1367,11 @@ class TerminalEmulator(QWidget):
         self.processes.append(process)
         self.terminal_selector.setCurrentIndex(0)
 
-        self.start_powershell(0, project_path='')
+        # self.start_powershell(0, project_path=current_file_path)
+        self.start_powershell(0, project_path=folder_path_)
+
+        # self.start_powershell(0, project_path='')
+
         # self.run_command('cls')
 
     def start_powershell(self, index, project_path=None):
@@ -1691,14 +1699,6 @@ class WelcomeWidget(QWidget):
         shortcut_1.setObjectName('ShortCutTexts')
         shortcut_1.setStyleSheet(get_css_style())
 
-        # shortcut_2 = QLabel('Press <span style="font-family: monospace; background-color: #2d2d2d; padding: 2px 4px; border: 1px; border-radius: 15px;">CTRL + T</span> to open Terminal')
-        # shortcut_2.setAlignment(Qt.AlignmentFlag.AlignCenter)
-
-
-        # shortcut_2.setObjectName('ShortCutTexts')
-        # shortcut_2.setStyleSheet(get_css_style())
-
-
         shortcut_2 = QLabel(f'Press <span style="font-family: monospace; background-color: #2d2d2d; padding: 2px 4px; border: 1px; border-radius: 15px;">{Show_Hide_Shortcuts()}</span> to open Shorcut List')
         shortcut_2.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
@@ -1725,7 +1725,6 @@ class WelcomeWidget(QWidget):
         line = QFrame()
         line.setFrameShape(QFrame.Shape.HLine)
         line.setFrameShadow(QFrame.Shadow.Sunken)
-        # line.setStyleSheet("color: gray;")
         line.setStyleSheet(get_css_style())
 
         line.setObjectName("horizontalLines")
@@ -1770,7 +1769,6 @@ class ListShortCuts(QWidget):
         line = QFrame()
         line.setFrameShape(QFrame.Shape.HLine)
         line.setFrameShadow(QFrame.Shadow.Sunken)
-        # line.setStyleSheet("color: gray;background-color: gray;margin-left: 10px;margin-right: 10px")
         line.setStyleSheet(get_css_style())
 
         line.setObjectName("horizontalLines")
@@ -1779,46 +1777,34 @@ class ListShortCuts(QWidget):
         self.layout_.addWidget(line)
 
         shortcut_1 = QLabel(f'Save Current File: <span style="background-color: #2d2d2d">{SaveCurrentFile()}</span>')
-        # shortcut_1 = QLabel('Save Current File: <span style="background-color: #2d2d2d">Ctrl + S</span>')
         shortcut_2 = QLabel(f'Show/Hide Directory Viewer: <span style="background-color: #2d2d2d">{Hide_Show_viewer()}</span>')
-        # shortcut_2 = QLabel('Show/Hide Directory Viewer: <span style="background-color: #2d2d2d">Ctrl + B</span>')
         shortcut_3 = QLabel(f'Run current python file: <span style="background-color: #2d2d2d">{RunCurrentPythonFile()}</span>')
-        # shortcut_3 = QLabel(f'Run current python file: <span style="background-color: #2d2d2d">Ctrl + N</span>')
         shortcut_4 = QLabel(f'Kill Terminal: <span style="background-color: #2d2d2d">{KillTerminalSession()}</span>')
-        # shortcut_4 = QLabel(f'Kill Terminal: <span style="background-color: #2d2d2d">Ctrl + Shift + G</span>')
         shortcut_5 = QLabel(f'Show/Hide Terminal: <span style="background-color: #2d2d2d">{Hide_Show_term()}</span>')
-        # shortcut_5 = QLabel(f'Show/Hide Terminal: <span style="background-color: #2d2d2d">Ctrl + T</span>')
         shortcut_6 = QLabel(f'Go to line: <span style="background-color: #2d2d2d">{GotoBlock_()}</span>')
-        # shortcut_6 = QLabel(f'Go to line: <span style="background-color: #2d2d2d">Ctrl + Shift + H</span>')
         shortcut_7 = QLabel(f'Find text: <span style="background-color: #2d2d2d">Ctrl + F</span>')
-        shortcut_8 = QLabel(f'Get Error: <span style="background-color: #2d2d2d">Ctrl + Shift + C</span>')
+        # shortcut_8 = QLabel(f'Get Error: <span style="background-color: #2d2d2d">Ctrl + Shift + C</span>')
+        shortcut_8 = QLabel(f'Open CSS file: <span style="background-color: #2d2d2d">{OpenStyleFile()}</span>')
+
+
         shortcut_9 = QLabel(f'Move Tab to left: <span style="background-color: #2d2d2d">{MoveTabLeft()}</span>')
-        # shortcut_9 = QLabel(f'Move Tab to left: <span style="background-color: #2d2d2d">Ctrl + Shift + E</span>')
         shortcut_10 = QLabel(f'Move tab to right: <span style="background-color: #2d2d2d">{MoveTabRight()}</span>')
-        # shortcut_10 = QLabel(f'Move tab to right: <span style="background-color: #2d2d2d">Ctrl + Shift + T</span>')
         shortcut_11 = QLabel(f'Remove current tab: <span style="background-color: #2d2d2d">{RemoveCurrentTab()}</span>')
-        # shortcut_11 = QLabel(f'Remove current tab: <span style="background-color: #2d2d2d">Ctrl + Shift + R</span>')
         shortcut_12 = QLabel(f'Remove line indent: <span style="background-color: #2d2d2d">{removeIndentCurrent()}</span>')
-        # shortcut_12 = QLabel(f'Remove line indent: <span style="background-color: #2d2d2d">Ctrl + [</span>')
         shortcut_13 = QLabel(f'Indet line: <span style="background-color: #2d2d2d">{IndentCurrentLine()}</span>')
-        # shortcut_13 = QLabel(f'Indet line: <span style="background-color: #2d2d2d">Ctrl + ]</span>')
         shortcut_14 = QLabel(f'Increase font size: <span style="background-color: #2d2d2d">{IncreaseFont()}</span>')
-        # shortcut_14 = QLabel(f'Increase font size: <span style="background-color: #2d2d2d">Ctrl + =</span>')
-        shortcut_15 = QLabel(f'decrease font size: <span style="background-color: #2d2d2d">{DecreaseFont()}</span>')
-        # shortcut_15 = QLabel(f'decrease font size: <span style="background-color: #2d2d2d">Ctrl + -</span>')
+        shortcut_15 = QLabel(f'Reduce font size: <span style="background-color: #2d2d2d">{DecreaseFont()}</span>')
         shortcut_16 = QLabel(f'Go to new line: <span style="background-color: #2d2d2d">{newLine()}</span>')
-        # shortcut_16 = QLabel(f'Go to new line: <span style="background-color: #2d2d2d">Ctrl + Return</span>')
         shortcut_17 = QLabel(f'Remove current line: <span style="background-color: #2d2d2d">{DeleteLine()}</span>')
-        # shortcut_17 = QLabel(f'Remove current line: <span style="background-color: #2d2d2d">Ctrl + Shift + K</span>')
         shortcut_18 = QLabel(f'Open Configuration file: <span style="background-color: #2d2d2d">{OpenConfigFile()}</span>')
-        # shortcut_18 = QLabel(f'Open Configuration file: <span style="background-color: #2d2d2d">Ctrl + Shift + O</span>')
         shortcut_19 = QLabel(f'Show/Hide Git Panel: <span style="background-color: #2d2d2d">{Hide_Show_gitpanel()}</span>')
-        # shortcut_19 = QLabel(f'Show/Hide Git Panel: <span style="background-color: #2d2d2d">Ctrl + G</span>')
         shortcut_20 = QLabel(f'Select Folder: <span style="background-color: #2d2d2d">{SelectFolder()}</span>')
+
         shortcut_21 = QLabel(f'Close: <span style="background-color: #2d2d2d">{Close()}</span>')
         shortcut_22 = QLabel(f'Minimize: <span style="background-color: #2d2d2d">{Minimize()}</span>')
-        shortcut_23 = QLabel(f'Restart: <span style="background-color: #2d2d2d">{Reboot()}</span>')
+        shortcut_23 = QLabel(f'Restart: <span style="background-color: #2d2d2d">{Reboot()}</span> Not available on binary file format.')
         shortcut_24 = QLabel(f'Maximize: <span style="background-color: #2d2d2d">{Maximize()}</span>')
+
         shortcut_25 = QLabel(f'Make New File: <span style="background-color: #2d2d2d">Ctrl + F</span>')
         shortcut_26 = QLabel(f'Make New Folder: <span style="background-color: #2d2d2d">Ctrl + D</span>')
         shortcut_27 = QLabel(f'Remove Hovered File: <span style="background-color: #2d2d2d">Ctrl + K</span>')
@@ -1830,14 +1816,20 @@ class ListShortCuts(QWidget):
         self.right_column.setAlignment(Qt.AlignmentFlag.AlignTop)
 
         # for shortcut in [shortcut_1, shortcut_2, shortcut_3, shortcut_4, shortcut_5, shortcut_6, shortcut_7, shortcut_8, shortcut_9, shortcut_19, shortcut_21, shortcut_23]:
-        for shortcut in [shortcut_1, shortcut_2, shortcut_3, shortcut_4, shortcut_5, shortcut_6, shortcut_25, shortcut_28 ,shortcut_7, shortcut_8, shortcut_9, shortcut_19, shortcut_21, shortcut_23]:
+        # for shortcut in [shortcut_1, shortcut_2, shortcut_3, shortcut_4, shortcut_5, shortcut_6, shortcut_25, shortcut_28 ,shortcut_7, shortcut_8, shortcut_9, shortcut_19, shortcut_21, shortcut_23]:
+        for shortcut in [shortcut_1, shortcut_3, shortcut_20, shortcut_6, shortcut_7, shortcut_2, shortcut_19, shortcut_5, shortcut_4, shortcut_9, shortcut_10, shortcut_11, shortcut_21, shortcut_23]:
+
 
             shortcut.setObjectName('ShortCutTexts')
             shortcut.setStyleSheet(get_css_style())
             self.left_column.addWidget(shortcut)
 
+
+        # dway 7
         # for shortcut in [shortcut_10, shortcut_11, shortcut_12, shortcut_13, shortcut_14, shortcut_15, shortcut_16, shortcut_17, shortcut_18, shortcut_20, shortcut_22, shortcut_24]:
-        for shortcut in [shortcut_10, shortcut_11, shortcut_12, shortcut_13, shortcut_14, shortcut_15, shortcut_26, shortcut_27 ,shortcut_16, shortcut_17, shortcut_18, shortcut_20, shortcut_22, shortcut_24]:
+        # for shortcut in [shortcut_10, shortcut_11, shortcut_12, shortcut_13, shortcut_14, shortcut_15, shortcut_26, shortcut_27 ,shortcut_16, shortcut_17, shortcut_18, shortcut_20, shortcut_22, shortcut_24]:
+        for shortcut in [shortcut_25, shortcut_26, shortcut_27, shortcut_28, shortcut_12, shortcut_13, shortcut_14, shortcut_15 ,shortcut_16, shortcut_17, shortcut_8, shortcut_18, shortcut_22, shortcut_24]:
+
 
             shortcut.setObjectName('ShortCutTexts')
             shortcut.setStyleSheet(get_css_style())
@@ -2199,7 +2191,7 @@ class GitDock(QDockWidget):
 
 
 class MessageBox(QMessageBox):
-    def __init__(self, text, link = None):
+    def __init__(self, text, link = None, add_buttons = False):
         super().__init__()
 
         self.setWindowFlag(Qt.WindowType.FramelessWindowHint)
@@ -2236,6 +2228,14 @@ class MessageBox(QMessageBox):
 
         self.addButton(ok_button, QMessageBox.ButtonRole.YesRole)
         self.addButton(cancel, QMessageBox.ButtonRole.RejectRole)
+        if add_buttons:
+            to_kurdish = QPushButton(self)
+            to_kurdish.setObjectName('MessageBoxSaveNot')
+            to_kurdish.setText('کوردی')
+            to_kurdish.setStyleSheet(get_css_style())
+            self.addButton(to_kurdish, QMessageBox.ButtonRole.AcceptRole)
+            to_kurdish.clicked.disconnect()  
+            to_kurdish.clicked.connect(lambda: self.change(to_kurdish))
 
 
         self.exec()
@@ -2244,6 +2244,20 @@ class MessageBox(QMessageBox):
         if link:
             if self.clickedButton() == ok_button:
                 webbrowser.open(link)
+
+    def change(self, button: QPushButton):
+        if button.text() == 'کوردی':
+            self.setText("بەخێر بێت بۆ Kryypto!\n\n"
+f"پێش ئەوەی دەست پێ بکەیت configuration file بکەوە بە بەکارهێنانی {OpenConfigFile()}\n"
+"وە برۆ بۆ بەشی [Python] بۆ pythoninterpreter\n"
+"وە لەوێ شوێنی python.exe دانێ.\n"
+"ئەگەر نازانی شۆێنی، دەتوانیت CMD کەیتەوەو بنوسیت: where python"
+"بەوە شوێنەکەت پیشان ئەیات.")
+            button.setText('English')
+
+        else:
+            button.setText('کوردی')
+            self.setText(f'Welcome to Kryypto!\n\nbefore you get started please open the configuration file by pressing {OpenConfigFile()} after this Message Box, go to [Python]\npythoninterpreter\nand put your python.exe.\n\nIf you dont know where it is you can open CMD and type: where python\nthis will give you the python interpreter path!')
 
     def open_link(self, url):
         webbrowser.open(url.toString())
