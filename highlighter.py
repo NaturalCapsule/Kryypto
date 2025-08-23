@@ -7,7 +7,6 @@ from config import *
 import re
 from PyQt6.QtCore import QObject, QRunnable, QThreadPool, pyqtSignal, QTimer, QMutex
 from PyQt6.QtGui import QSyntaxHighlighter, QTextCharFormat, QColor, QFont
-from PyQt6.QtWidgets import QApplication
 
 # class SyntaxBridge(QObject):
 #     result_ready = pyqtSignal(dict)
@@ -68,7 +67,17 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
         # self.highlighting_rules.append((QRegularExpression('#[^\n]*'), self.comment_format, 'comment'))
 
 
-        self.string_pattern = QRegularExpression(r'"([^"\\]|\\.)*"|\'([^\'\\]|\\.)*\'')
+        # self.string_pattern = QRegularExpression(r'"([^"\\]|\\.)*"|\'([^\'\\]|\\.)*\'')
+
+        # self.string_pattern = QRegularExpression(
+        #     r'"(?!""")([^"\\]|\\.)*"|\'(?!\'\'\')([^\'\\]|\\.)*\''
+        # )
+
+
+        self.string_pattern = QRegularExpression(
+            r'''(?:(?:f|fr|r|b|br)?)"([^"\\]|\\.)*"|(?:(?:f|fr|r|b|br)?)'([^'\\]|\\.)*' '''
+        )
+
         self.comment_pattern = QRegularExpression(r'#[^\n]*')
 
         # self.highlighting_rules.append((
@@ -104,20 +113,6 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
             'string'
         ))
 
-        # self.highlighting_rules.append((
-        #     QRegularExpression(r'"([^"\\]|\\.)*"|\'([^\'\\]|\\.)*\'|#[^\n]*'),
-        #     string_format,  # We'll decide formatting dynamically
-        #     'mixed'
-        # ))
-
-
-
-        # r, g, b = get_comment()
-        # self.comment_format = QTextCharFormat()
-        # self.comment_format.setForeground(QColor(r, g, b))  
-        # self.highlighting_rules.append((QRegularExpression('#[^\n]*'), self.comment_format, 'comment'))
-
-
 
         keyword_format = QTextCharFormat()
         r, g, b = get_python_keyword()
@@ -128,68 +123,124 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
         r, g, b = get_string()
         string_format.setForeground(QColor(r, g, b))
 
-        
+
+
         self.highlighting_rules.append((
-            QRegularExpression(r'''(?<=\W|^)f"[^"\\]*(\\.[^"\\]*)*"'''),
+            QRegularExpression(r'''f"([^"\\]|\\.)*"'''),
             self.string_format,
             'f-string'
         ))
 
         self.highlighting_rules.append((
-            QRegularExpression(r'''(?<=\W|^)f'[^'\\]*(\\.[^'\\]*)*' '''),
+            QRegularExpression(r'''f'([^'\\]|\\.)*''' + r"'"),
             self.string_format,
             'f-string'
         ))
 
-
-
+        # fr-strings
         self.highlighting_rules.append((
-            QRegularExpression(r'''(?<=\W|^)fr"[^"\\]*(\\.[^"\\]*)*"'''),
+            QRegularExpression(r'''fr"([^"\\]|\\.)*"'''),
             self.string_format,
             'fr-string'
         ))
 
         self.highlighting_rules.append((
-            QRegularExpression(r"""fr'[^'\\]*(\\.[^'\\]*)*""" + r"'"),
+            QRegularExpression(r'''fr'([^'\\]|\\.)*''' + r"'"),
             self.string_format,
             'fr-string'
         ))
 
-
+        # b-strings
         self.highlighting_rules.append((
-            QRegularExpression(r'''(?<=\W|^)b"[^"\\]*(\\.[^"\\]*)*"'''),
+            QRegularExpression(r'''b"([^"\\]|\\.)*"'''),
             self.string_format,
             'b-string'
         ))
 
         self.highlighting_rules.append((
-            QRegularExpression(r"""b'[^'\\]*(\\.[^'\\]*)*""" + r"'"),
+            QRegularExpression(r'''b'([^'\\]|\\.)*''' + r"'"),
             self.string_format,
             'b-string'
         ))
 
+        # br-strings
         self.highlighting_rules.append((
-            QRegularExpression(r'''(?<=\W|^)br"[^"\\]*(\\.[^"\\]*)*"'''),
+            QRegularExpression(r'''br"([^"\\]|\\.)*"'''),
             self.string_format,
             'br-string'
         ))
 
         self.highlighting_rules.append((
-            QRegularExpression(r"""br'[^'\\]*(\\.[^'\\]*)*""" + r"'"),
+            QRegularExpression(r'''br'([^'\\]|\\.)*''' + r"'"),
             self.string_format,
             'br-string'
         ))
+
+
+
+        # self.highlighting_rules.append((
+        #     QRegularExpression(r'''(?<=\W|^)f"[^"\\]*(\\.[^"\\]*)*"'''),
+        #     self.string_format,
+        #     'f-string'
+        # ))
+
+        # self.highlighting_rules.append((
+        #     QRegularExpression(r'''(?<=\W|^)f'[^'\\]*(\\.[^'\\]*)*' '''),
+        #     self.string_format,
+        #     'f-string'
+        # ))
+
+
+
+        # self.highlighting_rules.append((
+        #     QRegularExpression(r'''(?<=\W|^)fr"[^"\\]*(\\.[^"\\]*)*"'''),
+        #     self.string_format,
+        #     'fr-string'
+        # ))
+
+        # self.highlighting_rules.append((
+        #     QRegularExpression(r"""fr'[^'\\]*(\\.[^'\\]*)*""" + r"'"),
+        #     self.string_format,
+        #     'fr-string'
+        # ))
+
+
+        # self.highlighting_rules.append((
+        #     QRegularExpression(r'''(?<=\W|^)b"[^"\\]*(\\.[^"\\]*)*"'''),
+        #     self.string_format,
+        #     'b-string'
+        # ))
+
+        # self.highlighting_rules.append((
+        #     QRegularExpression(r"""b'[^'\\]*(\\.[^'\\]*)*""" + r"'"),
+        #     self.string_format,
+        #     'b-string'
+        # ))
+
+        # self.highlighting_rules.append((
+        #     QRegularExpression(r'''(?<=\W|^)br"[^"\\]*(\\.[^"\\]*)*"'''),
+        #     self.string_format,
+        #     'br-string'
+        # ))
+
+        # self.highlighting_rules.append((
+        #     QRegularExpression(r"""br'[^'\\]*(\\.[^'\\]*)*""" + r"'"),
+        #     self.string_format,
+        #     'br-string'
+        # ))
 
         self.highlighting_rules.append((
             QRegularExpression(r'"[^"\\]*(\\.[^"\\]*)*"'),
             self.string_format,
             'string'
         ))
-        self.highlighting_rules.append((
-            QRegularExpression(r"'[^'\\]*(\\.[^'\\]*)*'"),
-            self.string_format,
-            'string'
-        ))
+
+
+        # self.highlighting_rules.append((
+        #     QRegularExpression(r"'[^'\\]*(\\.[^'\\]*)*'"),
+        #     self.string_format,
+        #     'string'
+        # ))
 
         keywords = [
             'and', 'as', 'assert', 'break', 'class', 'continue', 'def',
@@ -456,45 +507,12 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
 
 
         if self.useit:
-            # self.get_classes()
 
             default_format = QTextCharFormat()
             default_format.setForeground(QColor("white"))
             self.setFormat(0, len(text), default_format)
 
             used_ranges = set()
-
-            triple_string_formats = [
-                ('"""', QRegularExpression('"""')),
-                ("'''", QRegularExpression("'''"))
-            ]
-
-            for quote, start_expression in triple_string_formats:
-                if self.previousBlockState() != 1:
-                    start_match = start_expression.match(text)
-                    start_index = start_match.capturedStart() if start_match.hasMatch() else -1
-                else:
-                    start_index = 0
-
-                while start_index >= 0:
-                    end_match = start_expression.match(text, start_index + 3)
-
-                    if end_match.hasMatch():
-                        length = end_match.capturedStart() - start_index + 3
-                        self.setCurrentBlockState(0)
-                    else:
-                        self.setCurrentBlockState(1)
-                        length = len(text) - start_index
-
-                    string_format = QTextCharFormat()
-                    r, g, b = get_string()
-                    string_format.setForeground(QColor(r, g, b))
-
-                    self.setFormat(start_index, length, string_format)
-                    used_ranges.add((start_index, start_index + length))
-
-                    next_match = start_expression.match(text, start_index + length)
-                    start_index = next_match.capturedStart() if next_match.hasMatch() else -1
 
 
             for pattern, fmt, name in self.highlighting_rules:
@@ -534,34 +552,76 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
                     self.setFormat(start, length, fmt)
                     used_ranges.add((start, start + length))
 
-            self.setCurrentBlockState(0)
 
-            start_expression = QRegularExpression('"""')
-            start_match = start_expression.match(text)
+        triple_string_formats = [
+            ('"""', QRegularExpression('"""')),
+            ("'''", QRegularExpression("'''"))
+        ]
 
+        for quote, start_expression in triple_string_formats:
             if self.previousBlockState() != 1:
+                start_match = start_expression.match(text)
                 start_index = start_match.capturedStart() if start_match.hasMatch() else -1
             else:
                 start_index = 0
 
             while start_index >= 0:
-                end_expression = QRegularExpression('"""')
-                end_match = end_expression.match(text, start_index + 3)
+                end_match = start_expression.match(text, start_index + 3)
 
                 if end_match.hasMatch():
-                    length = end_match.capturedStart() - start_index + end_match.capturedLength()
+                    # ✅ Found closing triple-quote on this line
+                    length = end_match.capturedStart() - start_index + 3
                     self.setCurrentBlockState(0)
                 else:
-                    self.setCurrentBlockState(1)
+                    # ❌ Still inside docstring
                     length = len(text) - start_index
+                    self.setCurrentBlockState(1)
 
                 string_format = QTextCharFormat()
                 r, g, b = get_string()
                 string_format.setForeground(QColor(r, g, b))
-                self.setFormat(start_index, length, string_format)
 
-                start_match = start_expression.match(text, start_index + length)
-                start_index = start_match.capturedStart() if start_match.hasMatch() else -1
+                self.setFormat(start_index, length, string_format)
+                used_ranges.add((start_index, start_index + length))
+
+                if self.currentBlockState() == 0:
+                    break
+
+                next_match = start_expression.match(text, start_index + length)
+                start_index = next_match.capturedStart() if next_match.hasMatch() else -1
+
+
+            self.setCurrentBlockState(0)
+
+
+
+            ### DOC STRING
+            # start_expression = QRegularExpression('"""')
+            # start_match = start_expression.match(text)
+
+            # if self.previousBlockState() != 1:
+            #     start_index = start_match.capturedStart() if start_match.hasMatch() else -1
+            # else:
+            #     start_index = 0
+
+            # while start_index >= 0:
+            #     end_expression = QRegularExpression('"""')
+            #     end_match = end_expression.match(text, start_index + 3)
+
+            #     if end_match.hasMatch():
+            #         length = end_match.capturedStart() - start_index + end_match.capturedLength()
+            #         self.setCurrentBlockState(0)
+            #     else:
+            #         self.setCurrentBlockState(1)
+            #         length = len(text) - start_index
+
+            #     string_format = QTextCharFormat()
+            #     r, g, b = get_string()
+            #     string_format.setForeground(QColor(r, g, b))
+            #     self.setFormat(start_index, length, string_format)
+
+            #     start_match = start_expression.match(text, start_index + length)
+            #     start_index = start_match.capturedStart() if start_match.hasMatch() else -1
 
 
             arg_match = QRegularExpression(r"\bdef\s+\w+\s*\(([^)]*)\)").match(text)
@@ -647,6 +707,19 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
                 match = match_it.next()
                 self.setFormat(match.capturedStart(), match.capturedLength(), self.string_format)
                 string_matches.append((match.capturedStart(), match.capturedEnd()))
+
+            # string_matches = []
+            # match_it = self.string_pattern.globalMatch(text)
+            # while match_it.hasNext():
+            #     match = match_it.next()
+            #     start, end = match.capturedStart(), match.capturedEnd()
+
+            #     if any(u_start <= start < u_end for u_start, u_end in used_ranges):
+            #         continue
+
+            #     self.setFormat(start, match.capturedLength(), self.string_format)
+            #     string_matches.append((start, end))
+
 
             # Then, highlight comments **only if they are outside string ranges**
             match_it = self.comment_pattern.globalMatch(text)

@@ -21,7 +21,7 @@ from heavy import *
 
 from config import setCustomTitleBar
 from get_style import get_css_style
-from pygit import open_file_dialog, folder_path_
+from pygit import open_file_dialog, is_gitInstalled, folder_path_
 from config import get_fontSize
 from check_version import checkUpdate
 
@@ -34,7 +34,7 @@ class Kryypto(QMainWindow):
         self.opened_directory = open_file_dialog(self, True)
         self.font_size = 12
         self.new_user_count = 0
-        self.settings.setValue('NewUser', self.new_user_count)
+        # self.settings.setValue('NewUser', self.new_user_count)
 
         try:
             self.new_user_count = self.settings.value('NewUser')
@@ -72,7 +72,8 @@ class Kryypto(QMainWindow):
     def addDocks(self):
         self.inner_window.setWindowFlags(Qt.WindowType.FramelessWindowHint)
         
-        self.inner_window.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self.git_panel)
+        if is_gitInstalled():
+            self.inner_window.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self.git_panel)
         self.inner_window.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, self.terminal)
         self.inner_window.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self.show_files)
         self.inner_window.setDockOptions(QMainWindow.DockOption.AnimatedDocks|
@@ -171,7 +172,12 @@ class Kryypto(QMainWindow):
 
         self.inner_window.setMouseTracking(True)
 
-        self.git_panel = widgets.GitDock(self.inner_window)
+        if is_gitInstalled():
+            self.git_panel = widgets.GitDock(self.inner_window)
+
+        else:
+            self.git_panel = None
+
         self.list_shortcuts = widgets.ListShortCuts()
         self.terminal = widgets.TerminalDock(self)
         self.show_files = widgets.ShowDirectory(self.main_text, self.tab_bar)
@@ -183,6 +189,7 @@ class Kryypto(QMainWindow):
             self.list_shortcuts, self.git_panel, self.font_size, self.main_text.line_number_area, self.show_files
 
         )
+    
 
 
         FileDockShortcut(

@@ -2,12 +2,19 @@ import git
 import os
 import sys
 import requests
+import shutil
 from datetime import datetime
 from PyQt6.QtWidgets import QFileDialog
 from PyQt6.QtCore import QRunnable, pyqtSignal, QObject
 from config import write_config, get_openedDir
 
 folder_path_ = get_openedDir()
+
+def is_gitInstalled():
+    if shutil.which("git") is None:
+        return False
+    else:
+        return True
 
 def open_file_dialog(parent, check):
     global folder_path_
@@ -26,12 +33,8 @@ def open_file_dialog(parent, check):
 
 def open_file_dialog_again(parent):
     global folder_path_
-    # from widgets import MessageBox
 
     folder_path = QFileDialog.getExistingDirectory(parent, "Select a folder")
-    # if folder_path == '' or folder_path == None:
-        # MessageBox('No Folder selected\nKryypto will close')
-        # sys.exit()
 
     if folder_path:
         folder_path_ = folder_path
@@ -42,21 +45,16 @@ class GitWorkerSignals(QObject):
     dataReady = pyqtSignal(str, str, int, str, dict, str)
 
 class GitWorker(QRunnable):
-    # def __init__(self, repo):
     def __init__(self):
 
         super().__init__()
-        # self.repo = repo
         self.signals = GitWorkerSignals()
 
     def run(self):
         try:
             commit_msg = get_latest_commit()
-            # commit_msg = self.repo.head.commit.message
-            # branch = self.repo.active_branch.name
             branch = get_active_branch_name()
 
-            # total = len(list(self.repo.iter_commits('HEAD')))
             total = get_TotalCommits()
 
             commit_time = get_latest_commit_time()
@@ -71,6 +69,10 @@ class GitWorker(QRunnable):
 
 
 def is_init():
+
+    if shutil.which("git") is None:
+        return False
+
     try:
         repo = git.Repo(fr'{get_openedDir()}', search_parent_directories=True)
 
@@ -88,8 +90,16 @@ def is_init():
 
     except git.NoSuchPathError:
         return False
+    except git.GitCommandNotFound:
+        return False
+
+    except git.GitError:
+        return False
 
 def get_TotalCommits():
+    if shutil.which("git") is None:
+        return "Git Not installed"
+
     repo = git.Repo(fr'{get_openedDir()}', search_parent_directories=True)
 
 
@@ -99,6 +109,9 @@ def get_TotalCommits():
     return total_commits
 
 def get_latest_commit_time():
+    if shutil.which("git") is None:
+        return "Git Not installed"
+
     try:
         repo_path = os.getcwd()
         repo = git.Repo(fr'{get_openedDir()}', search_parent_directories=True)
@@ -117,8 +130,13 @@ def get_latest_commit_time():
     except Exception as e:
         return f"An error occurred: {e}"
 
+    except git.GitError:
+        return "Git Not installed or not found"
 
 def get_reopName():
+    if shutil.which("git") is None:
+        return "Git Not installed"
+
     try:
         repo = git.Repo(fr'{get_openedDir()}', search_parent_directories=True)
         repo = repo.remotes.origin.url
@@ -136,7 +154,16 @@ def get_reopName():
     except Exception as e:
         return f"An error occurred: {e}"
 
+    except git.GitCommandNotFound:
+        return 'Git Not installed'
+
+    except git.GitError:
+        return "Git Not installed or not found"
+
 def get_active_branch_name():
+    if shutil.which("git") is None:
+        return "Git Not installed"
+
     try:
         repo = git.Repo(fr'{get_openedDir()}', search_parent_directories=True)
 
@@ -151,8 +178,15 @@ def get_active_branch_name():
 
     except Exception as e:
         return f"An error occurred: {e}"
+    except git.GitCommandNotFound:
+        return 'Git Not installed'
+
+    except git.GitError:
+        return "Git Not installed or not found"
 
 def get_github_remote_url(message):
+    if shutil.which("git") is None:
+        return "Git Not installed"
     try:
         repo = git.Repo(fr'{get_openedDir()}', search_parent_directories=True)
 
@@ -170,8 +204,16 @@ def get_github_remote_url(message):
         message(f'An error occurred:\n{e}')
         return f"An error occurred: {e}"
 
+    except git.GitCommandNotFound:
+        return 'Git Not installed'
+
+    except git.GitError:
+        return "Git Not installed or not found"
 
 def get_github_profile(message):
+    if shutil.which("git") is None:
+        return "Git Not installed"
+
     try:
         repo = git.Repo(fr'{get_openedDir()}', search_parent_directories=True)
 
@@ -203,7 +245,16 @@ def get_github_profile(message):
     except Exception as e:
         return f"An error occurred: {e}"
 
+    except git.GitCommandNotFound:
+        return 'Git Not installed'
+
+    except git.GitError:
+        return "Git Not installed or not found"
+
 def get_github_username():
+    if shutil.which("git") is None:
+        return "Git Not installed"
+
     try:
         repo = git.Repo(fr'{get_openedDir()}', search_parent_directories=True)
 
@@ -218,6 +269,11 @@ def get_github_username():
     except Exception as e:
         return f"An error occurred: {e}"
 
+    except git.GitCommandNotFound:
+        return 'Git Not installed'
+
+    except git.GitError:
+        return "Git Not installed or not found"
 
 def is_downloaded(message):
     if not os.path.exists('icons/github/user_profile/users_profile.png'):
@@ -226,6 +282,9 @@ def is_downloaded(message):
 
 
 def get_latest_commit():
+    if shutil.which("git") is None:
+        return "Git Not installed"
+
     try:
         repo = git.Repo(fr'{get_openedDir()}', search_parent_directories=True)
 
@@ -244,8 +303,16 @@ def get_latest_commit():
     except Exception as e:
         return f"An error occurred: {e}"
 
+    except git.GitCommandNotFound:
+        return 'Git Not installed'
+
+    except git.GitError:
+        return "Git Not installed or not found"
 
 def file_changes():
+    if shutil.which("git") is None:
+        return "Git Not installed"
+
     try:
         repo = git.Repo(fr'{get_openedDir()}', search_parent_directories=True)
 
@@ -259,7 +326,16 @@ def file_changes():
     except Exception as e:
         return f"An error occurred: {e}"
 
+    except git.GitCommandNotFound:
+        return 'Git Not installed'
+
+    except git.GitError:
+        return "Git Not installed or not found"
+
 def untracked():
+    if shutil.which("git") is None:
+        return "Git Not installed"
+
     try:
         repo = git.Repo(fr'{get_openedDir()}', search_parent_directories=True)
 
@@ -274,3 +350,9 @@ def untracked():
 
     except Exception as e:
         return f"An error occurred: {e}"
+        
+    except git.GitCommandNotFound:
+        return 'Git Not installed'
+
+    except git.GitError:
+        return "Git Not installed or not found"

@@ -1,14 +1,12 @@
 import re
 import sys
 import os
-import time
-import subprocess
 
 from PyQt6.QtGui import QFont, QShortcut, QKeySequence, QTextCursor, QFontMetrics
 from PyQt6.QtCore import QProcess, QCoreApplication
 
 from config import get_fontFamily, write_config
-from pygit import open_file_dialog_again
+from pygit import open_file_dialog_again, is_gitInstalled
 
 from animations import *
 from config import *
@@ -104,8 +102,9 @@ class MainTextShortcuts:
         hide_show_shortcuts = QShortcut(QKeySequence(Show_Hide_Shortcuts()), bawky_parent_)
         hide_show_shortcuts.activated.connect(lambda: self.hide_show_shortcuts(bawky_parent_, list_shortcuts))
 
-        hide_show_gitpanel = QShortcut(QKeySequence(Hide_Show_gitpanel()), bawky_parent_)
-        hide_show_gitpanel.activated.connect(lambda: self.hide_show_gitpanel(git_panel, parent, bawky_parent_))
+        if is_gitInstalled():
+            hide_show_gitpanel = QShortcut(QKeySequence(Hide_Show_gitpanel()), bawky_parent_)
+            hide_show_gitpanel.activated.connect(lambda: self.hide_show_gitpanel(git_panel, parent, bawky_parent_))
 
         select_folder = QShortcut(QKeySequence(SelectFolder()), bawky_parent_)
         select_folder.activated.connect(lambda: self.show_folderGUI(bawky_parent_))
@@ -142,10 +141,6 @@ class MainTextShortcuts:
         reboot()
 
     def hide_show_shortcuts(self, parent, list_shortcuts):
-        # if list_shortcuts.isVisible():
-        #     list_shortcuts.hide()
-        # else:
-        #     list_shortcuts.show()
         if list_shortcuts.maximumHeight() == 0:
             animatePanel(list_shortcuts, parent, show=True)
         else:
