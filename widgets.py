@@ -2,10 +2,6 @@ import re
 import subprocess
 import os
 import webbrowser
-
-
-import PyQt6
-
 from datetime import datetime
 from PyQt6.QtCore import QThreadPool, QRectF, QTimer, Qt, QRect, QFileInfo, pyqtSignal, QProcess
 from PyQt6.QtGui import QPainter, QPainterPath, QPixmap, QTextCursor, QKeyEvent, QPainter, QColor, QFont, QTextCursor, QColor, QFileSystemModel, QIcon, QStandardItemModel, QStandardItem

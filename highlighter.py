@@ -479,7 +479,6 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
 
             used_ranges = set()
 
-<<<<<<< HEAD
         # triple_string_formats = [
         #     ('"""', QRegularExpression('"""')),
         #     ("'''", QRegularExpression("'''"))
@@ -515,8 +514,6 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
         #         # Continue searching after this match
         #         next_match = start_expression.match(text, start_index + length)
         #         start_index = next_match.capturedStart() if next_match.hasMatch() else -1
-=======
->>>>>>> ea2ca0344b9d14455235ec8a0cc95920cdd94e6e
 
             for pattern, fmt, name in self.highlighting_rules:
                 matches = pattern.globalMatch(text)
