@@ -14,8 +14,11 @@
     background-color: #010409;
     color: #e6edf3;
     selection-background-color: rgba(255, 165, 0, 0.3);
-    padding: 12px;
-    margin: 6px;
+    /* padding: 12px;
+    margin: 6px; */
+    /* padding: 2px;
+    margin: 2px; */
+
     border-radius: 8px;
     border: 2px solid #30363d;
     font-weight: 400;
@@ -53,14 +56,15 @@
 }
 
 #AutoCompleter {
-    background-color: #161b22;
+    /* background-color: #161b22; */
+    background-color: transparent;
+
     color: #e6edf3;
     selection-background-color: rgba(255, 165, 0, 0.8);
     selection-color: #0d1117;
     border: 2px solid #30363d;
     border-radius: 10px;
     outline: none;
-    font-family: 'SF Mono', monospace;
 
 
 }
