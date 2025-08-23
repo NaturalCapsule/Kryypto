@@ -47,7 +47,7 @@ you got two options:
 
 1. Clone the repository:
    ```bash
-   git clone git@github.com:NaturalCapsule/IDE.git
+   git clone git@github.com:NaturalCapsule/Kryypto.git
    cd kryypto
    pip install -r requirements.txt
    kryypto.py
@@ -119,7 +119,7 @@ Git و GitHub
 
 1. ڕێپۆزیتۆری کلۆن بکە:
    ```bash
-   git clone git@github.com:NaturalCapsule/IDE.git
+   git clone git@github.com:NaturalCapsule/Kryypto.git
    cd kryypto
    pip install -r requirements.txt
    kryypto.py
