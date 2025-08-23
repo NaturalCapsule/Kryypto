@@ -52,6 +52,10 @@ you got two options:
 
 > [!WARNING]
 > This project is under heavy development. You might face lagging when loading large files or syntax highlighting missmatch, etc.
+
+
+
+> [!WARNING]
 > you might face a git error, you can solve it by installing and setting up git or open CMD and type: set GIT_PYTHON_REFRESH=quiet
 
 
