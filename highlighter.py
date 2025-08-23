@@ -1,11 +1,7 @@
-# import ast
 from PyQt6.QtGui import QSyntaxHighlighter, QTextCharFormat, QColor, QFont
 from PyQt6.QtCore import QRegularExpression, QRunnable, pyqtSignal, QObject, QThreadPool
 from config import *
 
-# import ast
-import re
-from PyQt6.QtCore import QObject, QRunnable, QThreadPool, pyqtSignal, QTimer, QMutex
 from PyQt6.QtGui import QSyntaxHighlighter, QTextCharFormat, QColor, QFont
 
 # class SyntaxBridge(QObject):
@@ -434,16 +430,6 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
 
         self.couting = 1
 
-    # def set_code(self, code: str):
-    #     try:
-    #         tree = ast.parse(code)
-    #         self.function_args.clear()
-    #         for node in ast.walk(tree):
-    #             if isinstance(node, ast.FunctionDef):
-    #                 for arg in node.args.args:
-    #                     self.function_args.add(arg.arg)
-    #     except Exception:
-    #         self.function_args.clear()
 
 
     def get_calls(self, instances: dict):
@@ -474,27 +460,6 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
                     self.function_calls.add(key)
         except Exception:
             self.function_calls.clear()
-
-    # def get_classes(self):
-    #     from func_classes import check_class
-
-    #     for classes in check_class:
-    #         if not classes:
-    #             continue  # skip empty strings
-
-    #         if classes not in self.class_dots:
-    #             import re
-    #         # Optionally: escape special regex characters in classes
-    #             safe_class = re.escape(classes)
-
-    #             pattern = QRegularExpression(rf'\b{safe_class}\b(?=\.)')
-    #             if not pattern.isValid():
-    #                 print(f"Invalid regex for: {safe_class}")
-    #                 continue
-
-    #             self.highlighting_rules.append((pattern, self.class_format, 'class'))
-    #         self.class_dots.add(classes)
-
 
     def highlightBlock(self, text):
         def is_overlapping(start, length, used_ranges):
@@ -569,11 +534,9 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
                 end_match = start_expression.match(text, start_index + 3)
 
                 if end_match.hasMatch():
-                    # ✅ Found closing triple-quote on this line
                     length = end_match.capturedStart() - start_index + 3
                     self.setCurrentBlockState(0)
                 else:
-                    # ❌ Still inside docstring
                     length = len(text) - start_index
                     self.setCurrentBlockState(1)
 

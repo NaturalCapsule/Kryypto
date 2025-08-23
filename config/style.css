@@ -1,68 +1,68 @@
+/* OBSIDIAN DARK THEME - Deep blacks with gold/amber accents */
+
 #MainWindow {
-    background-color: #1e1e2e;
-    /* background-color: black; */
-    /* background-color: transparent; */
-
-
-    color: #ffffff;
-    selection-background-color: #007acc;
-    /* padding: 2px;
-    margin: 2px; */
+    background-color: #0d1117;
+    color: #c9d1d9;
+    selection-background-color: #ffa500;
 }
 
 #Window {
-    background-color: #1e1e2e;
-
+    background-color: #0d1117;
 }
 
 #Editor {
-    background-color: #1e1e2e;
-    color: white;
-    selection-background-color: rgba(255, 255, 255, 0.5);
-    padding: 2px;
-    margin: 2px;
-    border-radius: 10px;
-    border: 2px solid #F38BA8;
-    font-weight: bold;
+    background-color: #010409;
+    color: #e6edf3;
+    selection-background-color: rgba(255, 165, 0, 0.3);
+    padding: 12px;
+    margin: 6px;
+    border-radius: 8px;
+    border: 2px solid #30363d;
+    font-weight: 400;
 }
 
 #Terminal {
-    background-color: #1e1e2e;
-    color: white;
-    selection-background-color: rgba(255, 255, 255, 0.5);
-    padding: 2px;
-    margin: 2px;
-    border-radius: 10px;
-    border: 2px solid #F38BA8;
-    /* font-size: 19px; */
+    background-color: #000000;
+    color: #f0f6fc;
+    selection-background-color: rgba(255, 165, 0, 0.2);
+    padding: 12px;
+    margin: 6px;
+    border-radius: 8px;
+    border: 2px solid #21262d;
+    font-family: 'SF Mono', 'Monaco', monospace;
 }
 
 #Finder {
-    border: 2px solid #F38BA8;
-    font-size: 22px;
-    background-color: #1e1e2e;
-    color: white;
-    border-radius: 15px;
-    /* border: 2px solid rgb(249, 226, 175); */
-
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                stop: 0 #161b22, stop: 1 #0d1117);
+    color: #f0f6fc;
+    border: 2px solid #ffa500;
+    border-radius: 12px;
+    padding: 10px;
+    selection-background-color: rgba(255, 165, 0, 0.2);
 }
 
 #GoLine {
-    font-size: 22px;
-    background-color: #1e1e2e;
-    color: white;
-    border-radius: 15px;
-    border: 2px solid rgb(249, 226, 175);
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                stop: 0 #21262d, stop: 1 #161b22);
+    color: #ffa500;
+    border: 2px solid #ffa500;
+    border-radius: 12px;
+    padding: 10px;
+    font-weight: 600;
 }
 
 #AutoCompleter {
-    background-color: #1e1e2e;
-    color: #ffffff;
-    selection-background-color: white;
-    selection-color: white;
-    border: 2px solid #F38BA8;
+    background-color: #161b22;
+    color: #e6edf3;
+    selection-background-color: rgba(255, 165, 0, 0.8);
+    selection-color: #0d1117;
+    border: 2px solid #30363d;
     border-radius: 10px;
     outline: none;
+    font-family: 'SF Mono', monospace;
+
+
 }
 
 #AutoCompleter::item {
@@ -71,406 +71,425 @@
     padding: 6px;
 }
 
-#AutoCompleter::item:hover,
+#AutoCompleter::item:hover {
+    background-color: rgba(48, 54, 61, 0.7);
+    border-radius: 6px;
+    color: #ffa500;
+}
+
 #AutoCompleter::item:selected {
-    background-color: #89b4fa;
-    border-radius: 15px;
-    color: white;
+    background-color: #ffa500;
+    border-radius: 6px;
+    color: #0d1117;
+    font-weight: 600;
     border: none;
     outline: none;
+
 }
 
 #GitPanel {
-    border: 2px solid #89b4fa;
-    border-radius: 15px;
+    background: qlineargradient(x1: 0, y1: 0, x2: 1, y2: 0,
+                stop: 0 rgba(255, 165, 0, 0.05), 
+                stop: 1 rgba(48, 54, 61, 0.1));
+    border: 2px solid #30363d;
+    border-radius: 12px;
+    padding: 10px;
 }
 
-#DockTitles{
-    background-color: transparent;
-    color: white;
-    padding: 4px;
-    border-radius: 10px;
-    margin: 4px
+#DockTitles {
+    background: qlineargradient(x1: 0, y1: 0, x2: 1, y2: 0,
+                stop: 0 rgba(255, 165, 0, 0.08),
+                stop: 1 transparent);
+    color: #ffa500;
+    padding: 8px 12px;
+    border-radius: 8px;
+    margin: 4px;
+    font-weight: 600;
 }
-
-
 
 #Docks {
-    background-color: #1e1e2e;
-    border: 2px solid #F9E2AF;
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                stop: 0 #161b22, stop: 1 #0d1117);
+    border: 2px solid #30363d;
     border-radius: 10px;
-    color: #ffffff;
+    color: #e6edf3;
 }
 
 #TitleBarBG {
-    background-color: rgba(30,30,46, 200);
+    background: qlineargradient(x1: 0, y1: 0, x2: 1, y2: 0,
+                stop: 0 rgba(13, 17, 23, 0.98),
+                stop: 1 rgba(22, 27, 34, 0.98));
     border: none;
-    border-radius: 0px;
+    border-bottom: 1px solid #21262d;
 }
 
 #TitleBarName {
-    color: white;
+    color: #f0f6fc;
+    padding: 10px 20px;
+    font-family: 'SF Pro Display', 'Segoe UI', sans-serif;
+    font-weight: 600;
+    letter-spacing: 0.5px;
     font-size: 15px;
-    padding: 5px;
-    font-family: 'Maple Mono';
-    font-weight: bold;
-    font-style: italic;
 }
 
 #TitleBarMin, #TitleBarMax, #TitleBarClose {
     color: white;
-    background-color: transparent;
-    border: none;
-    font-size: 14px;
-    font-weight: bold;
+    border-radius: 6px;
 }
 
-#TitleBarMax {
-    font-size: 16px;
+#TitleBarMin:hover {
+    background-color: rgba(255, 165, 0, 0.15);
+    color: #ffa500;
 }
 
-#TitleBarMin:hover, #TitleBarMax:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-    border-radius: 3px;
+#TitleBarMax:hover {
+    background-color: rgba(255, 165, 0, 0.15);
+    color: #ffa500;
 }
 
 #TitleBarClose:hover {
-    background-color: rgba(255, 0, 0, 0.7);
-    border-radius: 3px;
+    background-color: rgba(248, 81, 73, 0.8);
+    color: #ffffff;
 }
 
+/* Elegant DocStrings */
 #DocStrings {
-    background-color: #1e1e2e;
-    color: white;
-    border: 2px solid #F9E2AF;
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                stop: 0 #161b22, stop: 1 #0d1117);
+    color: #e6edf3;
+    border: 2px solid #21262d;
     border-radius: 10px;
-    /* font-family: 'Maple Mono'; */
-    padding: 5px;
+    padding: 16px;
+    font-family: 'SF Mono', monospace;
 }
+
 #DocStrings::title {
-    background-color: #2b2b2b;
-    color: black;
-    padding: 5px;
-    font-weight: bold;
+    background-color: #ffa500;
+    color: #0d1117;
+    padding: 8px 12px;
+    font-weight: 700;
     text-align: center;
+    border-radius: 6px;
+    letter-spacing: 0.5px;
 }
 
-
-#FileMaker {
-    background-color: #1e1e2e;
-    border: 1px solid #3c3c3c;
-    color: #ffffff;
-}
-
-#FolderMaker {
-    background-color: #1e1e2e;
-    border: 1px solid #3c3c3c;
-    color: #ffffff;
-}
-
-
-#horizontalLines {
-    color: gray;
-    background-color: gray;
-    margin-left: 10px;
-    margin-right: 10px;
-}
-
-
-#DirectoryViewer:hover::item{
-    background-color: #3a3a3a;
-    color: white;
-
-    border-radius: 15px;
-    border: none;
-    outline: none;
-
-}
-
+/* Refined Directory Viewer */
 #DirectoryViewer {
-    color: #ffffff;
-    /* font-size: 19px; */
-    /* font-size: 40px; */
-
-    selection-background-color: rgba(255, 255, 255, 0.5);
-    selection-color: white;
+    background-color: #0d1117;
+    color: #e6edf3;
+    selection-background-color: rgba(255, 165, 0, 0.2);
+    selection-color: #ffa500;
     border-radius: 10px;
-    border: 2px solid #F38BA8;
-    /* outline: none; */
-}
-
-
-#DirectoryViewer:hover::item,
-#DirectoryViewer:selected::item{
-    background-color: transparent;
-    border-radius: 15px;
-    color: white;
-
-}
-
-#DirectoryViewer:selected::item{
-    color: white;
-    border: none;
+    border: 2px solid #21262d;
     outline: none;
-    border-radius: 15px;
-    border: 2px solid #F38BA8;
-
+    font-family: 'SF Pro Text', 'Segoe UI', sans-serif;
+    padding: 8px;
 }
-
-
 
 #DirectoryViewer::item {
-    padding: 5px;
+    padding: 10px 16px;
     border: none;
-    border-radius: 10px;
+    border-radius: 6px;
+    margin: 2px 0;
 }
 
 #DirectoryViewer::item:selected {
-    background-color: #89b4fa;
-    color: black;
-    margin: 2px;
-    border-radius: 10px;
+    background: qlineargradient(x1: 0, y1: 0, x2: 1, y2: 0,
+                stop: 0 rgba(255, 165, 0, 0.8), 
+                stop: 1 rgba(255, 165, 0, 0.6));
+    color: #0d1117;
+    font-weight: 600;
+    border-radius: 6px;
 }
 
 #DirectoryViewer::item:hover {
-    background-color: #3a3a3a;
-    color: white;
-    border-radius: 10px;
+    background-color: rgba(48, 54, 61, 0.5);
+    color: #f0f6fc;
+    border-radius: 6px;
 }
 
-
-
+/* Sleek Tab styling */
 #OpenedFiles {
-    background-color: #1e1e2e;
+    background-color: #0d1117;
 }
 
 #OpenedFiles::tab {
-    background: #313244;
-    color: white;
-    padding: 6px 12px;
-    border: 1px solid #45475a;
-    border-bottom: none;
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                stop: 0 #21262d, stop: 1 #161b22);
+    color: #8b949e;
+    padding: 12px 20px;
+    border: none;
+    border-bottom: 3px solid transparent;
     margin-right: 2px;
-    border-top-left-radius: 4px;
-    border-top-right-radius: 4px;
+    font-weight: 500;
+    font-family: 'SF Pro Text', sans-serif;
 }
 
-#OpenedFiles::tab:selected{
-    background: #585b70;
-    color: #f5f5f5;
+#OpenedFiles::tab:selected {
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                stop: 0 #30363d, stop: 1 #21262d);
+    color: #ffa500;
+    font-weight: 600;
+    border-bottom: 3px solid #ffa500;
 }
 
-#OpenedFiles::tab:hover{
-    background: #6c7086;
+#OpenedFiles::tab:hover {
+    background: rgba(48, 54, 61, 0.7);
+    color: #e6edf3;
 }
 
 #CloseTabButton {
     background-color: transparent;
-    color: #cdd6f4;
-    font-size: 10px;
-    padding: 0px;
-    margin: 2px;
+    color: #6e7681;
+    padding: 3px;
+    margin: 3px;
     border: none;
+    border-radius: 3px;
 }
 
 #CloseTabButton:hover {
-    background-color: #f38ba8;
-    color: black;
-    border-radius: 2px;
+    background-color: #f85149;
+    color: #ffffff;
+    border-radius: 3px;
 }
 
 #CloseTabButton:pressed {
-    background-color: #cba6f7;
-    color: black;
+    background-color: #da3633;
+    color: #ffffff;
 }
 
-#SyntaxChecker {
-    color: white;
-}
-
-#NameErrorChecker {
-    color: white;
-}
-
+/* Clean Line Numbers */
 #NumberLines {
-    font-family: "Maple-Mono";
-    background-color: #1e1e2e;
+    font-family: "SF Mono", "Monaco", monospace;
+    background-color: #010409;
+    color: #6e7681;
+    border-right: 1px solid #21262d;
+    padding-right: 12px;
 }
 
-
+/* Elegant Welcome Screen */
 #Greeting {
-    font-size: 55px;
-    color: white;
+    color: #f0f6fc;
     text-align: center;
-    font-family: 'Maple Mono';
-    font-weight: bold;
-    font-style: italic;
-}
+    font-family: 'SF Pro Display', 'Helvetica Neue', sans-serif;
+    font-weight: 300;
+    letter-spacing: -1px;
+    margin: 24px;
+    font-size: 55px;
 
+}
 
 #Date {
     font-size: 22px;
-    color: white;
+
+    color: #8b949e;
     text-align: center;
-    font-family: 'Maple Mono';
-    font-weight: bold;
-    font-style: italic;
+    font-family: 'SF Mono', monospace;
+    font-weight: 400;
+    opacity: 0.8;
+    letter-spacing: 1px;
 }
 
 
-#TotalCommits, #ActiveBranch, #RemoteURL, 
-#Username, #CommitInfo, #CommitTime, 
-#CommitMessage, #RepoName, #RepoNotFound, #fileChanges, #UntrackedFiles {
-    color: #cdd6f4;
-    font-size: 13px;
-    font-family: 'Maple Mono';
-    font-weight: bold;
-    font-style: italic;
-    /* font-family: 'JetBrains Mono', monospace; */
-}
 
-#CommitMessage, #CommitTime, #TotalCommits, #fileChanges, #UntrackedFiles {
-    padding-left: 15px;
-}
-
-/* #fileChanges {
-    padding-left: 30px;
-} */
-
-#ActiveBranch, #RemoteURL, #RepoName {
-    padding-left: 15px;
+#RepoInfo {
+    color: #ffa500;
+    font-family: 'SF Mono', monospace;
+    font-weight: 600;
+    letter-spacing: 0.5px;
 }
 
 #CommitInfo {
-    color: #f38ba8;
-    font-weight: bold;
-    font-size: 19px;
+    color: #f0f6fc;
+    font-weight: 500;
+    background: rgba(255, 165, 0, 0.1);
+    padding: 6px 12px;
+    border-radius: 6px;
+    border-left: 3px solid #ffa500;
 }
 
 #Username {
-    font-size: 16px;
-    font-weight: bold;
-    color: #89b4fa;
+    font-weight: 600;
+    color: #58a6ff;
+    background: rgba(88, 166, 255, 0.1);
+    padding: 4px 8px;
+    border-radius: 4px;
 }
 
-#RepoInfo {
-    color: #a6e3a1;
-    font-family: 'Maple Mono';
-    font-weight: bold;
-    font-style: italic;
-
-    font-size: 19px;
+#TotalCommits, #ActiveBranch, #RemoteURL, 
+#CommitTime, #CommitMessage, #RepoName, 
+#RepoNotFound, #fileChanges, #UntrackedFiles {
+    color: #e6edf3;
+    font-family: 'SF Mono', monospace;
+    font-weight: 400;
+    line-height: 1.5;
 }
 
 #RepoNotFound {
-    color: #f38ba8;
-    font-size: 13px;
+    color: #f85149;
     font-style: italic;
-}
-
-#UserProfile {
-    margin-top: 8px;
-    margin-bottom: 4px;
 }
 
 #ShortCutTexts {
     font-size: 22px;
-    color: white;
+    color: #c9d1d9;
     text-align: center;
-    font-family: 'Maple Mono';
-    font-weight: bold;
-}
-
-#MessageBox QLabel {
-    color: white;
-
+    font-family: 'SF Pro Text', sans-serif;
+    font-weight: 500;
+    letter-spacing: 0.5px;
 }
 
 #MessageBox {
-    background-color: #1e1e2e;
-    color: white;
-    font-family: 'Maple Mono';
-    font-style: italic;
-    font-weight: bold;
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                stop: 0 #161b22, stop: 1 #0d1117);
+    color: #e6edf3;
+    font-family: 'SF Pro Text', sans-serif;
+    font-weight: 400;
     font-size: 14px;
-    border: 2px solid #89b4fa;
-    border-radius: 10px;
+    border: 2px solid #30363d;
+    border-radius: 12px;
+    background-color: transparent;
+}
+
+#MessageBox QLabel {
+    color: #e6edf3;
 }
 
 #MessageBoxSave {
-    background-color: #89b4fa;
-    color: white;
-    /* color: #1e1e2e; */
-    padding: 6px 14px;
-    border-radius: 6px;
-    font-weight: bold;
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                stop: 0 #ffa500, stop: 1 #e6930a);
+    color: #0d1117;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    border: none;
+    font-size: 13px;
 }
+
 #MessageBoxSave:hover {
-    background-color: #74c7ec;
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                stop: 0 #ffb84d, stop: 1 #ffa500);
 }
 
 #MessageBoxSaveNot {
-    background-color: #f38ba8;
-    color: #1e1e2e;
-    padding: 6px 14px;
-    border-radius: 6px;
-    font-weight: bold;
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                stop: 0 #f85149, stop: 1 #da3633);
+    color: #ffffff;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    border: none;
+    font-size: 13px;
 }
+
 #MessageBoxSaveNot:hover {
-    background-color: #f7768e;
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                stop: 0 #ff6b6b, stop: 1 #f85149);
 }
 
 #MessageBoxCancel {
-    background-color: #313244;
-    color: #cdd6f4;
-    padding: 6px 14px;
-    border-radius: 6px;
-    font-weight: bold;
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                stop: 0 #30363d, stop: 1 #21262d);
+    color: #c9d1d9;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 500;
+    border: none;
+    font-size: 13px;
 }
+
 #MessageBoxCancel:hover {
-    background-color: #45475a;
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                stop: 0 #484f58, stop: 1 #30363d);
 }
 
 QScrollBar:vertical {
-    background: #1e1e2e;
-    color: white;
-
-    width: 10px;
-    margin: 0px 0px 0px 0px;
+    background: #0d1117;
+    width: 14px;
+    border-radius: 7px;
+    margin: 0px;
 }
 
-QScrollBar::handle:vertical{
-    background: white;
-    color: white;
+QScrollBar::handle:vertical {
+    background: qlineargradient(x1: 0, y1: 0, x2: 1, y2: 0,
+                stop: 0 #30363d, stop: 1 #21262d);
     min-height: 20px;
+    border-radius: 7px;
+    margin: 2px;
+    border: 1px solid #21262d;
+}
+
+QScrollBar::handle:vertical:hover {
+    background: qlineargradient(x1: 0, y1: 0, x2: 1, y2: 0,
+                stop: 0 #484f58, stop: 1 #30363d);
 }
 
 QScrollBar::add-line:vertical,
 QScrollBar::sub-line:vertical {
     height: 0px;
-    color: white;
 }
-
 
 QTabBar::tab {
     background: transparent;
-    color: white;
-    padding: 6px 12px;
-    margin: 6px 12px;
+    color: #8b949e;
+    padding: 10px 18px;
+    margin: 4px 2px;
     outline: none;
     border: none;
-    border-bottom: none;
+    border-radius: 6px;
+    font-weight: 500;
+    font-family: 'SF Pro Text', sans-serif;
 }
 
 QTabBar::tab:selected {
-    background: transparent;
-    font-weight: bold;
+    background: rgba(255, 165, 0, 0.15);
+    color: #ffa500;
+    font-weight: 600;
 }
 
 QTabBar::tab:hover {
-    background: transparent;
+    background: rgba(48, 54, 61, 0.3);
+    color: #e6edf3;
 }
 
 QTabWidget::pane {
     border: none;
+    background-color: #0d1117;
+    border-radius: 8px;
+}
+#FileMaker {
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                stop: 0 #161b22, stop: 1 #0d1117);
+    color: #f0f6fc;
+    border: 2px solid #ffa500;
+    border-radius: 12px;
+    padding: 10px;
+    selection-background-color: rgba(255, 165, 0, 0.2);
+    font-size: 15px;
+    
+}
+#FolderMaker {
+    /* color: black;; */
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                stop: 0 #161b22, stop: 1 #0d1117);
+    color: #f0f6fc;
+    border: 2px solid #ffa500;
+    border-radius: 12px;
+    padding: 10px;
+    selection-background-color: rgba(255, 165, 0, 0.2);
+    font-size: 15px;
+
+
+}
+#horizontalLines {
+    color: gray;
+}
+#SyntaxChecker {
+    color: white;
+}
+#NameErrorChecker {
+    color: white;
+}
+#UserProfile {
+    
 }
