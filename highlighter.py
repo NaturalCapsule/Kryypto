@@ -479,6 +479,44 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
 
             used_ranges = set()
 
+<<<<<<< HEAD
+        # triple_string_formats = [
+        #     ('"""', QRegularExpression('"""')),
+        #     ("'''", QRegularExpression("'''"))
+        # ]
+
+        # for quote, start_expression in triple_string_formats:
+        #     if self.previousBlockState() != 1:
+        #         start_match = start_expression.match(text)
+        #         start_index = start_match.capturedStart() if start_match.hasMatch() else -1
+        #     else:
+        #         start_index = 0
+
+        #     while start_index >= 0:
+        #         # Look for the ending quote after the start
+        #         end_match = start_expression.match(text, start_index + 3)
+
+        #         if end_match.hasMatch():
+        #             # ✅ Found closing quote on the same line
+        #             length = end_match.capturedStart() - start_index + 3
+        #             self.setCurrentBlockState(0)  # don't carry to next line
+        #         else:
+        #             # ❌ No closing quote on this line → multiline docstring
+        #             self.setCurrentBlockState(1)
+        #             length = len(text) - start_index
+
+        #         string_format = QTextCharFormat()
+        #         r, g, b = get_string()
+        #         string_format.setForeground(QColor(r, g, b))
+
+        #         self.setFormat(start_index, length, string_format)
+        #         used_ranges.add((start_index, start_index + length))
+
+        #         # Continue searching after this match
+        #         next_match = start_expression.match(text, start_index + length)
+        #         start_index = next_match.capturedStart() if next_match.hasMatch() else -1
+=======
+>>>>>>> ea2ca0344b9d14455235ec8a0cc95920cdd94e6e
 
             for pattern, fmt, name in self.highlighting_rules:
                 matches = pattern.globalMatch(text)
