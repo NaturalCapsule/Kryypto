@@ -51,12 +51,12 @@ you got two options:
 2. Install binary file from the releases
 
 > [!WARNING]
-> This project is under heavy development. You might face lagging when loading large files or syntax highlighting missmatch, etc.
+> This project is under development. You might face lagging when loading large files or syntax highlighting missmatch, etc.
 
 
 
 > [!WARNING]
-> you might face a git error, you can solve it by installing and setting up git or open CMD and type: set GIT_PYTHON_REFRESH=quiet
+> you might face a git error when you launch Kryypto, you can solve it by installing and setting up git or open CMD and type: set GIT_PYTHON_REFRESH=quiet
 
 
 ## License
