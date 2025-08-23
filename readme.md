@@ -10,6 +10,7 @@ A lightweight, fully keyboard-supported text editor with deep customization and 
 ![Kryypto 4](icons/app/readme/kr4.PNG)
 ![Kryypto 5](icons/app/readme/kr5.PNG)
 ![Kryypto 7](icons/app/readme/kr7.PNG)
+![Kryypto 8](icons/app/readme/kr8.PNG)
 
 ## ✨ Features
 
@@ -29,6 +30,7 @@ A lightweight, fully keyboard-supported text editor with deep customization and 
   - Track file changes directly inside the editor
 - Productivity Features
   - Autocompleter
+  - Builtin Terminal
   - Docstring panel (hover to see function/class docstring)
   - Tab-based file switching
   - Custom title bar
@@ -77,6 +79,7 @@ This project is licensed under a [License](LICENSE.txt).
 ![Kryypto 4](icons/app/readme/kr4.PNG)
 ![Kryypto 5](icons/app/readme/kr5.PNG)
 ![Kryypto 7](icons/app/readme/kr7.PNG)
+![Kryypto 8](icons/app/readme/kr8.PNG)
 
 
 - تایبەتمەندیەکان
