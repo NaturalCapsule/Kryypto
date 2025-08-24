@@ -1413,28 +1413,54 @@ class TerminalEmulator(QWidget):
             return None
 
     def handle_stdout(self):
-        data = (
-            self.processes[self.current_process_index]
-            .readAllStandardOutput()
-            .data()
-            .decode()
-        )
+
+        stream = self.processes[self.current_process_index]
+        data = stream.readAllStandardOutput().data() 
+
+        # data = (
+        #     self.processes[self.current_process_index]
+        #     .readAllStandardOutput()
+        #     .data()
+        #     .decode()
+        # )
+
+        decoded_data = data.decode('utf-8', errors='replace')
+
+
+        # Enter the decoded text into the terminal
         self.terminal.moveCursor(QTextCursor.MoveOperation.End)
-        self.insert_colored_text(data)
+        self.insert_colored_text(decoded_data)
         self.terminal.moveCursor(QTextCursor.MoveOperation.End)
-        if not data.endswith("\n"):
+        if not decoded_data.endswith("\n"):
             self.terminal.insertPlainText("\n")
         self.display_prompt()
 
+
+
+
+        # self.terminal.moveCursor(QTextCursor.MoveOperation.End)
+        # self.insert_colored_text(data)
+        # self.terminal.moveCursor(QTextCursor.MoveOperation.End)
+        # if not data.endswith("\n"):
+        #     self.terminal.insertPlainText("\n")
+        # self.display_prompt()
+
     def handle_stderr(self):
-        data = (
-            self.processes[self.current_process_index]
-            .readAllStandardError()
-            .data()
-            .decode()
-        )
+        # data = (
+        #     self.processes[self.current_process_index]
+        #     .readAllStandardError()
+        #     .data()
+        #     .decode('utf-8', errors='replace')
+        # )
+
+        stream = self.processes[self.current_process_index]
+        data = stream.readAllStandardOutput().data() 
+
+        decoded_data = data.decode('utf-8', errors='replace')
+
+
         self.terminal.moveCursor(QTextCursor.MoveOperation.End)
-        self.insert_colored_text(data, QColor(255, 0, 0))  # Red color for errors
+        self.insert_colored_text(decoded_data, QColor(255, 0, 0))  # Red color for errors
         self.terminal.moveCursor(QTextCursor.MoveOperation.End)
         if not data.endswith("\n"):
             self.terminal.insertPlainText("\n")
