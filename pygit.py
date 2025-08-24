@@ -1,4 +1,3 @@
-import git
 import os
 import sys
 import requests
@@ -8,13 +7,33 @@ from PyQt6.QtWidgets import QFileDialog
 from PyQt6.QtCore import QRunnable, pyqtSignal, QObject
 from config import write_config, get_openedDir
 
+# Try to import git, but handle the case where it's not available
+try:
+    import git
+    GIT_AVAILABLE = True
+except ImportError:
+    GIT_AVAILABLE = False
+
 folder_path_ = get_openedDir()
 
 def is_gitInstalled():
+    """Check if git is available both as a package and as a system command"""
+    if not GIT_AVAILABLE:
+        return False
     if shutil.which("git") is None:
         return False
-    else:
-        return True
+    return True
+
+def safe_git_operation(func):
+    """Decorator to safely execute git operations"""
+    def wrapper(*args, **kwargs):
+        if not is_gitInstalled():
+            return "Git Not installed"
+        try:
+            return func(*args, **kwargs)
+        except Exception as e:
+            return f"Git error: {str(e)}"
+    return wrapper
 
 def open_file_dialog(parent, check):
     global folder_path_
@@ -68,155 +87,78 @@ class GitWorker(QRunnable):
             pass
 
 
+@safe_git_operation
 def is_init():
-
-    if shutil.which("git") is None:
-        return False
-
+    """Check if current directory is a git repository"""
     try:
         repo = git.Repo(fr'{get_openedDir()}', search_parent_directories=True)
-
-
-
-        if repo:
-            return True
-        else:
-            return False
-
-    except Exception:
-        return False
-    except git.InvalidGitRepositoryError:
+        return repo is not None
+    except (git.InvalidGitRepositoryError, git.NoSuchPathError, git.GitCommandNotFound, git.GitError):
         return False
 
-    except git.NoSuchPathError:
-        return False
-    except git.GitCommandNotFound:
-        return False
-
-    except git.GitError:
-        return False
-
+@safe_git_operation
 def get_TotalCommits():
-    if shutil.which("git") is None:
-        return "Git Not installed"
-
+    """Get total number of commits in the repository"""
     repo = git.Repo(fr'{get_openedDir()}', search_parent_directories=True)
-
-
     commits = list(repo.iter_commits('HEAD'))
+    return len(commits)
 
-    total_commits = len(commits)
-    return total_commits
-
+@safe_git_operation
 def get_latest_commit_time():
-    if shutil.which("git") is None:
-        return "Git Not installed"
-
+    """Get the timestamp of the latest commit"""
     try:
-        repo_path = os.getcwd()
         repo = git.Repo(fr'{get_openedDir()}', search_parent_directories=True)
-
-
-
         latest_commit = repo.head.commit
         commit_timestamp = latest_commit.committed_date
         commit_datetime = datetime.fromtimestamp(commit_timestamp)
-
         return commit_datetime.strftime("%Y-%m-%d %I:%M %p")
-
-    except git.InvalidGitRepositoryError:
-        return f"Error: '{repo_path}' is not a valid Git repository."
-
     except Exception as e:
-        return f"An error occurred: {e}"
+        return f"Error: {e}"
 
-    except git.GitError:
-        return "Git Not installed or not found"
-
+@safe_git_operation
 def get_reopName():
-    if shutil.which("git") is None:
-        return "Git Not installed"
-
+    """Get the repository name from the remote URL"""
     try:
         repo = git.Repo(fr'{get_openedDir()}', search_parent_directories=True)
-        repo = repo.remotes.origin.url
-        if repo.endswith('.git'):
-            repo = repo.split('/')[-1]
-            repo = repo[:-4]
+        repo_url = repo.remotes.origin.url
+        if repo_url.endswith('.git'):
+            repo_name = repo_url.split('/')[-1][:-4]
         else:
-            repo = repo.split('/')[-1]
-            repo = ''.join(repo)
-
-        return repo
-    except git.InvalidGitRepositoryError:
-        pass
-
+            repo_name = repo_url.split('/')[-1]
+        return repo_name
     except Exception as e:
-        return f"An error occurred: {e}"
+        return f"Error: {e}"
 
-    except git.GitCommandNotFound:
-        return 'Git Not installed'
-
-    except git.GitError:
-        return "Git Not installed or not found"
-
+@safe_git_operation
 def get_active_branch_name():
-    if shutil.which("git") is None:
-        return "Git Not installed"
-
+    """Get the name of the active branch"""
     try:
         repo = git.Repo(fr'{get_openedDir()}', search_parent_directories=True)
-
-
         if repo:
             return repo.active_branch.name
         else:
             return "No Active branch name"
-
-    except git.InvalidGitRepositoryError:
-        return f"Error: something went wrong!"
-
     except Exception as e:
-        return f"An error occurred: {e}"
-    except git.GitCommandNotFound:
-        return 'Git Not installed'
+        return f"Error: {e}"
 
-    except git.GitError:
-        return "Git Not installed or not found"
-
+@safe_git_operation
 def get_github_remote_url(message):
-    if shutil.which("git") is None:
-        return "Git Not installed"
+    """Get the GitHub remote URL for the repository"""
     try:
         repo = git.Repo(fr'{get_openedDir()}', search_parent_directories=True)
-
-
         if repo:
             return repo.remotes.origin.url
         else:
             return "No URL"
-
-    except git.InvalidGitRepositoryError as e:
-        message(f'Invalid Git Repository\n{e}')
-        return f"Error: something went wrong!"
-
     except Exception as e:
         message(f'An error occurred:\n{e}')
-        return f"An error occurred: {e}"
+        return f"Error: {e}"
 
-    except git.GitCommandNotFound:
-        return 'Git Not installed'
-
-    except git.GitError:
-        return "Git Not installed or not found"
-
+@safe_git_operation
 def get_github_profile(message):
-    if shutil.which("git") is None:
-        return "Git Not installed"
-
+    """Download GitHub profile picture for the user"""
     try:
         repo = git.Repo(fr'{get_openedDir()}', search_parent_directories=True)
-
         if repo:
             config_reader = repo.config_reader()
             username = config_reader.get_value('user', 'name')
@@ -230,129 +172,64 @@ def get_github_profile(message):
             if avatar_response.status_code == 200:
                 with open("icons/github/user_profile/users_profile.png", "wb") as f:
                     f.write(avatar_response.content)
-
             else:
                 message('Could not download pfp\nplease make sure you have internet connection')
-
-
         else:
             message('User Not Found!')
-
-
-    except git.InvalidGitRepositoryError as e:
-        return f"Error: something went wrong!"
-
     except Exception as e:
-        return f"An error occurred: {e}"
+        return f"Error: {e}"
 
-    except git.GitCommandNotFound:
-        return 'Git Not installed'
-
-    except git.GitError:
-        return "Git Not installed or not found"
-
+@safe_git_operation
 def get_github_username():
-    if shutil.which("git") is None:
-        return "Git Not installed"
-
+    """Get the GitHub username from git config"""
     try:
         repo = git.Repo(fr'{get_openedDir()}', search_parent_directories=True)
-
         if repo:
             config_reader = repo.config_reader()
             username = config_reader.get_value('user', 'name')
             return username
-
-    except git.InvalidGitRepositoryError as e:
-        return f"Error: something went wrong!"
-
     except Exception as e:
-        return f"An error occurred: {e}"
-
-    except git.GitCommandNotFound:
-        return 'Git Not installed'
-
-    except git.GitError:
-        return "Git Not installed or not found"
+        return f"Error: {e}"
 
 def is_downloaded(message):
     if not os.path.exists('icons/github/user_profile/users_profile.png'):
-        get_github_profile(message)
+        # Only try to download if git is installed
+        if is_gitInstalled():
+            get_github_profile(message)
 
 
 
+@safe_git_operation
 def get_latest_commit():
-    if shutil.which("git") is None:
-        return "Git Not installed"
-
+    """Get the message of the latest commit"""
     try:
         repo = git.Repo(fr'{get_openedDir()}', search_parent_directories=True)
-
         if repo:
             commit = str(repo.head.commit.message)
             commit = commit[:-1]
             if len(commit) > 43:
                 commit = f"{commit[:43]}..."
-
             return commit
-
-
-    except git.InvalidGitRepositoryError:
-        return f"Error: something went wrong!"
-
     except Exception as e:
-        return f"An error occurred: {e}"
+        return f"Error: {e}"
 
-    except git.GitCommandNotFound:
-        return 'Git Not installed'
-
-    except git.GitError:
-        return "Git Not installed or not found"
-
+@safe_git_operation
 def file_changes():
-    if shutil.which("git") is None:
-        return "Git Not installed"
-
+    """Get file changes from the latest commit"""
     try:
         repo = git.Repo(fr'{get_openedDir()}', search_parent_directories=True)
-
         if repo:
             return repo.head.commit.stats.files
-
-
-    except git.InvalidGitRepositoryError:
-        return f"Error: something went wrong!"
-
     except Exception as e:
-        return f"An error occurred: {e}"
+        return f"Error: {e}"
 
-    except git.GitCommandNotFound:
-        return 'Git Not installed'
-
-    except git.GitError:
-        return "Git Not installed or not found"
-
+@safe_git_operation
 def untracked():
-    if shutil.which("git") is None:
-        return "Git Not installed"
-
+    """Get list of untracked files"""
     try:
         repo = git.Repo(fr'{get_openedDir()}', search_parent_directories=True)
-
         if repo:
             untracked_files = "\n   ".join(repo.untracked_files)
             return untracked_files
-
-
-
-    except git.InvalidGitRepositoryError:
-        return f"Error: something went wrong!"
-
     except Exception as e:
-        return f"An error occurred: {e}"
-        
-    except git.GitCommandNotFound:
-        return 'Git Not installed'
-
-    except git.GitError:
-        return "Git Not installed or not found"
+        return f"Error: {e}"

@@ -1846,7 +1846,9 @@ class GitDock(QDockWidget):
     def __init__(self, parent):
 
         super().__init__()
-        is_downloaded(MessageBox)
+        # Only call git functions if git is installed
+        if is_gitInstalled():
+            is_downloaded(MessageBox)
         self.thread_pool = QThreadPool()
         self.setObjectName('Docks')
         self.setStyleSheet(get_css_style())
@@ -1913,7 +1915,11 @@ class GitDock(QDockWidget):
         self.active_branch_name.setObjectName('ActiveBranch')
         self.active_branch_name.setStyleSheet(get_css_style())
 
-        self.remote_url = QLabel(get_github_remote_url(MessageBox))
+        # Only call git functions if git is installed
+        if is_gitInstalled():
+            self.remote_url = QLabel(get_github_remote_url(MessageBox))
+        else:
+            self.remote_url = QLabel("Git not installed")
         # self.remote_url.setOpenExternalLinks(True)
         # self.remote_url.setTextInteractionFlags(Qt.TextInteractionFlag.TextBrowserInteraction)
         self.remote_url.setObjectName('RemoteURL')
@@ -1929,7 +1935,11 @@ class GitDock(QDockWidget):
         self.users_profile.setObjectName('UserProfile')
         self.users_profile.setStyleSheet(get_css_style())
 
-        self.user_username = QLabel(get_github_username())
+        # Only call git functions if git is installed
+        if is_gitInstalled():
+            self.user_username = QLabel(get_github_username())
+        else:
+            self.user_username = QLabel("Git not installed")
         self.user_username.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.user_username.setObjectName('Username')
         self.user_username.setStyleSheet(get_css_style())
@@ -1969,7 +1979,11 @@ class GitDock(QDockWidget):
         self.untracked_header.setStyleSheet(get_css_style())
 
 
-        self.repo_name = QLabel(f"Repository name {get_reopName()}")
+        # Only call git functions if git is installed
+        if is_gitInstalled():
+            self.repo_name = QLabel(f"Repository name {get_reopName()}")
+        else:
+            self.repo_name = QLabel("Repository name: Git not installed")
         self.repo_name.setObjectName('RepoName')
         self.repo_name.setStyleSheet(get_css_style())
 
@@ -2051,9 +2065,11 @@ class GitDock(QDockWidget):
         self.show_changes.setText(text)
 
     def update_git_info(self):
-        worker = GitWorker()
-        worker.signals.dataReady.connect(self.update_ui)
-        self.thread_pool.start(worker)
+        # Only update git info if git is installed
+        if is_gitInstalled():
+            worker = GitWorker()
+            worker.signals.dataReady.connect(self.update_ui)
+            self.thread_pool.start(worker)
 
     def update_ui(self, commit_msg, branch, total, get_latest_commit_time, file_changes, untracked_files):
         # if self.isVisible() and is_init():
@@ -2183,7 +2199,9 @@ class GitDock(QDockWidget):
     def gitTimers(self):
         self.timer = QTimer()
         self.timer.timeout.connect(self.update_git_info)
-        self.timer.start(1500)
+        # Only start the timer if git is installed
+        if is_gitInstalled():
+            self.timer.start(1500)
 
 
 class MessageBox(QMessageBox):

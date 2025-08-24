@@ -59,8 +59,8 @@ you got two options:
 
 
 
-> [!WARNING]
-> you might face a git error when you launch Kryypto, you can solve it by installing and setting up git or open CMD and type: set GIT_PYTHON_REFRESH=quiet
+> [!WARNING]  
+> ~~you might face a git error when you launch Kryypto, you can solve it by installing and setting up git or open CMD and type: set GIT_PYTHON_REFRESH=quiet~~
 
 
 ## License
@@ -104,6 +104,7 @@ Git و GitHub
 - تایبەت مەندی چالاکی
   - Auto Completer
   - Docstring
+  - Terminal
   - گۆرینی فایلەکان
 
 - بۆ ڕونکردنەوەی Syntax
@@ -132,4 +133,4 @@ Git و GitHub
 
 
 > [!WARNING]
-> لەوانەیە کە یەکەم جار بەرنامەکە بکەیتەوە git ئیرۆر بات دەتوانیت چاکی بکەیت بە دابەزاندنی git و ڕێکی خەیت یان CMD کەیتەوە و بنوسیت: set GIT_PYTHON_REFRESH=quiet
+> ~~لەوانەیە کە یەکەم جار بەرنامەکە بکەیتەوە git ئیرۆر بات دەتوانیت چاکی بکەیت بە دابەزاندنی git و ڕێکی خەیت یان CMD کەیتەوە و بنوسیت: set GIT_PYTHON_REFRESH=quiet~~
