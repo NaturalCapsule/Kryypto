@@ -1263,6 +1263,8 @@ class ShowOpenedFile(QTabBar):
                     try:
                         if self.show_error:
                             self.show_error.error_label = None
+                            self.highlighter = None
+
                             self.show_error = None
                     except Exception as e:
                         pass
@@ -1286,8 +1288,6 @@ class ShowOpenedFile(QTabBar):
                     commenting = ''
                     self.is_panel = True
 
-                    self.highlighter = PythonSyntaxHighlighter(False, self.editor.document())
-                    self.highlighter.deleteLater()
 
             else:
                 file_description[path] = file_name

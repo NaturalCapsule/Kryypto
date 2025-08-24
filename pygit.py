@@ -17,7 +17,6 @@ except ImportError:
 folder_path_ = get_openedDir()
 
 def is_gitInstalled():
-    """Check if git is available both as a package and as a system command"""
     if not GIT_AVAILABLE:
         return False
     if shutil.which("git") is None:
@@ -25,7 +24,6 @@ def is_gitInstalled():
     return True
 
 def safe_git_operation(func):
-    """Decorator to safely execute git operations"""
     def wrapper(*args, **kwargs):
         if not is_gitInstalled():
             return "Git Not installed"
@@ -89,7 +87,6 @@ class GitWorker(QRunnable):
 
 @safe_git_operation
 def is_init():
-    """Check if current directory is a git repository"""
     try:
         repo = git.Repo(fr'{get_openedDir()}', search_parent_directories=True)
         return repo is not None
@@ -98,14 +95,12 @@ def is_init():
 
 @safe_git_operation
 def get_TotalCommits():
-    """Get total number of commits in the repository"""
     repo = git.Repo(fr'{get_openedDir()}', search_parent_directories=True)
     commits = list(repo.iter_commits('HEAD'))
     return len(commits)
 
 @safe_git_operation
 def get_latest_commit_time():
-    """Get the timestamp of the latest commit"""
     try:
         repo = git.Repo(fr'{get_openedDir()}', search_parent_directories=True)
         latest_commit = repo.head.commit
@@ -113,11 +108,10 @@ def get_latest_commit_time():
         commit_datetime = datetime.fromtimestamp(commit_timestamp)
         return commit_datetime.strftime("%Y-%m-%d %I:%M %p")
     except Exception as e:
-        return f"Error: {e}"
+        return f"No Git repository detected"
 
 @safe_git_operation
 def get_reopName():
-    """Get the repository name from the remote URL"""
     try:
         repo = git.Repo(fr'{get_openedDir()}', search_parent_directories=True)
         repo_url = repo.remotes.origin.url
@@ -127,11 +121,10 @@ def get_reopName():
             repo_name = repo_url.split('/')[-1]
         return repo_name
     except Exception as e:
-        return f"Error: {e}"
+        return f"No Git repository detected"
 
 @safe_git_operation
 def get_active_branch_name():
-    """Get the name of the active branch"""
     try:
         repo = git.Repo(fr'{get_openedDir()}', search_parent_directories=True)
         if repo:
@@ -139,11 +132,10 @@ def get_active_branch_name():
         else:
             return "No Active branch name"
     except Exception as e:
-        return f"Error: {e}"
+        return f"No Git repository detected"
 
 @safe_git_operation
 def get_github_remote_url(message):
-    """Get the GitHub remote URL for the repository"""
     try:
         repo = git.Repo(fr'{get_openedDir()}', search_parent_directories=True)
         if repo:
@@ -151,12 +143,12 @@ def get_github_remote_url(message):
         else:
             return "No URL"
     except Exception as e:
-        message(f'An error occurred:\n{e}')
-        return f"Error: {e}"
+        # message(f'No Git repository detected:\n{e}')
+
+        return f"No Git repository detected"
 
 @safe_git_operation
 def get_github_profile(message):
-    """Download GitHub profile picture for the user"""
     try:
         repo = git.Repo(fr'{get_openedDir()}', search_parent_directories=True)
         if repo:
@@ -177,7 +169,7 @@ def get_github_profile(message):
         else:
             message('User Not Found!')
     except Exception as e:
-        return f"Error: {e}"
+        return f"No Git repository detected or invalid folder"
 
 @safe_git_operation
 def get_github_username():
@@ -193,7 +185,6 @@ def get_github_username():
 
 def is_downloaded(message):
     if not os.path.exists('icons/github/user_profile/users_profile.png'):
-        # Only try to download if git is installed
         if is_gitInstalled():
             get_github_profile(message)
 
@@ -201,7 +192,6 @@ def is_downloaded(message):
 
 @safe_git_operation
 def get_latest_commit():
-    """Get the message of the latest commit"""
     try:
         repo = git.Repo(fr'{get_openedDir()}', search_parent_directories=True)
         if repo:
@@ -215,7 +205,6 @@ def get_latest_commit():
 
 @safe_git_operation
 def file_changes():
-    """Get file changes from the latest commit"""
     try:
         repo = git.Repo(fr'{get_openedDir()}', search_parent_directories=True)
         if repo:
@@ -225,7 +214,6 @@ def file_changes():
 
 @safe_git_operation
 def untracked():
-    """Get list of untracked files"""
     try:
         repo = git.Repo(fr'{get_openedDir()}', search_parent_directories=True)
         if repo:

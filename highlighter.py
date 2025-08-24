@@ -50,6 +50,9 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
         self._last_instances = {}
 
     def setup_highlighting_rules(self):
+        self.function_args = set()
+
+
         r, g, b = get_comment()
         self.string_format = QTextCharFormat()
         r, g, b = get_string()
@@ -407,7 +410,6 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
         self.method_calls_format = QTextCharFormat()
         self.method_calls_format.setForeground(QColor(r, g, b))
 
-        self.function_args = set()
 
         self.c_instances = {}
 
@@ -643,19 +645,19 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
 
 
 
-            for arg in self.function_args:
-                pattern = QRegularExpression(fr"\b{arg}\b")
-                it = pattern.globalMatch(text)
+            # for arg in self.function_args:
+            #     pattern = QRegularExpression(fr"\b{arg}\b")
+            #     it = pattern.globalMatch(text)
 
 
-                while it.hasNext():
-                    match = it.next()
+            #     while it.hasNext():
+            #         match = it.next()
 
-                    if is_overlapping(match.capturedStart(), match.capturedLength(), used_ranges):
-                        continue
+            #         if is_overlapping(match.capturedStart(), match.capturedLength(), used_ranges):
+            #             continue
 
-                    self.setFormat(match.capturedStart(), match.capturedLength(), self.arg_usage_format)
-                    used_ranges.add((match.capturedStart(), match.capturedStart() + match.capturedLength()))
+            #         self.setFormat(match.capturedStart(), match.capturedLength(), self.arg_usage_format)
+            #         used_ranges.add((match.capturedStart(), match.capturedStart() + match.capturedLength()))
 
 
             try:
