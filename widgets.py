@@ -1462,7 +1462,7 @@ class TerminalEmulator(QWidget):
         self.terminal.moveCursor(QTextCursor.MoveOperation.End)
         self.insert_colored_text(decoded_data, QColor(255, 0, 0))  # Red color for errors
         self.terminal.moveCursor(QTextCursor.MoveOperation.End)
-        if not data.endswith("\n"):
+        if not decoded_data.endswith("\n"):
             self.terminal.insertPlainText("\n")
         self.display_prompt()
 
