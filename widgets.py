@@ -1435,8 +1435,9 @@ class TerminalEmulator(QWidget):
             self.terminal.insertPlainText("\n")
         self.display_prompt()
 
-
     def handle_stderr(self):
+
+        
         stream = self.processes[self.current_process_index]
         data = stream.readAllStandardOutput().data() 
 
