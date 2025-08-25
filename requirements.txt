@@ -5,4 +5,4 @@ parso==0.8.4
 lark==1.2.2
 requests==2.32.3
 gitpython==3.1.45
-cssutils
+cssutils==2.11.1
