@@ -1,6 +1,8 @@
 ## Could've made a helper function but whatever
 import configparser
 import sys
+import os
+import platform
 
 config = configparser.ConfigParser()
 config.read('config/configuration.cfg')
@@ -732,19 +734,25 @@ def showDocstringpanel():
 def is_frozen():
     return getattr(sys, "frozen", False)
 
+def is_valid_python(path: str) -> bool:
+    if platform.system() == 'Windows':
+        return path and os.path.isfile(path) and path.lower().endswith("python.exe")
+    elif platform.system() == 'Linux':
+        return path and os.path.isfile(path) and path.lower().endswith("python")
+
+
 def getInterpreter():
     try:
         con = config.get('Python', 'pythoninterpreter')
-        if con and con.lower() != 'none':
+        con = fr"{con}"
+        if is_valid_python(con):
             return con
         else:
-            if is_frozen():
-                return None
-            else:
-                return sys.executable
+            return None
     except configparser.NoOptionError:
         write_config('none', 'Python', 'pythoninterpreter')
-        return 'none'
+        return None
+
 
 def getDuration():
     try:

@@ -19,7 +19,6 @@ from highlighter import *
 from show_errors import *
 from pygit import *
 
-
 central_widget = QWidget()
 central_widget.setObjectName('MainWindow')
 central_widget.setStyleSheet(get_css_style())
@@ -44,7 +43,6 @@ current_file_path = ''
 class MainText(QPlainTextEdit):
     def __init__(self, parent, window, font_size, window_):
         super().__init__()
-        print(sys.executable)
         self.font_size = font_size
         global commenting
         self.clipboard = window
@@ -1801,8 +1799,6 @@ class TerminalEmulator(QWidget):
         self.display_prompt()
 
     def handle_stderr(self):
-
-        
         stream = self.processes[self.current_process_index]
         data = stream.readAllStandardError().data()
         
@@ -1812,12 +1808,13 @@ class TerminalEmulator(QWidget):
         self.terminal.moveCursor(QTextCursor.MoveOperation.End)
 
     def process_finished(self):
-        """Handle when process exits"""
-        exit_code = self.processes[self.current_process_index].exitCode()
-        self.terminal.appendPlainText(f"\nProcess exited with code: {exit_code}\n")
+        try:
+            exit_code = self.processes[self.current_process_index].exitCode()
+            self.terminal.appendPlainText(f"\nProcess exited with code: {exit_code}\n")
+        except RuntimeError:
+            pass
 
     def display_prompt(self):
-        # Only use this for Windows PowerShell, not for Linux shells
         if platform.system() == 'Windows':
             self.terminal.appendPlainText(self.prompt)
             self.terminal.moveCursor(QTextCursor.MoveOperation.End)
@@ -1860,13 +1857,12 @@ class TerminalEmulator(QWidget):
                 super().keyPressEvent(event)
 
     def terminal_key_press_event(self, event: QKeyEvent):
-        """Handle key press events in the terminal widget"""
         cursor = self.terminal.textCursor()
 
         if event.key() == Qt.Key.Key_Return or event.key() == Qt.Key.Key_Enter:
-            print(f"Enter pressed, current_command: '{self.current_command}'")  # Debug
+            # print(f"Enter pressed, current_command: '{self.current_command}'")  # Debug
             self.execute_command()
-            return  # Important: don't call parent keyPressEvent
+            return
             
         elif event.key() == Qt.Key.Key_Backspace:
             if len(self.current_command) > 0:
@@ -1909,8 +1905,7 @@ class TerminalEmulator(QWidget):
             QPlainTextEdit.keyPressEvent(self.terminal, event)
 
     def execute_command(self):
-        """Execute the current command in the shell"""
-        print(f"Executing command: '{self.current_command}'")  # Debug
+        # print(f"Executing command: '{self.current_command}'")  # Debug
         
         # Don't add extra newlines for Linux shells
         if platform.system() == 'Windows':

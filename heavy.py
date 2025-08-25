@@ -3,29 +3,11 @@ from PyQt6.QtCore import QObject, QTimer, pyqtSignal
 from func_classes import list_classes_functions
 from queue import Empty
 import queue
+from config import getInterpreter, is_frozen
 
-_cache = {}
-_cache_size_limit = 1000
+# _cache = {}
+# _cache_size_limit = 1000
 
-# def is_cursor_in_string(text, cursor_pos):
-#     before_cursor = text[:cursor_pos]
-
-#     single_quotes = before_cursor.count("'") - before_cursor.count("\\'")
-#     double_quotes = before_cursor.count('"') - before_cursor.count('\\"')
-#     if single_quotes % 2 == 1 or double_quotes % 2 == 1:
-#         return True
-
-#     return False
-
-
-# def is_cursor_in_parentheses(text, cursor_pos):
-#     before_cursor = text[:cursor_pos]
-#     parenthes = before_cursor.count("(") - before_cursor.count(')')
-
-#     if parenthes % 2 == 1:
-#         return True
-
-#     return False
 
 
 def jedi_worker(code_queue, result_queue):
@@ -36,56 +18,32 @@ def jedi_worker(code_queue, result_queue):
             continue
 
 
-        # item = code_queue.get()
         if item == "__EXIT__":
             break
         code, line, column = item
         try:
-            script = jedi.Script(code=code)
-            definitions = script.help(line, column)
-            result = definitions[0].docstring() if definitions else ""
+            python_path = getInterpreter()
+            print(python_path)
+            if python_path:
+                try:
+                    env = jedi.create_environment(python_path)
+                    script = jedi.Script(code=code, environment = env)
+                    definitions = script.help(line, column)
+                    result = definitions[0].docstring() if definitions else ""
+                except Exception as env_error:
+                    script = jedi.Script(code=code)
+                    definitions = script.help(line, column)
+                    result = definitions[0].docstring() if definitions else ""
+            else:
+                script = jedi.Script(code=code)
+                definitions = script.help(line, column)
+                result = definitions[0].docstring() if definitions else ""
+
             result_queue.put(result)
         except Exception as e:
             result_queue.put(str(e))
 
 
-# def jedi_completion(code_queue, result_queue, current_file):
-#     while True:
-#         item = code_queue.get()
-#         if item == "__EXIT__":
-#             break
-#         code, line, column = item
-
-#         try:
-
-#             script = jedi.Script(code=code, path = fr"{current_file}")
-#             completions = script.complete(line, column)
-
-
-#             payload = []
-#             for c in completions[:30]:
-#                 try:
-#                     name = getattr(c, "name", None) or ""
-#                     ctype = getattr(c, "type", None) or ""
-#                     description = getattr(c, "description", None) or ""
-
-#                     suffix = getattr(c, "suffix", None)
-#                     if suffix:
-#                         name += suffix
-
-#                     payload.append({
-#                         "name": name,
-#                         "type": ctype,
-#                         "description": description
-#                     })
-#                 except Exception as inner_err:
-#                     print(f"Skipped completion due to error: {inner_err}")
-#                     continue
-
-#             result_queue.put(payload)
-
-#         except Exception as e:
-#             result_queue.put([{"name": str(e), "type": "error", "description": ""}])
 
 def jedi_completion(code_queue, result_queue, current_file):
     while True:
@@ -99,9 +57,19 @@ def jedi_completion(code_queue, result_queue, current_file):
 
         code, line, column = item
         try:
-            script = jedi.Script(code=code, path=current_file)
-            completions = script.complete(line, column)
-
+            python_path = getInterpreter()
+            if python_path:
+                try:
+                    env = jedi.create_environment(python_path)
+                    script = jedi.Script(code=code, path=current_file, environment = env)
+                    completions = script.complete(line, column)
+                except Exception as env_error:
+                    script = jedi.Script(code=code, path=current_file)
+                    completions = script.complete(line, column)
+            else:
+                script = jedi.Script(code=code, path=current_file)
+                completions = script.complete(line, column)
+ 
 
             payload = []
             for c in completions[:30]:
