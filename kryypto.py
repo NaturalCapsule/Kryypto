@@ -186,10 +186,11 @@ class Kryypto(QMainWindow):
             self.main_text, self.main_text.completer, self.tab_bar, 
             widgets.error_label, self.clipboard, self.editor_layout, 
             self.terminal, self, self.tab_bar, widgets.file_description, 
+
             self.list_shortcuts, self.git_panel, self.font_size, self.main_text.line_number_area, self.show_files
 
         )
-    
+
 
 
         FileDockShortcut(
