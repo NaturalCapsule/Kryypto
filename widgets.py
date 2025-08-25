@@ -1,10 +1,11 @@
 import re
 import subprocess
 import os
+import platform
 import webbrowser
 from datetime import datetime
-from PyQt6.QtCore import QThreadPool, QRectF, QTimer, Qt, QRect, QFileInfo, pyqtSignal, QProcess
-from PyQt6.QtGui import QPainter, QPainterPath, QPixmap, QTextCursor, QKeyEvent, QPainter, QColor, QFont, QTextCursor, QColor, QFileSystemModel, QIcon, QStandardItemModel, QStandardItem
+from PyQt6.QtCore import QPointF, QThreadPool, QRectF, QTimer, Qt, QRect, QFileInfo, pyqtSignal, QProcess
+from PyQt6.QtGui import  QPainter, QPainterPath, QPixmap, QTextCursor, QKeyEvent, QPainter, QColor, QFont, QTextCursor, QColor, QFileSystemModel, QIcon, QStandardItemModel, QStandardItem
 from PyQt6.QtWidgets import QMessageBox, QFrame, QComboBox, QLabel, QPushButton, QHBoxLayout, QLineEdit, QPlainTextEdit, QVBoxLayout, QWidget, QCompleter, QDockWidget, QTextEdit, QTreeView, QFileIconProvider, QTabBar
 from lines import ShowLines
 from multiprocessing import Process, Queue
@@ -192,11 +193,14 @@ class MainText(QPlainTextEdit):
     def paintEvent(self, event):
         super().paintEvent(event)
         if showIndentLine():
-            self.paint_indent_guides(event)
+            if platform.system() == 'Windows':
+                self.windows_paint_indent_guides(event)
+            elif platform.system() == "Linux":
+                self.linux_paint_indent_guides(event)
         self.paint_cursor(event) 
 
 
-    def paint_indent_guides(self, event):
+    def windows_paint_indent_guides(self, event):
         painter = QPainter(self.viewport())
         r, g, b = get_IndentlineColor()
         painter.setPen(QColor(r, g, b))
@@ -219,6 +223,35 @@ class MainText(QPlainTextEdit):
             block = block.next()
             top += line_height
 
+        painter.end()
+
+
+    def linux_paint_indent_guides(self, event):
+
+        painter = QPainter(self.viewport())
+        r, g, b = get_IndentlineColor()
+        painter.setPen(QColor(r, g, b))
+        
+        block = self.firstVisibleBlock()
+        top = self.blockBoundingGeometry(block).translated(self.contentOffset()).top()
+        line_height = self.fontMetrics().height()
+        space_width = self.fontMetrics().horizontalAdvance(' ')
+        
+        while block.isValid():
+            text = block.text()
+            leading_spaces = len(text) - len(text.lstrip(' '))
+            
+            for col in range(4, leading_spaces + 1, 4):
+                if col <= len(text) and text[col - 1] == ' ':
+                    x = space_width * col
+                    # Alternative: Use QPointF for precise float coordinates
+                    p1 = QPointF(x, top)
+                    p2 = QPointF(x, top + line_height)
+                    painter.drawLine(p1, p2)
+            
+            block = block.next()
+            top += line_height
+        
         painter.end()
 
 
@@ -1356,19 +1389,364 @@ class TerminalEmulator(QWidget):
         self.terminal_selector = QComboBox()
         # self.terminal_selector.setStyleSheet("QComboBox { min-width: 150px; }")
 
+    # def startSession(self):
+    #     process = QProcess(self)
+    #     process.readyReadStandardOutput.connect(self.handle_stdout)
+    #     process.readyReadStandardError.connect(self.handle_stderr)
+    #     self.processes.append(process)
+    #     self.terminal_selector.setCurrentIndex(0)
+
+    #     if platform.system() == 'Linux':
+    #         self.start_shell(0, project_path = folder_path_)
+
+    #     elif platform.system() == 'Windows':
+    #         self.start_powershell(0, project_path=folder_path_)
+    #     else:
+    #         print("Error")
+
+
+
+    # def start_shell(self, index, project_path=None):
+    #     shell_path = self.find_shell()
+        
+    #     if project_path == "" or project_path == None:
+    #         project_path = os.getcwd()
+        
+    #     self.processes[index].setWorkingDirectory(project_path)
+        
+    #     if shell_path:
+    #         self.processes[index].start(shell_path)
+    #     else:
+    #         default_shell = os.environ.get('SHELL', '/bin/bash')
+    #         self.processes[index].start(default_shell)
+        
+    #     self.terminal.appendPlainText(
+    #         f"Your current working directory {project_path}.\n"
+    #     )
+    #     self.display_prompt()
+
+    # def find_shell(self):
+    #     shell_paths = [
+    #         "/bin/bash",   
+    #         "/usr/bin/bash",
+    #         "/bin/zsh",    
+    #         "/usr/bin/zsh",
+    #         "/bin/sh",      
+    #         "/usr/bin/fish",       
+    #         "/bin/dash",           
+    #     ]
+        
+    #     user_shell = os.environ.get('SHELL')
+    #     if user_shell and os.path.exists(user_shell):
+    #         return user_shell
+        
+    #     for shell_path in shell_paths:
+    #         if os.path.exists(shell_path):
+    #             return shell_path
+        
+    #     try:
+    #         result = subprocess.run(
+    #             ["which", "bash"],
+    #             capture_output=True,
+    #             text=True,
+    #             check=True,
+    #         )
+    #         return result.stdout.strip()
+    #     except subprocess.CalledProcessError:
+    #         pass
+        
+    #     try:
+    #         result = subprocess.run(
+    #             ["which", "sh"],
+    #             capture_output=True,
+    #             text=True,
+    #             check=True,
+    #         )
+    #         return result.stdout.strip()
+    #     except subprocess.CalledProcessError:
+    #         return None
+
+
+
+    # def start_powershell(self, index, project_path=None):
+    #     powershell_path = self.find_powershell_core()
+    #     if project_path == "":
+    #         project_path = os.getcwd()
+
+    #     self.processes[index].setWorkingDirectory(project_path)
+
+    #     if powershell_path:
+    #         self.processes[index].start(powershell_path)
+    #         self.terminal.appendPlainText(
+    #             f"Your current working directory {project_path}.\n"
+    #         )
+    #     else:
+    #         self.processes[index].start("powershell.exe")
+    #         self.terminal.appendPlainText(
+    #             f"Your current working directory {project_path}.\n"
+    #         )
+
+    #     self.display_prompt()
+
+    # def find_powershell_core(self):
+    #     paths_maybe = [
+    #         r"C:\Program Files\PowerShell\7\pwsh.exe",
+    #         r"C:\Program Files (x86)\PowerShell\7\pwsh.exe",
+    #         "/usr/local/bin/pwsh",
+    #         "/usr/bin/pwsh",
+    #     ]
+
+    #     for path in paths_maybe:
+    #         if os.path.exists(path):
+    #             return path
+    #     try:
+    #         result = subprocess.run(
+    #             ["where", "pwsh"] if os.name == "nt" else ["which", "pwsh"],
+    #             capture_output=True,
+    #             text=True,
+    #             check=True,
+    #         )
+    #         return result.stdout.strip()
+    #     except subprocess.CalledProcessError:
+    #         return None
+
+    # def handle_stdout(self):
+
+    #     stream = self.processes[self.current_process_index]
+    #     data = stream.readAllStandardOutput().data() 
+
+
+    #     decoded_data = data.decode('utf-8', errors='replace')
+
+
+    #     self.terminal.moveCursor(QTextCursor.MoveOperation.End)
+    #     self.insert_colored_text(decoded_data)
+    #     self.terminal.moveCursor(QTextCursor.MoveOperation.End)
+    #     if not decoded_data.endswith("\n"):
+    #         self.terminal.insertPlainText("\n")
+    #     self.display_prompt()
+
+
+    # def handle_stderr(self):
+
+    #     stream = self.processes[self.current_process_index]
+    #     data = stream.readAllStandardOutput().data() 
+
+    #     decoded_data = data.decode('utf-8', errors='replace')
+
+
+    #     self.terminal.moveCursor(QTextCursor.MoveOperation.End)
+    #     self.insert_colored_text(decoded_data, QColor(255, 0, 0))
+    #     self.terminal.moveCursor(QTextCursor.MoveOperation.End)
+    #     if not decoded_data.endswith("\n"):
+    #         self.terminal.insertPlainText("\n")
+    #     self.display_prompt()
+
+    # def display_prompt(self):
+    #     self.terminal.appendPlainText(self.prompt)
+    #     self.terminal.moveCursor(QTextCursor.MoveOperation.End)
+
+    # def insert_colored_text(self, text, default_color=QColor(255, 255, 255)):
+    #     cursor = self.terminal.textCursor()
+
+    #     ansi_escape = re.compile(r"\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])")
+    #     segments = ansi_escape.split(text)
+    #     codes = ansi_escape.findall(text)
+
+    #     current_color = default_color
+    #     for i, segment in enumerate(segments):
+    #         if segment:
+    #             format = cursor.charFormat()
+    #             format.setForeground(current_color)
+    #             cursor.setCharFormat(format)
+    #             cursor.insertText(segment)
+
+    #         if i < len(codes):
+    #             code = codes[i]
+    #             if code == "\x1B[0m":
+    #                 current_color = default_color
+    #             elif code.startswith("\x1B[38;2;"):
+    #                 rgb = code[7:-1].split(";")
+    #                 if len(rgb) == 3:
+    #                     current_color = QColor(int(rgb[0]), int(rgb[1]), int(rgb[2]))
+
+    #     self.terminal.setTextCursor(cursor)
+
+    # def keyPressEvent(self, event: QKeyEvent):
+    #     if event is not None:
+    #         if event.key() == Qt.Key.Key_Return or event.key() == Qt.Key.Key_Enter:
+    #             self.execute_command()
+    #         elif event.key() == Qt.Key.Key_Up:
+    #             self.show_previous_command()
+    #         elif event.key() == Qt.Key.Key_Down:
+    #             self.show_next_command()
+    #         else:
+    #             super().keyPressEvent(event)
+
+    # def terminal_key_press_event(self, event: QKeyEvent):
+    #     cursor = self.terminal.textCursor()
+
+    #     if event.key() == Qt.Key.Key_Return or event.key() == Qt.Key.Key_Enter:
+    #         self.execute_command()
+    #     elif event.key() == Qt.Key.Key_Backspace:
+    #         if len(self.current_command) > 0:
+    #             self.current_command = self.current_command[:-1]
+    #             cursor.deletePreviousChar()
+    #     elif event.key() == Qt.Key.Key_Up:
+    #         self.show_previous_command()
+    #     elif event.key() == Qt.Key.Key_Down:
+    #         self.show_next_command()
+    #     elif event.key() == Qt.Key.Key_Left:
+    #         if cursor.positionInBlock() > len(self.prompt):
+    #             cursor.movePosition(QTextCursor.MoveOperation.Left)
+    #     elif event.key() == Qt.Key.Key_Home:
+    #         cursor.movePosition(QTextCursor.MoveOperation.StartOfLine)
+    #         cursor.movePosition(
+    #             QTextCursor.MoveOperation.Right,
+    #             QTextCursor.MoveMode.MoveAnchor,
+    #             len(self.prompt),
+    #         )
+    #     else:
+    #         if cursor.positionInBlock() >= len(self.prompt):
+    #             self.current_command += event.text()
+    #             QPlainTextEdit.keyPressEvent(self.terminal, event)
+
+    # def execute_command(self):
+    #     self.terminal.appendPlainText("")
+    #     self.processes[self.current_process_index].write(
+    #         self.current_command.encode() + b"\n"
+    #     )
+    #     self.command_history.append(self.current_command)
+    #     self.history_index = len(self.command_history)
+    #     self.command_input.emit(self.current_command)
+    #     self.current_command = ""
+
+    # def show_previous_command(self):
+    #     if self.history_index > 0:
+    #         self.history_index -= 1
+    #         self.show_command_from_history()
+
+    # def show_next_command(self):
+    #     if self.history_index < len(self.command_history):
+    #         self.history_index += 1
+    #         self.show_command_from_history()
+
+    # def show_command_from_history(self):
+    #     cursor = self.terminal.textCursor()
+    #     cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock)
+    #     cursor.movePosition(
+    #         QTextCursor.MoveOperation.StartOfBlock, QTextCursor.MoveMode.KeepAnchor
+    #     )
+    #     cursor.removeSelectedText()
+
+    #     if self.history_index < len(self.command_history):
+    #         self.current_command = self.command_history[self.history_index]
+    #     else:
+    #         self.current_command = ""
+
+    #     cursor.insertText(f"{self.prompt}{self.current_command}")
+
+    # def run_command(self, command):
+    #     self.terminal.moveCursor(QTextCursor.MoveOperation.End)
+    #     self.terminal.insertPlainText(f"{self.prompt}{command}\n")
+    #     self.processes[self.current_process_index].write(command.encode() + b"\n")
+
     def startSession(self):
         process = QProcess(self)
         process.readyReadStandardOutput.connect(self.handle_stdout)
         process.readyReadStandardError.connect(self.handle_stderr)
+        # IMPORTANT: Add finished signal connection
+        process.finished.connect(lambda: self.process_finished())
+        
         self.processes.append(process)
         self.terminal_selector.setCurrentIndex(0)
+        
+        # CRITICAL: Connect terminal input handling
+        self.terminal.keyPressEvent = self.terminal_key_press_event
+        
+        # Initialize command tracking
+        if not hasattr(self, 'current_command'):
+            self.current_command = ""
+        if not hasattr(self, 'command_history'):
+            self.command_history = []
+        if not hasattr(self, 'history_index'):
+            self.history_index = 0
 
-        # self.start_powershell(0, project_path=current_file_path)
-        self.start_powershell(0, project_path=folder_path_)
+        if platform.system() == 'Linux':
+            self.start_shell(0, project_path=folder_path_)
+        elif platform.system() == 'Windows':
+            self.start_powershell(0, project_path=folder_path_)
+        else:
+            print("Error")
 
-        # self.start_powershell(0, project_path='')
+    def start_shell(self, index, project_path=None):
+        shell_path = self.find_shell()
+        
+        if project_path == "" or project_path == None:
+            project_path = os.getcwd()
+        
+        self.processes[index].setWorkingDirectory(project_path)
+        
+        # CRITICAL: Set process channel mode for proper I/O
+        self.processes[index].setProcessChannelMode(QProcess.ProcessChannelMode.MergedChannels)
+        
+        if shell_path:
+            # IMPORTANT: Start shell with interactive flags
+            if "bash" in shell_path:
+                self.processes[index].start(shell_path, ["-i"])
+            elif "zsh" in shell_path:
+                self.processes[index].start(shell_path, ["-i"])
+            elif "fish" in shell_path:
+                self.processes[index].start(shell_path, ["-i"])
+            else:
+                self.processes[index].start(shell_path, ["-i"])
+        else:
+            default_shell = os.environ.get('SHELL', '/bin/bash')
+            self.processes[index].start(default_shell, ["-i"])
+        
+        self.terminal.appendPlainText(f"Starting shell in: {project_path}\n")
+        # DON'T call display_prompt() here - let the shell show its own prompt
 
-        # self.run_command('cls')
+    def find_shell(self):
+        shell_paths = [
+            "/bin/bash",   
+            "/usr/bin/bash",
+            "/bin/zsh",    
+            "/usr/bin/zsh",
+            "/bin/sh",      
+            "/usr/bin/fish",       
+            "/bin/dash",           
+        ]
+        
+        user_shell = os.environ.get('SHELL')
+        if user_shell and os.path.exists(user_shell):
+            return user_shell
+        
+        for shell_path in shell_paths:
+            if os.path.exists(shell_path):
+                return shell_path
+        
+        try:
+            result = subprocess.run(
+                ["which", "bash"],
+                capture_output=True,
+                text=True,
+                check=True,
+            )
+            return result.stdout.strip()
+        except subprocess.CalledProcessError:
+            pass
+        
+        try:
+            result = subprocess.run(
+                ["which", "sh"],
+                capture_output=True,
+                text=True,
+                check=True,
+            )
+            return result.stdout.strip()
+        except subprocess.CalledProcessError:
+            return None
 
     def start_powershell(self, index, project_path=None):
         powershell_path = self.find_powershell_core()
@@ -1379,14 +1757,10 @@ class TerminalEmulator(QWidget):
 
         if powershell_path:
             self.processes[index].start(powershell_path)
-            self.terminal.appendPlainText(
-                f"Your current working directory {project_path}.\n"
-            )
+            self.terminal.appendPlainText(f"Your current working directory {project_path}.\n")
         else:
             self.processes[index].start("powershell.exe")
-            self.terminal.appendPlainText(
-                f"Your current working directory {project_path}.\n"
-            )
+            self.terminal.appendPlainText(f"Your current working directory {project_path}.\n")
 
         self.display_prompt()
 
@@ -1413,62 +1787,40 @@ class TerminalEmulator(QWidget):
             return None
 
     def handle_stdout(self):
-
         stream = self.processes[self.current_process_index]
-        data = stream.readAllStandardOutput().data() 
-
-        # data = (
-        #     self.processes[self.current_process_index]
-        #     .readAllStandardOutput()
-        #     .data()
-        #     .decode()
-        # )
-
+        data = stream.readAllStandardOutput().data()
+        
         decoded_data = data.decode('utf-8', errors='replace')
-
-
-        # Enter the decoded text into the terminal
+        
+        # Don't add extra newlines or prompts for shell output
         self.terminal.moveCursor(QTextCursor.MoveOperation.End)
         self.insert_colored_text(decoded_data)
         self.terminal.moveCursor(QTextCursor.MoveOperation.End)
-        if not decoded_data.endswith("\n"):
-            self.terminal.insertPlainText("\n")
-        self.display_prompt()
-
-
-
-
-        # self.terminal.moveCursor(QTextCursor.MoveOperation.End)
-        # self.insert_colored_text(data)
-        # self.terminal.moveCursor(QTextCursor.MoveOperation.End)
-        # if not data.endswith("\n"):
-        #     self.terminal.insertPlainText("\n")
-        # self.display_prompt()
+        
+        # REMOVED: Don't add newlines or display_prompt() for shell output
+        # The shell handles its own formatting
 
     def handle_stderr(self):
-        # data = (
-        #     self.processes[self.current_process_index]
-        #     .readAllStandardError()
-        #     .data()
-        #     .decode('utf-8', errors='replace')
-        # )
-
         stream = self.processes[self.current_process_index]
-        data = stream.readAllStandardOutput().data() 
-
+        # FIX: Should read stderr, not stdout!
+        data = stream.readAllStandardError().data()
+        
         decoded_data = data.decode('utf-8', errors='replace')
-
-
+        
         self.terminal.moveCursor(QTextCursor.MoveOperation.End)
-        self.insert_colored_text(decoded_data, QColor(255, 0, 0))  # Red color for errors
+        self.insert_colored_text(decoded_data, QColor(255, 0, 0))
         self.terminal.moveCursor(QTextCursor.MoveOperation.End)
-        if not decoded_data.endswith("\n"):
-            self.terminal.insertPlainText("\n")
-        self.display_prompt()
+
+    def process_finished(self):
+        """Handle when process exits"""
+        exit_code = self.processes[self.current_process_index].exitCode()
+        self.terminal.appendPlainText(f"\nProcess exited with code: {exit_code}\n")
 
     def display_prompt(self):
-        self.terminal.appendPlainText(self.prompt)
-        self.terminal.moveCursor(QTextCursor.MoveOperation.End)
+        # Only use this for Windows PowerShell, not for Linux shells
+        if platform.system() == 'Windows':
+            self.terminal.appendPlainText(self.prompt)
+            self.terminal.moveCursor(QTextCursor.MoveOperation.End)
 
     def insert_colored_text(self, text, default_color=QColor(255, 255, 255)):
         cursor = self.terminal.textCursor()
@@ -1508,42 +1860,85 @@ class TerminalEmulator(QWidget):
                 super().keyPressEvent(event)
 
     def terminal_key_press_event(self, event: QKeyEvent):
+        """Handle key press events in the terminal widget"""
         cursor = self.terminal.textCursor()
 
         if event.key() == Qt.Key.Key_Return or event.key() == Qt.Key.Key_Enter:
+            print(f"Enter pressed, current_command: '{self.current_command}'")  # Debug
             self.execute_command()
+            return  # Important: don't call parent keyPressEvent
+            
         elif event.key() == Qt.Key.Key_Backspace:
             if len(self.current_command) > 0:
                 self.current_command = self.current_command[:-1]
                 cursor.deletePreviousChar()
+            return
+            
         elif event.key() == Qt.Key.Key_Up:
             self.show_previous_command()
+            return
+            
         elif event.key() == Qt.Key.Key_Down:
             self.show_next_command()
+            return
+            
         elif event.key() == Qt.Key.Key_Left:
-            if cursor.positionInBlock() > len(self.prompt):
+            # For Linux shells, be more permissive with cursor movement
+            if platform.system() == 'Linux' or cursor.positionInBlock() > len(getattr(self, 'prompt', '')):
                 cursor.movePosition(QTextCursor.MoveOperation.Left)
+            return
+            
         elif event.key() == Qt.Key.Key_Home:
             cursor.movePosition(QTextCursor.MoveOperation.StartOfLine)
-            cursor.movePosition(
-                QTextCursor.MoveOperation.Right,
-                QTextCursor.MoveMode.MoveAnchor,
-                len(self.prompt),
-            )
+            if platform.system() == 'Windows':
+                cursor.movePosition(
+                    QTextCursor.MoveOperation.Right,
+                    QTextCursor.MoveMode.MoveAnchor,
+                    len(getattr(self, 'prompt', '')),
+                )
+            return
+            
         else:
-            if cursor.positionInBlock() >= len(self.prompt):
-                self.current_command += event.text()
-                QPlainTextEdit.keyPressEvent(self.terminal, event)
+            # Handle regular text input
+            text = event.text()
+            if text and text.isprintable():
+                self.current_command += text
+                print(f"Added text: '{text}', current_command now: '{self.current_command}'")  # Debug
+                
+            # Let the parent handle the visual display
+            QPlainTextEdit.keyPressEvent(self.terminal, event)
 
     def execute_command(self):
-        self.terminal.appendPlainText("")
-        self.processes[self.current_process_index].write(
-            self.current_command.encode() + b"\n"
-        )
-        self.command_history.append(self.current_command)
-        self.history_index = len(self.command_history)
-        self.command_input.emit(self.current_command)
-        self.current_command = ""
+        """Execute the current command in the shell"""
+        print(f"Executing command: '{self.current_command}'")  # Debug
+        
+        # Don't add extra newlines for Linux shells
+        if platform.system() == 'Windows':
+            self.terminal.appendPlainText("")
+        
+        # Check if process is running
+        if (self.current_process_index < len(self.processes) and 
+            self.processes[self.current_process_index].state() == QProcess.ProcessState.Running):
+            
+            # Send command to the shell process
+            command_bytes = self.current_command.encode() + b"\n"
+            bytes_written = self.processes[self.current_process_index].write(command_bytes)
+            print(f"Wrote {bytes_written} bytes to process")  # Debug
+            
+            # Add to history if not empty
+            if self.current_command.strip():
+                self.command_history.append(self.current_command)
+                self.history_index = len(self.command_history)
+            
+            # Emit signal if you have command_input signal defined
+            if hasattr(self, 'command_input'):
+                self.command_input.emit(self.current_command)
+            
+            # Clear current command
+            self.current_command = ""
+        else:
+            print("Process not running or invalid index")  # Debug
+            self.terminal.appendPlainText("Error: Shell process not running\n")
 
     def show_previous_command(self):
         if self.history_index > 0:
@@ -1568,23 +1963,19 @@ class TerminalEmulator(QWidget):
         else:
             self.current_command = ""
 
-        cursor.insertText(f"{self.prompt}{self.current_command}")
+        prompt = getattr(self, 'prompt', '')
+        cursor.insertText(f"{prompt}{self.current_command}")
 
     def run_command(self, command):
         self.terminal.moveCursor(QTextCursor.MoveOperation.End)
-        self.terminal.insertPlainText(f"{self.prompt}{command}\n")
+        
+        if platform.system() == 'Windows':
+            self.terminal.insertPlainText(f"{self.prompt}{command}\n")
+        else:
+            # For Linux shells, just send the command without adding prompt
+            pass
+            
         self.processes[self.current_process_index].write(command.encode() + b"\n")
-
-    # def run_file(self, file_path):
-    #     file_name = os.path.basename(file_path)
-    #     self.run_command(file_name)
-
-    # def change_directory(self, new_path):
-    #     self.run_command(f"cd '{new_path}'")
-
-    # def parse_ansi_codes(self, text):
-    #     ansi_escape = re.compile(r"\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])")
-    #     return ansi_escape.sub("", text)
 
 class TerminalDock(QDockWidget):
     # def __init__(self, parent):

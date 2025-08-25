@@ -37,6 +37,7 @@ def reboot():
 
 class MainTextShortcuts:
     def __init__(self, parent, completer, tab, error_label, clipboard, bawky_parent, term, bawky_parent_, opened_tabs, file_desc, list_shortcuts, git_panel, font_size, lines, show_files):
+
         self.font_size = font_size
         self.terminal = term
         self.lines = lines
