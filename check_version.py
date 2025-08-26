@@ -2,8 +2,8 @@ import requests
 
 from packaging import version
 
-APP_VERSION = "1.0.2"
-VERSION_URL = "https://raw.githubusercontent.com/NaturalCapsule/IDE/main/version/version.json"
+APP_VERSION = "1.0.3"
+VERSION_URL = "https://raw.githubusercontent.com/NaturalCapsule/Kryypto/main/version/version.json"
 
 def checkUpdate():
     try:
