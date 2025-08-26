@@ -1658,6 +1658,9 @@ class TerminalEmulator(QWidget):
         
         self.processes.append(process)
         self.terminal_selector.setCurrentIndex(0)
+        # Ensure a valid current process index
+        if self.current_process_index == -1:
+            self.current_process_index = 0
         
         # CRITICAL: Connect terminal input handling
         self.terminal.keyPressEvent = self.terminal_key_press_event
@@ -1907,9 +1910,8 @@ class TerminalEmulator(QWidget):
     def execute_command(self):
         # print(f"Executing command: '{self.current_command}'")  # Debug
         
-        # Don't add extra newlines for Linux shells
-        if platform.system() == 'Windows':
-            self.terminal.appendPlainText("")
+        # Insert a visual newline before sending the command (for all platforms)
+        self.terminal.appendPlainText("")
         
         # Check if process is running
         if (self.current_process_index < len(self.processes) and 
