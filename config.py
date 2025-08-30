@@ -680,6 +680,21 @@ def Show_Hide_Shortcuts():
         write_config('Ctrl+L', 'ShortCuts', 'Hide-Show-ShortCuts')
         return 'Ctrl+L'
 
+
+def MoveBlockDown():
+    try:
+        return config.get('ShortCuts', 'MoveBlockDown')
+    except configparser.NoOptionError:
+        write_config('Alt+Down', 'ShortCuts', 'MoveBlockDown')
+        return 'Alt+Down'
+
+def MoveBlockUp():
+    try:
+        return config.get('ShortCuts', 'MoveBlockUp')
+    except configparser.NoOptionError:
+        write_config('Alt+Up', 'ShortCuts', 'MoveBlockUp')
+        return 'Alt+Up'
+
 def Minimize():
     try:
         return config.get('ShortCuts', 'Minimize')

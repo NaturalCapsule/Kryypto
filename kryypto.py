@@ -8,8 +8,7 @@ from PyQt6.QtCore import Qt, QPoint, QRect, QCoreApplication
 from multiprocessing import freeze_support, active_children
 
 if getattr(sys, 'frozen', False):
-    # Running from PyInstaller onefile exe
-    base_path = sys._MEIPASS  # Temp folder (_MEIxxxxx)
+    base_path = sys._MEIPASS
     plugin_path = os.path.join(base_path, "PyQt6", "Qt6", "plugins")
     QCoreApplication.addLibraryPath(plugin_path)
 

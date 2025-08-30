@@ -110,8 +110,16 @@ class MainTextShortcuts:
         select_folder = QShortcut(QKeySequence(SelectFolder()), bawky_parent_)
         select_folder.activated.connect(lambda: self.show_folderGUI(bawky_parent_))
 
-        maximze = QShortcut(QKeySequence(Maximize()), bawky_parent_)
-        maximze.activated.connect(lambda: self.max_(bawky_parent_))
+
+        move_block_above = QShortcut(QKeySequence(MoveBlockUp()), parent)
+        move_block_above.activated.connect(lambda: self.moveBlock_above(parent))
+
+        move_block_below = QShortcut(QKeySequence(MoveBlockDown()), parent)
+        move_block_below.activated.connect(lambda: self.moveBlock_below(parent))
+
+
+        maximize = QShortcut(QKeySequence(Maximize()), bawky_parent_)
+        maximize.activated.connect(lambda: self.max_(bawky_parent_))
 
         minimize = QShortcut(QKeySequence(Minimize()), bawky_parent_)
         minimize.activated.connect(lambda: self.min_(bawky_parent_))
@@ -185,7 +193,6 @@ class MainTextShortcuts:
                     self.terminal.termEmulator.terminal.setFocus()
                     # self.terminal.termEmulator.run_command(fr"{sys.executable} {path}")
                     if ' ' in path:
-                        # path = f""{path}""
                         self.terminal.termEmulator.run_command(fr"{getInterpreter()} '{path}'")
                     else:
                         self.terminal.termEmulator.run_command(fr"{getInterpreter()} {path}")
@@ -198,14 +205,9 @@ class MainTextShortcuts:
                     self.terminal.termEmulator.terminal.setFocus()
 
                     if ' ' in path:
-                        # path = f""{path}""
                         self.terminal.termEmulator.run_command(fr"{getInterpreter()} '{path}'")
                     else:
                         self.terminal.termEmulator.run_command(fr"{getInterpreter()} {path}")
-
-
-                    # self.terminal.termEmulator.run_command(fr"{sys.executable} {path}")
-
                 break
 
 
@@ -249,10 +251,179 @@ class MainTextShortcuts:
             cursor.setPosition(block.position())
             cursor.select(QTextCursor.SelectionType.BlockUnderCursor)
             cursor.removeSelectedText()
-            # cursor.deleteChar()
+            if cursor.block().text() == '':
+                cursor.deleteChar()
+            else:
+                cursor.movePosition(QTextCursor.MoveOperation.Down)
+
 
         text_edit.setTextCursor(cursor)
         cursor.endEditBlock()
+
+
+    def moveBlock_below(self, text_edit):
+        cursor = text_edit.textCursor()
+        cursor.beginEditBlock()
+
+        cursor_pos = cursor.block()
+        next_block = cursor_pos.next()
+
+
+        if not cursor.hasSelection():
+            cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock)
+            cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock, QTextCursor.MoveMode.KeepAnchor)
+
+        start = cursor.selectionStart()
+        end = cursor.selectionEnd()
+
+        cursor.setPosition(start)
+        cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock)
+        start_block = cursor.blockNumber()
+
+        cursor.setPosition(end)
+        cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock)
+        end_block = cursor.blockNumber()
+
+        if next_block.isValid() and next_block.next().isValid():
+            for block_num in reversed(range(start_block, end_block + 1)):
+                block = text_edit.document().findBlockByNumber(block_num)
+                cursor.setPosition(block.position())
+
+                cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock)
+                cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock, QTextCursor.MoveMode.KeepAnchor)
+
+                line_text = cursor.block().text()
+
+
+                cursor.removeSelectedText()
+                cursor.deleteChar()
+
+                next_position = cursor.block().next().position()
+
+                # cursor.setPosition(next_position, QTextCursor.MoveMode.KeepAnchor)
+                cursor.setPosition(next_position)
+
+                cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock)
+                cursor.insertText(f'{line_text}\n')
+                cursor.setPosition(next_position)
+
+
+
+            text_edit.setTextCursor(cursor)
+
+            new_cursor = text_edit.textCursor()
+            block_start = text_edit.document().findBlockByNumber(start_block + 1).position()
+            block_end = text_edit.document().findBlockByNumber(end_block + 1).position()
+            new_cursor.setPosition(block_start, QTextCursor.MoveMode.MoveAnchor)
+            new_cursor.setPosition(block_end, QTextCursor.MoveMode.KeepAnchor)
+            text_edit.setTextCursor(new_cursor)
+
+        cursor.endEditBlock()
+
+
+    def moveBlock_above(self, text_edit):
+        # cursor = text_edit.textCursor()
+        # cursor.beginEditBlock()
+
+        # if not cursor.hasSelection():
+        #     cursor.select(QTextCursor.SelectionType.LineUnderCursor)
+
+        # start = cursor.selectionStart()
+        # end = cursor.selectionEnd()
+
+        # cursor.setPosition(start)
+        # cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock)
+        # start_block = cursor.blockNumber()
+
+        # cursor.setPosition(end)
+        # cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock)
+        # end_block = cursor.blockNumber()
+
+
+        # cursor_pos = cursor.block()
+        # prev_block = cursor_pos.previous()
+        # prev_position = prev_block.position()
+
+
+        # if prev_block.isValid():
+        #     for block_num in reversed(range(start_block, end_block + 1)):
+        #         block = text_edit.document().findBlockByNumber(block_num)
+        #         cursor.setPosition(block.position())
+
+        #         cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock)
+        #         cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock, QTextCursor.MoveMode.KeepAnchor)
+
+        #         line_text = cursor.selectedText()
+        #         cursor.removeSelectedText()
+        #         cursor.deleteChar()
+
+
+        #         cursor.setPosition(prev_position)
+        #         cursor.insertText(f'{line_text}\n')
+        #         cursor.setPosition(prev_position)
+
+        #     text_edit.setTextCursor(cursor)
+
+        # cursor.endEditBlock()
+
+
+        cursor = text_edit.textCursor()
+        cursor.beginEditBlock()
+
+        cursor_pos = cursor.block()
+        prev_block = cursor_pos.previous()
+
+
+        if not cursor.hasSelection():
+            cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock)
+            cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock, QTextCursor.MoveMode.KeepAnchor)
+
+        start = cursor.selectionStart()
+        end = cursor.selectionEnd()
+
+        cursor.setPosition(start)
+        cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock)
+        start_block = cursor.blockNumber()
+
+        cursor.setPosition(end)
+        cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock)
+        end_block = cursor.blockNumber()
+
+
+        if prev_block.isValid():
+            for block_num in range(start_block, end_block + 1):
+                block = text_edit.document().findBlockByNumber(block_num)
+                cursor.setPosition(block.position())
+
+                cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock)
+                cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock, QTextCursor.MoveMode.KeepAnchor)
+
+                line_text = cursor.block().text()
+
+                cursor.removeSelectedText()
+                cursor.deleteChar()
+
+                prev_position = cursor.block().previous().position()
+
+
+                cursor.setPosition(prev_position)
+                cursor.insertText(f'{line_text}\n')
+                cursor.setPosition(prev_position)
+
+
+            text_edit.setTextCursor(cursor)
+
+
+            new_cursor = text_edit.textCursor()
+            block_start = text_edit.document().findBlockByNumber(start_block - 1).position()
+            block_end = text_edit.document().findBlockByNumber(end_block - 1).position()
+            new_cursor.setPosition(block_start, QTextCursor.MoveMode.MoveAnchor)
+            new_cursor.setPosition(block_end, QTextCursor.MoveMode.KeepAnchor)
+            text_edit.setTextCursor(new_cursor)
+
+
+        cursor.endEditBlock()
+
 
 
     def goto_next_block(self, text_edit):
@@ -277,31 +448,105 @@ class MainTextShortcuts:
         cursor = text_edit.textCursor()
         cursor.beginEditBlock()
 
+
+
+
+        if not cursor.hasSelection():
+            cursor.select(QTextCursor.SelectionType.LineUnderCursor)
+
+        start = cursor.selectionStart()
+        end = cursor.selectionEnd()
+
+        cursor.setPosition(start)
         cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock)
-        cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock, QTextCursor.MoveMode.KeepAnchor)
+        start_block = cursor.blockNumber()
 
-        line_text = cursor.selectedText()
+        cursor.setPosition(end)
+        cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock)
+        end_block = cursor.blockNumber()
 
-        new_line = "    " + line_text
 
-        cursor.insertText(new_line)
+
+        for block_num in reversed(range(start_block, end_block + 1)):
+            block = text_edit.document().findBlockByNumber(block_num)
+            cursor.setPosition(block.position())
+
+            cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock)
+            cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock, QTextCursor.MoveMode.KeepAnchor)
+
+            line_text = cursor.selectedText()
+
+            new_line = "    " + line_text
+
+            cursor.insertText(new_line)
 
         cursor.endEditBlock()
 
+
+        # cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock)
+        # cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock, QTextCursor.MoveMode.KeepAnchor)
+
+        # line_text = cursor.selectedText()
+
+        # new_line = "    " + line_text
+
+        # cursor.insertText(new_line)
+
+        # cursor.endEditBlock()
+
     def remove_indentation(self, text_edit):
+        # cursor = text_edit.textCursor()
+        # cursor.beginEditBlock()
+
+
+        # cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock)
+        # cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock, QTextCursor.MoveMode.KeepAnchor)
+
+        # line_text = cursor.selectedText()
+
+        # stripped_line = line_text[4:] if line_text.startswith("    ") else line_text.lstrip()
+
+        # cursor.insertText(stripped_line)
+        # cursor.endEditBlock()
+
         cursor = text_edit.textCursor()
         cursor.beginEditBlock()
 
 
+
+
+        if not cursor.hasSelection():
+            cursor.select(QTextCursor.SelectionType.LineUnderCursor)
+
+        start = cursor.selectionStart()
+        end = cursor.selectionEnd()
+
+        cursor.setPosition(start)
         cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock)
-        cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock, QTextCursor.MoveMode.KeepAnchor)
+        start_block = cursor.blockNumber()
 
-        line_text = cursor.selectedText()
+        cursor.setPosition(end)
+        cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock)
+        end_block = cursor.blockNumber()
 
-        stripped_line = line_text[4:] if line_text.startswith("    ") else line_text.lstrip()
 
-        cursor.insertText(stripped_line)
+
+        for block_num in reversed(range(start_block, end_block + 1)):
+            block = text_edit.document().findBlockByNumber(block_num)
+            cursor.setPosition(block.position())
+
+            cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock)
+            cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock, QTextCursor.MoveMode.KeepAnchor)
+
+            line_text = cursor.selectedText()
+
+            stripped_line = line_text[4:] if line_text.startswith("    ") else line_text.lstrip()
+
+
+            cursor.insertText(stripped_line)
+
         cursor.endEditBlock()
+
 
 
     def increase_font(self, text_edit, tab_bar):

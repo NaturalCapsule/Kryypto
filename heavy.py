@@ -23,7 +23,6 @@ def jedi_worker(code_queue, result_queue):
         code, line, column = item
         try:
             python_path = getInterpreter()
-            print(python_path)
             if python_path:
                 try:
                     env = jedi.create_environment(python_path)

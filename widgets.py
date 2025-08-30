@@ -351,6 +351,10 @@ class MainText(QPlainTextEdit):
             self.paste_text()
             return
 
+        if key == Qt.Key.Key_Escape:
+            self.clear_selection()
+            return
+
         if key == Qt.Key.Key_F and event.modifiers() & Qt.KeyboardModifier.ControlModifier:
             if self.finder.maximumHeight() == 0:
                 animatePanel(self.finder, self.window, show=True)
@@ -377,6 +381,11 @@ class MainText(QPlainTextEdit):
 
         if self.show_completer and showCompleter():
             self.handle_autocomplete()
+
+    def clear_selection(self):
+        cursor = self.textCursor()
+        cursor.clearSelection()
+        self.setTextCursor(cursor)
 
     def toggle_comments(self):
         cursor = self.textCursor()
@@ -2220,14 +2229,15 @@ class ListShortCuts(QWidget):
         shortcut_27 = QLabel(f'Remove Hovered File: <span style="background-color: #2d2d2d">Ctrl + K</span>')
         shortcut_28 = QLabel(f'Remove Hovered Folder: <span style="background-color: #2d2d2d">Ctrl + J</span>')
 
+        shortcut_29 = QLabel(f'Move Block Up: <span style="background-color: #2d2d2d">{MoveBlockUp()}</span>')
+        shortcut_30 = QLabel(f'Move Block Down: <span style="background-color: #2d2d2d">{MoveBlockDown()}</span>')
+
         self.left_column = QVBoxLayout()
         self.right_column = QVBoxLayout()
         self.left_column.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.right_column.setAlignment(Qt.AlignmentFlag.AlignTop)
 
-        # for shortcut in [shortcut_1, shortcut_2, shortcut_3, shortcut_4, shortcut_5, shortcut_6, shortcut_7, shortcut_8, shortcut_9, shortcut_19, shortcut_21, shortcut_23]:
-        # for shortcut in [shortcut_1, shortcut_2, shortcut_3, shortcut_4, shortcut_5, shortcut_6, shortcut_25, shortcut_28 ,shortcut_7, shortcut_8, shortcut_9, shortcut_19, shortcut_21, shortcut_23]:
-        for shortcut in [shortcut_1, shortcut_3, shortcut_20, shortcut_6, shortcut_7, shortcut_2, shortcut_19, shortcut_5, shortcut_4, shortcut_9, shortcut_10, shortcut_11, shortcut_21, shortcut_23]:
+        for shortcut in [shortcut_1, shortcut_3, shortcut_29, shortcut_20, shortcut_6, shortcut_7, shortcut_2, shortcut_19, shortcut_5, shortcut_4, shortcut_9, shortcut_10, shortcut_11, shortcut_21, shortcut_23]:
 
 
             shortcut.setObjectName('ShortCutTexts')
@@ -2235,10 +2245,7 @@ class ListShortCuts(QWidget):
             self.left_column.addWidget(shortcut)
 
 
-        # dway 7
-        # for shortcut in [shortcut_10, shortcut_11, shortcut_12, shortcut_13, shortcut_14, shortcut_15, shortcut_16, shortcut_17, shortcut_18, shortcut_20, shortcut_22, shortcut_24]:
-        # for shortcut in [shortcut_10, shortcut_11, shortcut_12, shortcut_13, shortcut_14, shortcut_15, shortcut_26, shortcut_27 ,shortcut_16, shortcut_17, shortcut_18, shortcut_20, shortcut_22, shortcut_24]:
-        for shortcut in [shortcut_25, shortcut_26, shortcut_27, shortcut_28, shortcut_12, shortcut_13, shortcut_14, shortcut_15 ,shortcut_16, shortcut_17, shortcut_8, shortcut_18, shortcut_22, shortcut_24]:
+        for shortcut in [shortcut_25, shortcut_26, shortcut_30, shortcut_27, shortcut_28, shortcut_12, shortcut_13, shortcut_14, shortcut_15 ,shortcut_16, shortcut_17, shortcut_8, shortcut_18, shortcut_22, shortcut_24]:
 
 
             shortcut.setObjectName('ShortCutTexts')
@@ -2695,7 +2702,7 @@ def pop_messagebox(parent, event, tab_bar, use_events):
 
     box.setWindowFlag(Qt.WindowType.FramelessWindowHint)
 
-    box.setText('Hey!\nIt looks like you are trying to close IDE without saving your progress\nDo you really want your work go in vain?')
+    box.setText('Hey!\nIt looks like you are trying to close Kryypto without saving your progress\nDo you really want your work go in vain?')
 
     box.setObjectName('MessageBox')
     box.setStyleSheet(get_css_style())
