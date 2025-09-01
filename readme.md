@@ -9,8 +9,8 @@ A lightweight, fully keyboard-supported text editor with deep customization and 
 ![Kryypto 3](icons/app/readme/kr3.PNG)
 ![Kryypto 4](icons/app/readme/kr4.PNG)
 ![Kryypto 5](icons/app/readme/kr5.PNG)
-![Kryypto 7](icons/app/readme/kr7.PNG)
 ![Kryypto 8](icons/app/readme/kr8.PNG)
+![Kryypto 7](icons/app/readme/kr7.PNG)
 
 ## ✨ Features
 
@@ -67,7 +67,7 @@ you got two options:
 
 This project is licensed under a [License](LICENSE.txt).
 
-
+<!-- 
 ## Kurdish
 
 بەرنامەیەکی کێش سووک، بە تەواوی پشتگیریKeyboard دەکات بە شێوازی جۆراو جۆر لەگەڵ GitHub.
@@ -133,4 +133,4 @@ Git و GitHub
 
 
 > [!WARNING]
-> ~~لەوانەیە کە یەکەم جار بەرنامەکە بکەیتەوە git ئیرۆر بات دەتوانیت چاکی بکەیت بە دابەزاندنی git و ڕێکی خەیت یان CMD کەیتەوە و بنوسیت: set GIT_PYTHON_REFRESH=quiet~~
+> ~~لەوانەیە کە یەکەم جار بەرنامەکە بکەیتەوە git ئیرۆر بات دەتوانیت چاکی بکەیت بە دابەزاندنی git و ڕێکی خەیت یان CMD کەیتەوە و بنوسیت: set GIT_PYTHON_REFRESH=quiet~~ -->

@@ -2661,14 +2661,14 @@ class MessageBox(QMessageBox):
 
         self.addButton(ok_button, QMessageBox.ButtonRole.YesRole)
         self.addButton(cancel, QMessageBox.ButtonRole.RejectRole)
-        if add_buttons:
-            to_kurdish = QPushButton(self)
-            to_kurdish.setObjectName('MessageBoxSaveNot')
-            to_kurdish.setText('کوردی')
-            to_kurdish.setStyleSheet(get_css_style())
-            self.addButton(to_kurdish, QMessageBox.ButtonRole.AcceptRole)
-            to_kurdish.clicked.disconnect()  
-            to_kurdish.clicked.connect(lambda: self.change(to_kurdish))
+        # if add_buttons:
+        #     to_kurdish = QPushButton(self)
+        #     to_kurdish.setObjectName('MessageBoxSaveNot')
+        #     to_kurdish.setText('کوردی')
+        #     to_kurdish.setStyleSheet(get_css_style())
+        #     self.addButton(to_kurdish, QMessageBox.ButtonRole.AcceptRole)
+        #     to_kurdish.clicked.disconnect()  
+        #     to_kurdish.clicked.connect(lambda: self.change(to_kurdish))
 
 
         self.exec()
@@ -2678,19 +2678,19 @@ class MessageBox(QMessageBox):
             if self.clickedButton() == ok_button:
                 webbrowser.open(link)
 
-    def change(self, button: QPushButton):
-        if button.text() == 'کوردی':
-            self.setText("بەخێر بێت بۆ Kryypto!\n\n"
-f"پێش ئەوەی دەست پێ بکەیت configuration file بکەوە بە بەکارهێنانی {OpenConfigFile()}\n"
-"وە برۆ بۆ بەشی [Python] بۆ pythoninterpreter\n"
-"وە لەوێ شوێنی python.exe دانێ.\n"
-"ئەگەر نازانی شۆێنی، دەتوانیت CMD کەیتەوەو بنوسیت: where python"
-"بەوە شوێنەکەت پیشان ئەیات.")
-            button.setText('English')
+#     def change(self, button: QPushButton):
+#         if button.text() == 'کوردی':
+#             self.setText("بەخێر بێت بۆ Kryypto!\n\n"
+# f"پێش ئەوەی دەست پێ بکەیت configuration file بکەوە بە بەکارهێنانی {OpenConfigFile()}\n"
+# "وە برۆ بۆ بەشی [Python] بۆ pythoninterpreter\n"
+# "وە لەوێ شوێنی python.exe دانێ.\n"
+# "ئەگەر نازانی شۆێنی، دەتوانیت CMD کەیتەوەو بنوسیت: where python"
+# "بەوە شوێنەکەت پیشان ئەیات.")
+#             button.setText('English')
 
-        else:
-            button.setText('کوردی')
-            self.setText(f'Welcome to Kryypto!\n\nbefore you get started please open the configuration file by pressing {OpenConfigFile()} after this Message Box, go to [Python]\npythoninterpreter\nand put your python.exe.\n\nIf you dont know where it is you can open CMD and type: where python\nthis will give you the python interpreter path!')
+#         else:
+#             button.setText('کوردی')
+#             self.setText(f'Welcome to Kryypto!\n\nbefore you get started please open the configuration file by pressing {OpenConfigFile()} after this Message Box, go to [Python]\npythoninterpreter\nand put your python.exe.\n\nIf you dont know where it is you can open CMD and type: where python\nthis will give you the python interpreter path!')
 
     def open_link(self, url):
         webbrowser.open(url.toString())

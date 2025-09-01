@@ -114,6 +114,15 @@ def get_python_builtin():
         write_config("255, 255, 255", 'Python', 'builtin')
         return 255, 255, 255
 
+def get_python_unusedvarColor():
+    try:
+        con = config.get('Python', 'unusedvariable')
+        r, g, b = con.split(',')
+        return int(r), int(g), int(b)
+    except configparser.NoOptionError:
+        write_config("128, 128, 128", 'Python', 'unusedvariable')
+        return 128, 128, 128
+
 def set_advancedHighlighting():
     try:
         return config.getboolean('Python', "AdvancedSyntaxHighlighting")

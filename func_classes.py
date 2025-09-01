@@ -1,9 +1,28 @@
 import importlib, inspect
 import io
 import tokenize
+import ast
 
 _cache = {}
 _cache_size_limit = 1000
+
+
+
+class UnusedVariableFinder(ast.NodeVisitor):
+    def __init__(self):
+        self.assigned = set()
+        self.used = set()
+
+    def visit_Assign(self, node):
+        for target in node.targets:
+            if isinstance(target, ast.Name):
+                self.assigned.add(target.id)
+        self.generic_visit(node)
+
+    def visit_Name(self, node):
+        if isinstance(node.ctx, ast.Load):  
+            self.used.add(node.id)
+        self.generic_visit(node)
 
 def classify_import(module_name, attr_name):
     try:
@@ -28,10 +47,18 @@ def list_classes_functions(code_text: str):
     args = []
     prev = None
 
-    # Keep a small set just to avoid double-tagging obvious imports/calls
     seen = set()
 
     try:
+
+        tree = ast.parse(code_text)
+        finder = UnusedVariableFinder()
+        finder.visit(tree)
+
+        unused = finder.assigned - finder.used
+        for unuse in unused:
+            func_class_instances[unuse] = 'unused'
+
 
         tokens = tokenize.generate_tokens(io.StringIO(code_text).readline)
 

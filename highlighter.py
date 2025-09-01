@@ -90,16 +90,10 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
         r, g, b = get_bracket()
         self.func_args_format.setForeground(QColor(r, g, b))
 
+        self.unused_format = QTextCharFormat()
+        r, g, b = get_python_unusedvarColor()
+        self.unused_format.setForeground(QColor(r, g, b))
 
-        # self.comment_format = QTextCharFormat()
-        # self.comment_format.setForeground(QColor(r, g, b))  
-        # self.highlighting_rules.append((QRegularExpression('#[^\n]*'), self.comment_format, 'comment'))
-
-
-
-        # string_format = QTextCharFormat()
-        # r, g, b = get_string()
-        # string_format.setForeground(QColor(r, g, b))
 
         self.highlighting_rules.append((
             QRegularExpression(r'"[^"\\]*(\\.[^"\\]*)*"'),
@@ -644,22 +638,6 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
                             used_ranges.add((pos, pos + len(arg_name)))
 
 
-
-            # for arg in self.function_args:
-            #     pattern = QRegularExpression(fr"\b{arg}\b")
-            #     it = pattern.globalMatch(text)
-
-
-            #     while it.hasNext():
-            #         match = it.next()
-
-            #         if is_overlapping(match.capturedStart(), match.capturedLength(), used_ranges):
-            #             continue
-
-            #         self.setFormat(match.capturedStart(), match.capturedLength(), self.arg_usage_format)
-            #         used_ranges.add((match.capturedStart(), match.capturedStart() + match.capturedLength()))
-
-
             try:
                 for name, (pattern, type_name) in self._compiled_patterns.items():
                     it = pattern.globalMatch(text)
@@ -694,6 +672,8 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
                         elif type_name == 'args':
                             self.setFormat(match.capturedStart(), match.capturedLength(), self.func_args_format)
 
+                        elif type_name == 'unused':
+                            self.setFormat(match.capturedStart(), match.capturedLength(), self.unused_format)
 
                         used_ranges.add((match.capturedStart(), match.capturedStart() + match.capturedLength()))
 
