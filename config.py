@@ -818,3 +818,12 @@ def get_linenumbercolor():
     except configparser.NoOptionError:
         write_config('255, 255, 255', 'Editor', 'LineNumberColor')
         return 255, 255, 255
+    
+def get_activeLineColor():
+    try:
+        con = config.get('Editor', 'activteLineColor')
+        r, g, b = con.split(',')
+        return int(r), int(g), int(b)
+    except configparser.NoOptionError:
+        write_config('121, 192, 255', 'Editor', 'activteLineColor')
+        return 121, 192, 255

@@ -7,6 +7,8 @@ from PyQt6.QtWidgets import QFileDialog
 from PyQt6.QtCore import QRunnable, pyqtSignal, QObject
 from config import write_config, get_openedDir
 
+
+
 # Try to import git, but handle the case where it's not available
 try:
     import git

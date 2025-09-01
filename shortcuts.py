@@ -450,7 +450,6 @@ class MainTextShortcuts:
 
 
 
-
         if not cursor.hasSelection():
             cursor.select(QTextCursor.SelectionType.LineUnderCursor)
 

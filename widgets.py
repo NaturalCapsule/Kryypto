@@ -99,6 +99,8 @@ class MainText(QPlainTextEdit):
 
         if showDocstringpanel():
             self.cursorPositionChanged.connect(self.on_text_change)
+
+
             self.jedi_bridge.result_ready.connect(self.on_docstring_result)
 
         self.update_line_number_area_width(0)
@@ -117,9 +119,6 @@ class MainText(QPlainTextEdit):
         self.completer.setCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
         self.completer.activated.connect(self.insert_completion)
         self.hide()
-
-
-
 
         self._last_docstring_position = -1
         self._last_docstring = ""
@@ -181,6 +180,10 @@ class MainText(QPlainTextEdit):
 
         if rect.contains(self.viewport().rect()):
             self.update_line_number_area_width(0)
+
+
+    # def cursorChanges(self):
+        # self.on_text_change()
 
 
     def toggle_cursor(self):
@@ -515,11 +518,6 @@ class MainText(QPlainTextEdit):
             return
 
         self.code_queue_.put((code, line, column))
-        # worker = AutocompleteRunnable(self, code, line, column, 1)
-        # worker.signals.results.connect(self.on_autocomplete_results)
-        # worker.signals.error.connect(self.on_autocomplete_error)
-
-        # QThreadPool.globalInstance().start(worker)
 
 
 
@@ -577,7 +575,6 @@ class MainText(QPlainTextEdit):
 
     def line_number_area_paint_event(self, event, font_metrics):
         painter = QPainter(self.line_number_area)
-        # painter.fillRect(event.rect(), QColor(30, 30, 46))
 
         r, g, b = get_lineareacolor()
 
@@ -597,9 +594,12 @@ class MainText(QPlainTextEdit):
         while block.isValid() and top <= event.rect().bottom():
             if block.isVisible() and bottom >= event.rect().top():
                 number = str(block_number + 1)
-                # painter.setPen(QColor(160, 160, 160))
-                r, g, b = get_linenumbercolor()
-                painter.setPen(QColor(r, g, b))
+                if block_number == self.textCursor().block().blockNumber():
+                    r, g, b = get_activeLineColor()
+                    painter.setPen(QColor(r, g, b))
+                else:
+                    r, g, b = get_linenumbercolor()
+                    painter.setPen(QColor(r, g, b))
 
                 painter.drawText(
                     0, top, self.line_number_area.width() - 5, font_metrics.height(),
@@ -609,7 +609,7 @@ class MainText(QPlainTextEdit):
             top = bottom
             bottom = top + int(self.blockBoundingRect(block).height())
             block_number += 1
-
+    
 
 class DocStringDock(QDockWidget):
     def __init__(self, parent, use):
@@ -2167,7 +2167,6 @@ class WelcomeWidget(QWidget):
         self._layout.addWidget(shortcut_3, alignment=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignBottom)
         self._layout.addWidget(shortcut_4, alignment=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignBottom)
         self.setFocus()
-        # self.show()
 
     def update_text(self):
         if self.current_index <= len(self.full_text):
@@ -2202,7 +2201,6 @@ class ListShortCuts(QWidget):
         shortcut_5 = QLabel(f'Show/Hide Terminal: <span style="background-color: #2d2d2d">{Hide_Show_term()}</span>')
         shortcut_6 = QLabel(f'Go to line: <span style="background-color: #2d2d2d">{GotoBlock_()}</span>')
         shortcut_7 = QLabel(f'Find text: <span style="background-color: #2d2d2d">Ctrl + F</span>')
-        # shortcut_8 = QLabel(f'Get Error: <span style="background-color: #2d2d2d">Ctrl + Shift + C</span>')
         shortcut_8 = QLabel(f'Open CSS file: <span style="background-color: #2d2d2d">{OpenStyleFile()}</span>')
 
 

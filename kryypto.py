@@ -110,13 +110,11 @@ class Kryypto(QMainWindow):
         
         is_update = checkUpdate()
 
-        # if checkUpdate():
         if is_update:
             widgets.MessageBox(
                 f"'An update for "
                 f"<a href='{is_update}'>Kryypto</a>"
                 " has been released go download it!",
-                # link=True
                 link=is_update
 
             )

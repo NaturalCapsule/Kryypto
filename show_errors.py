@@ -7,12 +7,11 @@ import json
 import commentjson
 
 from PyQt6.QtGui import QTextCursor, QColor, QTextCharFormat, QTextCursor, QColor
-from PyQt6.QtCore import QThreadPool, QTimer, QRunnable, pyqtSlot, pyqtSignal, QObject, QThread, QMutex, QMutexLocker, Q_ARG
-# from PyQt6.QtWidgets import QApplication
+from PyQt6.QtCore import QTimer, QRunnable, Q_ARG
 from lark.exceptions import UnexpectedToken
 from threading import Thread
 from multiprocessing import Process, Queue
-
+from concurrent.futures import ProcessPoolExecutor
 
 from func_classes import list_classes_functions
 from config import set_advancedHighlighting
@@ -48,7 +47,8 @@ class ShowErrors:
     def __init__(self, parent, highlighter):
         super().__init__()
         parent.textChanged.connect(self.schedule_check)
-        from heavy import SyntaxBridge, syntax_worker
+        # from heavy import SyntaxBridge, syntax_worker
+        self.exec = ProcessPoolExecutor(max_workers = 2)
 
 
         self.timer = QTimer()
@@ -56,16 +56,16 @@ class ShowErrors:
         self.timer.timeout.connect(self.check_syntax)
 
 
-        self._code_queue = Queue()
-        self._result_queue = Queue()
+        # self._code_queue = Queue()
+        # self._result_queue = Queue()
 
-        self.syntax_processor = Process(target=syntax_worker, args=(self._code_queue, self._result_queue))
-        self.syntax_processor.start()
+        # self.syntax_processor = Process(target=syntax_worker, args=(self._code_queue, self._result_queue))
+        # self.syntax_processor.start()
 
-        _bridge = SyntaxBridge(self._code_queue, self._result_queue)
-        self.syntax_bridge = _bridge
+        # _bridge = SyntaxBridge(self._code_queue, self._result_queue)
+        # self.syntax_bridge = _bridge
 
-        self.syntax_bridge.result_ready.connect(self.analyze_code)
+        # self.syntax_bridge.result_ready.connect(self.analyze_code)
 
 
         self.error_label = None
@@ -73,8 +73,6 @@ class ShowErrors:
         self.parent = parent
         self.highlighter = highlighter
         
-        # self.thread_pool = QThreadPool()
-        # self.thread_pool.setMaxThreadCount(1)
         
         self._current_code = ""
         self._last_instances = {}
@@ -105,24 +103,14 @@ class ShowErrors:
 
 
             if set_advancedHighlighting():
-                self._code_queue.put(code)
+                # self._code_queue.put(code)
+                # with ProcessPoolExecutor(max_workers=2) as executor:
+                self.parse_code(code)
+                #     future = executor.submit(list_classes_functions, code)
+                #     tokens = future.result(timeout=5)
+                #     future.add_done_callback(self.on_done)
+                    # self.analyze_code(tokens)
 
-                # if self._use_sync_fallback:
-                #     instances = list_classes_functions(code)
-                #     self._update_highlighter(instances)
-                # else:
-                #     if len(code.strip()) < self._sync_threshold:
-                #         instances = list_classes_functions(code)
-                #         self._update_highlighter(instances)
-                #     else:
-                #         if self._use_background:
-                #             # Cancel previous task
-                #             self._current_task_id += 1
-                #             worker = AnalysisWorker(code, self, self._current_task_id)
-                #             self.thread_pool.start(worker)
-                #         else:
-                #             instances = list_classes_functions(code)
-                #             self._update_highlighter(instances)
 
         except (SyntaxError, NameError) as e:
             if self.error_label:
@@ -143,18 +131,19 @@ class ShowErrors:
             if self.nameErrorlabel:
                 self.nameErrorlabel.setText(f'⚠️ Module Not Found: {e.name}')
         except Exception as e:
-
             pass
 
-    # @pyqtSlot(dict)
-    # def _update_highlighter(self, instances):
-    #     try:
-    #         if instances and isinstance(instances, dict):
-    #             if instances != self._last_instances:
-    #                 self.analyze_code(instances)
-    #                 self._last_instances = instances
-    #     except Exception as e:
-    #         print(f"Error in update highlighter: {e}")
+    def parse_code(self, code):
+        if set_advancedHighlighting():
+            future = self.exec.submit(list_classes_functions, code)
+            future.add_done_callback(self.on_done)
+
+    def on_done(self, future):
+        try:
+            tokens = future.result()
+            self.analyze_code(tokens)
+        except Exception as e:
+            print(f"Error in on_done: {e}")
 
     def clear_error_highlighting(self):
         cursor = self.parent.textCursor()
