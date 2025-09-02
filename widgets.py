@@ -616,14 +616,15 @@ class MainText(QPlainTextEdit):
                     painter.setPen(QColor(r, g, b))
 
                 painter.drawText(
-                    0, top, self.line_number_area.width() - 5, font_metrics.height(),
+                    # 0, top, self.line_number_area.width() - 5, font_metrics.height(),
+                    0, top, self.line_number_area.width(), font_metrics.height(),
+
                     Qt.AlignmentFlag.AlignRight, number
                 )
             block = block.next()
             top = bottom
             bottom = top + int(self.blockBoundingRect(block).height())
             block_number += 1
-    
 
 class DocStringDock(QDockWidget):
     def __init__(self, parent, use):

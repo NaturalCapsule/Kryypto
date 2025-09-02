@@ -156,25 +156,24 @@ class MainTextShortcuts:
         parent.showMinimized()
 
     def goto_bookrmarked_block(self, text_edit: QPlainTextEdit):
-        cursor = text_edit.textCursor()
+        if text_edit.bookmarked_blocks:
+            cursor = text_edit.textCursor()
+            try:
+                block = text_edit.document().findBlockByNumber(text_edit.bookmarked_blocks[self.index])
+                cursor.setPosition(block.position())
 
-        try:
-            block = text_edit.document().findBlockByNumber(text_edit.bookmarked_blocks[self.index])
-            cursor.setPosition(block.position())
-
-        except IndexError:
-            self.index = 0
-            block = text_edit.document().findBlockByNumber(text_edit.bookmarked_blocks[self.index])
-            cursor.setPosition(block.position())
+            except IndexError:
+                self.index = 0
+                block = text_edit.document().findBlockByNumber(text_edit.bookmarked_blocks[self.index])
+                cursor.setPosition(block.position())
 
 
-        self.index += 1
-        text_edit.setTextCursor(cursor)
+            self.index += 1
+            text_edit.setTextCursor(cursor)
 
     def bookmark_line(self, text_edit: QPlainTextEdit):
         cursor = text_edit.textCursor()
         current_block = cursor.block().blockNumber()
-        # print(current_block)
         if current_block not in text_edit.bookmarked_blocks:
             text_edit.bookmarked_blocks.append(current_block)
 
