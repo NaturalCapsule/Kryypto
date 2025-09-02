@@ -33,6 +33,8 @@ nameErrorlabel.setStyleSheet(get_css_style())
 
 file_description = {}
 
+
+
 commenting = ''
 current_file_path = ''
 
@@ -44,6 +46,8 @@ class MainText(QPlainTextEdit):
     def __init__(self, parent, window, font_size, window_):
         super().__init__()
         self.font_size = font_size
+        self.bookmarked_blocks = []
+
         global commenting
         self.clipboard = window
         self.window = window_
@@ -84,13 +88,15 @@ class MainText(QPlainTextEdit):
 
         self.cursor_visible = True
         r, g, b = get_cursorColor()
-        # self.cursor_color = QColor("#f38ba8")
         self.cursor_color = QColor(r, g, b)
 
         self.blink_timer = QTimer(self)
         self.blink_timer.timeout.connect(self.toggle_cursor)
         self.blink_timer.start(get_cursorBlinkingRate())
 
+        self.bookmarked_timer = QTimer(self)
+        self.bookmarked_timer.timeout.connect(self.update_line)
+        self.bookmarked_timer.start(400)
 
 
         self.line_number_area = ShowLines(self, self.font_size)
@@ -169,6 +175,9 @@ class MainText(QPlainTextEdit):
         digits = len(str(self.blockCount()))
         return 3 + font_metrics.horizontalAdvance('9') * digits
 
+    def update_line(self):
+        self.line_number_area.update()
+
     def update_line_number_area_width(self, _):
         self.setViewportMargins(self.line_number_area_width(self.line_number_area.font_metrics), 0, 0, 0)
 
@@ -182,14 +191,9 @@ class MainText(QPlainTextEdit):
             self.update_line_number_area_width(0)
 
 
-    # def cursorChanges(self):
-        # self.on_text_change()
-
-
     def toggle_cursor(self):
         self.cursor_visible = not self.cursor_visible
         self.viewport().update()
-
 
     def paintEvent(self, event):
         super().paintEvent(event)
@@ -573,6 +577,8 @@ class MainText(QPlainTextEdit):
         cr = self.contentsRect()
         self.line_number_area.setGeometry(QRect(cr.left(), cr.top(), self.line_number_area_width(self.line_number_area.font_metrics), cr.height()))
 
+
+    ## use self.line_number_area.update() in a QTimer for updating bookmarked lines. maybe it will work?!
     def line_number_area_paint_event(self, event, font_metrics):
         painter = QPainter(self.line_number_area)
 
@@ -597,8 +603,16 @@ class MainText(QPlainTextEdit):
                 if block_number == self.textCursor().block().blockNumber():
                     r, g, b = get_activeLineColor()
                     painter.setPen(QColor(r, g, b))
+
+                elif int(block.blockNumber()) in self.bookmarked_blocks:
+                    r, g, b = get_bookmarkedlineColor()
+                    painter.setPen(QColor(r, g, b))
+
                 else:
                     r, g, b = get_linenumbercolor()
+                    if block.blockNumber() not in self.bookmarked_blocks:
+                        painter.setPen(QColor(r, g, b))
+
                     painter.setPen(QColor(r, g, b))
 
                 painter.drawText(
@@ -2230,12 +2244,16 @@ class ListShortCuts(QWidget):
         shortcut_29 = QLabel(f'Move Block Up: <span style="background-color: #2d2d2d">{MoveBlockUp()}</span>')
         shortcut_30 = QLabel(f'Move Block Down: <span style="background-color: #2d2d2d">{MoveBlockDown()}</span>')
 
+        shortcut_31 = QLabel(f'Bookmark Current Line: <span style="background-color: #2d2d2d">{bookmarkLine()}</span>')
+        shortcut_32 = QLabel(f'Go to Bookmarked Line: <span style="background-color: #2d2d2d">{gotobookmarkedline()}</span>')
+        shortcut_33 = QLabel(f'Remove Bookmarked Line: <span style="background-color: #2d2d2d">{removebookmarkedline()}</span>')
+
         self.left_column = QVBoxLayout()
         self.right_column = QVBoxLayout()
         self.left_column.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.right_column.setAlignment(Qt.AlignmentFlag.AlignTop)
 
-        for shortcut in [shortcut_1, shortcut_3, shortcut_29, shortcut_20, shortcut_6, shortcut_7, shortcut_2, shortcut_19, shortcut_5, shortcut_4, shortcut_9, shortcut_10, shortcut_11, shortcut_21, shortcut_23]:
+        for shortcut in [shortcut_1, shortcut_3, shortcut_20, shortcut_6, shortcut_7, shortcut_2, shortcut_19, shortcut_5, shortcut_4, shortcut_9, shortcut_10, shortcut_11, shortcut_31, shortcut_32, shortcut_33, shortcut_21, shortcut_23]:
 
 
             shortcut.setObjectName('ShortCutTexts')
@@ -2243,7 +2261,7 @@ class ListShortCuts(QWidget):
             self.left_column.addWidget(shortcut)
 
 
-        for shortcut in [shortcut_25, shortcut_26, shortcut_30, shortcut_27, shortcut_28, shortcut_12, shortcut_13, shortcut_14, shortcut_15 ,shortcut_16, shortcut_17, shortcut_8, shortcut_18, shortcut_22, shortcut_24]:
+        for shortcut in [shortcut_25, shortcut_26, shortcut_29, shortcut_30, shortcut_27, shortcut_28, shortcut_12, shortcut_13, shortcut_14, shortcut_15 ,shortcut_16, shortcut_17, shortcut_8, shortcut_18, shortcut_22, shortcut_24]:
 
 
             shortcut.setObjectName('ShortCutTexts')

@@ -704,6 +704,29 @@ def MoveBlockUp():
         write_config('Alt+Up', 'ShortCuts', 'MoveBlockUp')
         return 'Alt+Up'
 
+def bookmarkLine():
+    try:
+        return config.get('ShortCuts', 'bookmarkline')
+    except configparser.NoOptionError:
+        write_config('Ctrl+O', 'ShortCuts', 'bookmarkline')
+        return 'Ctrl+O'
+    
+
+def removebookmarkedline():
+    try:
+        return config.get('ShortCuts', 'removebookmarkedline')
+    except configparser.NoOptionError:
+        write_config('Ctrl+E', 'ShortCuts', 'removebookmarkedline')
+        return 'Ctrl+E'
+
+
+def gotobookmarkedline():
+    try:
+        return config.get('ShortCuts', 'gotobookmarkedline')
+    except configparser.NoOptionError:
+        write_config('Ctrl+R', 'ShortCuts', 'gotobookmarkedline')
+        return 'Ctrl+R'
+
 def Minimize():
     try:
         return config.get('ShortCuts', 'Minimize')
@@ -836,3 +859,12 @@ def get_activeLineColor():
     except configparser.NoOptionError:
         write_config('121, 192, 255', 'Editor', 'activteLineColor')
         return 121, 192, 255
+    
+def get_bookmarkedlineColor():
+    try:
+        con = config.get('Editor', 'bookmarkedlines')
+        r, g, b = con.split(',')
+        return int(r), int(g), int(b)
+    except configparser.NoOptionError:
+        write_config('255, 184, 77', 'Editor', 'bookmarkedlines')
+        return 255, 184, 77

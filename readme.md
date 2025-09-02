@@ -1,6 +1,5 @@
-# Kryypto 📝
+# Kryypto ⌨️​
 
-## English
 A lightweight, fully keyboard-supported text editor with deep customization and GitHub integration.
 
 ## ScreenShots 📸

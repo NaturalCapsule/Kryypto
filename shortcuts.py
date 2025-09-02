@@ -3,6 +3,7 @@ import sys
 import os
 
 from PyQt6.QtGui import QFont, QShortcut, QKeySequence, QTextCursor, QFontMetrics
+from PyQt6.QtWidgets import QPlainTextEdit
 from PyQt6.QtCore import QProcess, QCoreApplication
 
 from config import get_fontFamily, write_config
@@ -42,7 +43,7 @@ class MainTextShortcuts:
         self.terminal = term
         self.lines = lines
         self.show_files = show_files
-
+        self.index = 0
 
 
         delete_line = QShortcut(QKeySequence(DeleteLine()), parent)
@@ -117,6 +118,16 @@ class MainTextShortcuts:
         move_block_below = QShortcut(QKeySequence(MoveBlockDown()), parent)
         move_block_below.activated.connect(lambda: self.moveBlock_below(parent))
 
+        goto_bookrmarked_block = QShortcut(QKeySequence("Ctrl+R"), parent)
+        goto_bookrmarked_block.activated.connect(lambda: self.goto_bookrmarked_block(parent))
+
+        bookmark_line = QShortcut(QKeySequence("Ctrl+O"), parent)
+        bookmark_line.activated.connect(lambda: self.bookmark_line(parent))
+
+        pop_bookmark_line = QShortcut(QKeySequence("Ctrl+E"), parent)
+        # pop_bookmark_line = QShortcut(QKeySequence("Ctrl+Alt+R"), parent)
+        pop_bookmark_line.activated.connect(lambda: self.pop_bookmarked_line(parent))
+
 
         maximize = QShortcut(QKeySequence(Maximize()), bawky_parent_)
         maximize.activated.connect(lambda: self.max_(bawky_parent_))
@@ -144,6 +155,34 @@ class MainTextShortcuts:
     def min_(self, parent):
         parent.showMinimized()
 
+    def goto_bookrmarked_block(self, text_edit: QPlainTextEdit):
+        cursor = text_edit.textCursor()
+
+        try:
+            block = text_edit.document().findBlockByNumber(text_edit.bookmarked_blocks[self.index])
+            cursor.setPosition(block.position())
+
+        except IndexError:
+            self.index = 0
+            block = text_edit.document().findBlockByNumber(text_edit.bookmarked_blocks[self.index])
+            cursor.setPosition(block.position())
+
+
+        self.index += 1
+        text_edit.setTextCursor(cursor)
+
+    def bookmark_line(self, text_edit: QPlainTextEdit):
+        cursor = text_edit.textCursor()
+        current_block = cursor.block().blockNumber()
+        # print(current_block)
+        if current_block not in text_edit.bookmarked_blocks:
+            text_edit.bookmarked_blocks.append(current_block)
+
+    def pop_bookmarked_line(self, text_edit):
+        try:
+            text_edit.bookmarked_blocks.pop()
+        except IndexError:
+            pass
 
     def show_folderGUI(self, parent):
         open_file_dialog_again(parent)
