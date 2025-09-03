@@ -196,7 +196,8 @@ class MainTextShortcuts:
 
 
     def open_config(self, tab, file_desc, bawky_parent, parent):
-        path = "config/configuration.cfg"
+        # path = "config/configuration.cfg"
+        path = fr'C:\Users\{os.getlogin()}\AppData\Roaming\Kryypto\config\configuration.cfg'
         with open(path, 'r', encoding = 'utf-8') as css_file:
             if path not in file_desc.keys() and 'configuration.cfg' not in file_desc.values():
                 file_desc[path] = 'configuration.cfg'
@@ -206,11 +207,13 @@ class MainTextShortcuts:
 
 
     def open_css(self, tab, file_desc, bawky_parent, parent):
-        path = "config/style.css"
+        # path = "config/style.css"
+        path = get_stylefile()
+        file_name = path.split(r'\\')[-1]
         with open(path, 'r', encoding = 'utf-8') as css_file:
-            if path not in file_desc.keys() and 'style.css' not in file_desc.values():
-                file_desc[path] = 'style.css'
-                tab.add_file(path, 'style.css')
+            if path not in file_desc.keys() and file_name not in file_desc.values():
+                file_desc[path] = file_name
+                tab.add_file(path, file_name)
                 parent.setPlainText(css_file.read())
                 parent.setFocus()
 

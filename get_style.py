@@ -47,7 +47,7 @@ ids = [
     "MessageBoxSaveNot",
     "MessageBoxCancel"
 ]
-
+import os
 def get_css_style():
     try:
         with open(get_stylefile()) as f:
@@ -61,5 +61,5 @@ def get_css_style():
             return read_file
 
     except FileNotFoundError:
-        with open('config/style.css') as f:
+        with open(fr'C:\Users\{os.getlogin()}\AppData\Roaming\Kryypto\config\style.css') as f:
             return f.read()

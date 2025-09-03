@@ -1,11 +1,40 @@
 import sys
 import os
+import shutil
+import time
+import platform
+
+src = r'config'
+if platform.system() == 'Windows':        
+    dst = fr'C:\Users\{os.getlogin()}\AppData\Roaming\Kryypto'
+elif platform.system() == 'Linux':
+    dst = os.path.expanduser('~/.config/Kryypto')
+else:
+    print("Unknown OS detected, exiting now...")
+    sys.exit()
+
+did_transfer = False
+
+if os.path.exists(src) and not os.path.exists(dst):
+    os.makedirs(dst, exist_ok=True)
+    shutil.move(src, dst)
+
+    new_path = os.path.join(dst, 'config')
+    for _ in range(50):
+        if os.path.exists(new_path):
+            did_transfer = True
+            break
+        time.sleep(0.1)
+    else:
+        raise FileNotFoundError(f"Move failed, {new_path} not found")
+
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QApplication, QMainWindow
 from PyQt6.QtGui import  QSurfaceFormat, QCloseEvent, QIcon, QPixmap
 from titlebar import CustomTitleBar
 from PyQt6.QtCore import Qt, QPoint, QRect, QCoreApplication
-# from multiprocessing import Process, Queue
 from multiprocessing import freeze_support, active_children
+
+
 
 if getattr(sys, 'frozen', False):
     base_path = sys._MEIPASS
@@ -20,14 +49,24 @@ from heavy import *
 
 from config import setCustomTitleBar
 from get_style import get_css_style
-from pygit import open_file_dialog, is_gitInstalled, folder_path_
 from config import get_fontSize
 from check_version import checkUpdate
 
 class Kryypto(QMainWindow):
     def __init__(self, clipboard):
         super().__init__()
+        # self.move_folder()
+        from pygit import open_file_dialog
+
         from widgets import MessageBox
+
+        if did_transfer:
+            if platform.system() == 'Windows':
+                MessageBox(fr"configuration files is now moved to 'C:\Users\{os.getlogin()}\AppData\Roaming\Kryypto' if not. move the 'config' folder manually to 'C:\Users\{os.getlogin()}\AppData\Roaming\Kryypto'")
+            elif platform.system() == 'Linux':
+                MessageBox(f"configuration files is now moved to '~/.config/Kryypto/config' if not\nmove the 'config' folder manually to '~/.config/Kryypto'")
+
+
         self.clipboard = clipboard
         self.settings = Setting()
         self.opened_directory = open_file_dialog(self, True)
@@ -67,8 +106,17 @@ class Kryypto(QMainWindow):
         except Exception:
             self.settings.setValue('NewUser', self.new_user_count)
 
+    # def move_folder(self):
+    #     import widgets
+    #     if os.path.exists(r'config') and not os.path.exists(fr'C:\Users\{os.getlogin()}\AppData\Roaming\Kryypto'):
+    #         os.makedirs(fr'C:\Users\{os.getlogin()}\AppData\Roaming\Kryypto')
+    #         # print('yes')
+    #         shutil.move('config', fr'C:\Users\{os.getlogin()}\AppData\Roaming\Kryypto')
+    #         widgets.MessageBox(fr"configuration files is now moved to 'C:\Users\{os.getlogin()}\AppData\Roaming\Kryypto' if not\nmove the 'config' folder manually to 'C:\Users\{os.getlogin()}\AppData\Roaming\Kryypto'")
 
     def addDocks(self):
+        from pygit import is_gitInstalled
+
         self.inner_window.setWindowFlags(Qt.WindowType.FramelessWindowHint)
         
         if is_gitInstalled():

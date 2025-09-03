@@ -9,7 +9,6 @@ from config import write_config, get_openedDir
 
 
 
-# Try to import git, but handle the case where it's not available
 try:
     import git
     GIT_AVAILABLE = True
