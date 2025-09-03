@@ -7,18 +7,16 @@ import platform
 if platform.system() == "Windows":
     path = fr'C:\Users\{os.getlogin()}\AppData\Roaming\Kryypto\config\configuration.cfg'
 elif platform.system() == 'Linux':
-    path = '~/.config/Kryypto/config/configuration.cfg'
+    # path = '~/.config/KryyptoConfig/config/configuration.cfg'
+    path = os.path.expanduser('~/.config/KryyptoConfig/config/configuration.cfg')
 
 config = configparser.ConfigParser()
-# config.read(fr'C:\Users\{os.getlogin()}\AppData\Roaming\Kryypto\config\configuration.cfg')
 config.read(path)
 
 
 def write_config(value, section, option):
     config[section][option] = str(value)
-    # with open (fr'C:\Users\{os.getlogin()}\AppData\Roaming\Kryypto\config\configuration.cfg', 'w', encoding = 'utf-8') as configfile:
     with open (path, 'w', encoding = 'utf-8') as configfile:
-
         config.write(configfile)
 
 def get_comment():
@@ -511,8 +509,11 @@ def get_stylefile():
                 write_config(fr'C:\Users\{os.getlogin()}\AppData\Roaming\Kryypto\config\style.css', 'Appearance', 'StyleFile')
                 return fr'C:\Users\{os.getlogin()}\AppData\Roaming\Kryypto\config\style.css'
             elif platform.system() == "Linux":
-                write_config(fr'~/.config/Kryypto/config/style.css', 'Appearance', 'StyleFile')
-                return fr'~/.config/Kryypto/config/style.css'
+                write_config(fr'~/.config/KryyptoConfig/config/style.css', 'Appearance', 'StyleFile')
+                # return f'~/.config/KryyptoConfig/config/style.css'
+                path = os.path.expanduser('~/.config/KryyptoConfig/config/style.css')
+                return path
+
 
     except configparser.NoOptionError:
         # write_config(fr'C:\Users\{os.getlogin()}\AppData\Roaming\Kryypto\config\style.css', 'Appearance', 'StyleFile')
@@ -521,8 +522,10 @@ def get_stylefile():
             write_config(fr'C:\Users\{os.getlogin()}\AppData\Roaming\Kryypto\config\style.css', 'Appearance', 'StyleFile')
             return fr'C:\Users\{os.getlogin()}\AppData\Roaming\Kryypto\config\style.css'
         elif platform.system() == "Linux":
-            write_config(fr'~/.config/Kryypto/config/style.css', 'Appearance', 'StyleFile')
-            return fr'~/.config/Kryypto/config/style.css'
+            write_config(fr'~/.config/KryyptoConfig/config/style.css', 'Appearance', 'StyleFile')
+            # return fr'~/.config/KryyptoConfig/config/style.css'
+            path = os.path.expanduser('~/.config/KryyptoConfig/config/style.css')
+            return path
 
 
 def useItalic():

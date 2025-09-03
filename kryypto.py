@@ -8,7 +8,7 @@ src = r'config'
 if platform.system() == 'Windows':        
     dst = fr'C:\Users\{os.getlogin()}\AppData\Roaming\Kryypto'
 elif platform.system() == 'Linux':
-    dst = os.path.expanduser('~/.config/Kryypto')
+    dst = os.path.expanduser('~/.config/KryyptoConfig')
 else:
     print("Unknown OS detected, exiting now...")
     sys.exit()
@@ -64,7 +64,7 @@ class Kryypto(QMainWindow):
             if platform.system() == 'Windows':
                 MessageBox(fr"configuration files is now moved to 'C:\Users\{os.getlogin()}\AppData\Roaming\Kryypto' if not. move the 'config' folder manually to 'C:\Users\{os.getlogin()}\AppData\Roaming\Kryypto'")
             elif platform.system() == 'Linux':
-                MessageBox(f"configuration files is now moved to '~/.config/Kryypto/config' if not\nmove the 'config' folder manually to '~/.config/Kryypto'")
+                MessageBox(f"configuration files is now moved to '~/.config/KryyptoConfig/config' if not\nmove the 'config' folder manually to '~/.config/KryyptoConfig'")
 
 
         self.clipboard = clipboard
