@@ -23,6 +23,7 @@ A lightweight, fully keyboard-supported text editor with deep customization and 
   - Jump to line
   - Adjustable cursor (color & width)
   - Configurable animations (types & duration)
+-Discord presence
 - Git & GitHub Integration
   - View total commits
   - See last commit message & date

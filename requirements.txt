@@ -6,3 +6,4 @@ lark==1.2.2
 requests==2.32.3
 gitpython==3.1.45
 cssutils==2.11.1
+pypresence==4.3.0

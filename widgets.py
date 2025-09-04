@@ -9,6 +9,7 @@ from PyQt6.QtGui import  QPainter, QPainterPath, QPixmap, QTextCursor, QKeyEvent
 from PyQt6.QtWidgets import QMessageBox, QFrame, QComboBox, QLabel, QPushButton, QHBoxLayout, QLineEdit, QPlainTextEdit, QVBoxLayout, QWidget, QCompleter, QDockWidget, QTextEdit, QTreeView, QFileIconProvider, QTabBar
 from lines import ShowLines
 from multiprocessing import Process, Queue
+from discord_presence import DiscordPresence
 
 from get_style import get_css_style
 
@@ -37,6 +38,7 @@ file_description = {}
 
 commenting = ''
 current_file_path = ''
+# file_ = ''
 
 # layout = QVBoxLayout(central_widget)
 
@@ -47,6 +49,7 @@ class MainText(QPlainTextEdit):
         super().__init__()
         self.font_size = font_size
         self.bookmarked_blocks = []
+        self.file_name_ = None
 
         global commenting
         self.clipboard = window
@@ -76,6 +79,9 @@ class MainText(QPlainTextEdit):
         self.selected_text = None
         self.setContextMenuPolicy(Qt.ContextMenuPolicy.NoContextMenu)
 
+        self.discord_presence = DiscordPresence()
+        self.discord_presence.connect()
+
         self.doc_panel = None
 
         self.docstring_timer = QTimer()
@@ -89,6 +95,10 @@ class MainText(QPlainTextEdit):
         self.cursor_visible = True
         r, g, b = get_cursorColor()
         self.cursor_color = QColor(r, g, b)
+
+        self.discord_timer = QTimer(self)
+        self.discord_timer.timeout.connect(self.update_presence)
+        self.discord_timer.start(1000)
 
         self.blink_timer = QTimer(self)
         self.blink_timer.timeout.connect(self.toggle_cursor)
@@ -170,6 +180,19 @@ class MainText(QPlainTextEdit):
             else:
                 formatted.append(line)
         return "<br>".join(formatted)
+
+    def update_presence(self):
+        if self.discord_presence.connected:
+            if current_file_path != '':
+                directory = current_file_path.split('/')[-2]
+                cursor = self.textCursor()
+                pos = cursor.position()
+                line, column = self.cursor_to_line_column(pos)
+                position = f"{line}:{column}"
+                self.discord_presence.update_file(file_name=self.file_name_, directory=directory, cursor_position = position)
+            else:
+                self.discord_presence.update_file(file_name=self.file_name_)
+
 
     def line_number_area_width(self, font_metrics):
         digits = len(str(self.blockCount()))
@@ -578,7 +601,6 @@ class MainText(QPlainTextEdit):
         self.line_number_area.setGeometry(QRect(cr.left(), cr.top(), self.line_number_area_width(self.line_number_area.font_metrics), cr.height()))
 
 
-    ## use self.line_number_area.update() in a QTimer for updating bookmarked lines. maybe it will work?!
     def line_number_area_paint_event(self, event, font_metrics):
         painter = QPainter(self.line_number_area)
 
@@ -769,6 +791,7 @@ class ShowDirectory(QDockWidget):
             path = self.sender().model().filePath(index)
             str_path = str(path)
             file_name = str_path.split('/')[-1]
+
             if '.' in file_name:
                 if path not in file_description.keys() and file_name not in file_description.values():
 
@@ -971,7 +994,6 @@ class CustomIcons(QFileIconProvider):
 class ShowOpenedFile(QTabBar):
     def __init__(self, editor, layout, error_label, parent, welcome_page, editor_containter, editor_layout, nameError):
     # def __init__(self, editor, layout, error_label, parent):
-
         super().__init__()
         global file_description
         global commenting
@@ -981,7 +1003,8 @@ class ShowOpenedFile(QTabBar):
         self.welcome_page = welcome_page
         self.editor_layout = editor_layout
         self.editor_containter = editor_containter
-
+        # self.discord_ = DiscordPresence()
+        # self.discord_.connect()
 
         self.editor = editor
         self.layout_ = layout
@@ -1128,6 +1151,8 @@ class ShowOpenedFile(QTabBar):
                         self.editor.setPlainText(file.read())
 
                         cursor.endEditBlock()
+                        self.editor.file_name_ = file_name
+                        # self.discord_.update_file(file_name, current_file_path)
 
                 except FileNotFoundError:
                     self.remove_tab(self.currentIndex())

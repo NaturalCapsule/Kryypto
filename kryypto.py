@@ -160,13 +160,13 @@ class Kryypto(QMainWindow):
 
         if is_update:
             widgets.MessageBox(
-                f"'An update for "
+                f"An update for "
                 f"<a href='{is_update}'>Kryypto</a>"
                 " has been released go download it!",
                 link=is_update
 
             )
-        
+
         central_widget = QWidget()
 
 
@@ -384,6 +384,8 @@ class Kryypto(QMainWindow):
 
         if self.tab_bar.is_save_file_needed():
             pop_messagebox(self, event, self.tab_bar, True)
+
+        self.main_text.discord_presence.disconnect()
 
 if __name__ == "__main__":
     freeze_support()
