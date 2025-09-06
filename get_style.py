@@ -45,7 +45,8 @@ ids = [
     "MessageBox",
     "MessageBoxSave",
     "MessageBoxSaveNot",
-    "MessageBoxCancel"
+    "MessageBoxCancel",
+    "MarkdownViewer"
 ]
 import os
 import platform

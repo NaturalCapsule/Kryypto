@@ -100,6 +100,9 @@ class MainTextShortcuts:
         open_config_file = QShortcut(QKeySequence(OpenConfigFile()), bawky_parent_)
         open_config_file.activated.connect(lambda: self.open_config(opened_tabs, file_desc, bawky_parent_, parent))
 
+        open_markdown_file = QShortcut(QKeySequence(OpenMarkDownFile()), bawky_parent_)
+        open_markdown_file.activated.connect(lambda: self.open_markdown(opened_tabs, file_desc, bawky_parent_, parent))
+
 
         hide_show_shortcuts = QShortcut(QKeySequence(Show_Hide_Shortcuts()), bawky_parent_)
         hide_show_shortcuts.activated.connect(lambda: self.hide_show_shortcuts(bawky_parent_, list_shortcuts))
@@ -208,6 +211,19 @@ class MainTextShortcuts:
                 parent.setPlainText(css_file.read())
                 parent.setFocus()
 
+    def open_markdown(self, tab, file_desc, bawky_parent, parent):
+        # path = "config/configuration.cfg"
+        # if platform.system() == 'Windows':
+        #     path = fr'C:\Users\{os.getlogin()}\AppData\Roaming\Kryypto\config\configuration.cfg'
+        # elif platform.system() == "Linux":
+        #     path = f'~/.config/KryyptoConfig/config/configuration.cfg'
+        path = get_markdownpreview_file()
+        with open(path, 'r', encoding = 'utf-8') as markdown_file:
+            if path not in file_desc.keys() and 'markdown.txt' not in file_desc.values():
+                file_desc[path] = 'markdown.txt'
+                tab.add_file(path, 'markdown.txt')
+                parent.setPlainText(markdown_file.read())
+                parent.setFocus()
 
     def open_css(self, tab, file_desc, bawky_parent, parent):
         # path = "config/style.css"

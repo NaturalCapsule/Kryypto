@@ -24,6 +24,7 @@ A lightweight, fully keyboard-supported text editor with deep customization and 
   - Adjustable cursor (color & width)
   - Configurable animations (types & duration)
 - Discord presence
+- Live MarkDown Preview
 - Git & GitHub Integration
   - View total commits
   - See last commit message & date
@@ -33,6 +34,7 @@ A lightweight, fully keyboard-supported text editor with deep customization and 
   - Builtin Terminal
   - Docstring panel (hover to see function/class docstring)
   - Tab-based file switching
+  - Bookmarking lines
   - Custom title bar
 - Syntax Highlighting for
   - Python
@@ -40,19 +42,20 @@ A lightweight, fully keyboard-supported text editor with deep customization and 
   - JSON
   - Config files
   - Markdown
-
+  
 ## 🚀 Getting Started
 
 you got two options:
 
-1. Clone the repository:
+1. Install binary file from the releases
+
+2. Clone the repository:
    ```bash
    git clone git@github.com:NaturalCapsule/Kryypto.git
    cd kryypto
    pip install -r requirements.txt
    kryypto.py
 
-2. Install binary file from the releases
 
 > [!WARNING]
 > This project is under development. You might face lagging when loading large files or syntax highlighting missmatch, etc.

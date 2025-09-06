@@ -314,6 +314,41 @@ def get_css_none():
 #     r, g, b = con.split(',')
 #     return int(r), int(g), int(b)
 
+def get_markdownpreview_file():
+    try:
+        con = config.get('MarkDown', 'markdownpreview')
+        # r, g, b = con.split(',')
+        if con:
+            return con
+        
+        # return int(r), int(g), int(b)
+    # except configparser.NoOptionError:
+    #     write_config("255, 255, 255", 'MarkDown', 'markdownpreview')
+    #     return 255, 255, 255
+    
+        else:
+            if platform.system() == 'Windows':
+                write_config(fr'C:\Users\{os.getlogin()}\AppData\Roaming\Kryypto\config\markdown.txt', 'MarkDown', 'markdownpreview')
+                return fr'C:\Users\{os.getlogin()}\AppData\Roaming\Kryypto\config\markdown.txt'
+            elif platform.system() == "Linux":
+                write_config(fr'~/.config/KryyptoConfig/config/markdown.txt', 'MarkDown', 'markdownpreview')
+                # return f'~/.config/KryyptoConfig/config/markdown.txt'
+                path = os.path.expanduser('~/.config/KryyptoConfig/config/markdown.txt')
+                return path
+
+
+    except configparser.NoOptionError:
+        # write_config(fr'C:\Users\{os.getlogin()}\AppData\Roaming\Kryypto\config\markdown.txt', 'MarkDown', 'markdownpreview')
+        # return fr'C:\Users\{os.getlogin()}\AppData\Roaming\Kryypto\config\markdown.txt'
+        if platform.system() == 'Windows':
+            write_config(fr'C:\Users\{os.getlogin()}\AppData\Roaming\Kryypto\config\markdown.txt', 'MarkDown', 'markdownpreview')
+            return fr'C:\Users\{os.getlogin()}\AppData\Roaming\Kryypto\config\markdown.txt'
+        elif platform.system() == "Linux":
+            write_config(fr'~/.config/KryyptoConfig/config/markdown.txt', 'MarkDown', 'markdownpreview')
+            # return fr'~/.config/KryyptoConfig/config/markdown.txt'
+            path = os.path.expanduser('~/.config/KryyptoConfig/config/markdown.txt')
+            return path
+
 
 def get_markdown_backtick():
     try:
@@ -685,6 +720,13 @@ def OpenStyleFile():
     except configparser.NoOptionError:
         write_config('Ctrl+Shift+S', 'ShortCuts', 'OpenStyleFile')
         return 'Ctrl+Shift+S'
+
+def OpenMarkDownFile():
+    try:
+        return config.get('ShortCuts', 'OpenMarkdownfile')
+    except configparser.NoOptionError:
+        write_config('Ctrl+Shift+M', 'ShortCuts', 'OpenMarkdownfile')
+        return 'Ctrl+Shift+M'
 
 def Maximize():
     try:

@@ -3,10 +3,13 @@ import subprocess
 import os
 import platform
 import webbrowser
+import markdown
 from datetime import datetime
-from PyQt6.QtCore import QPointF, QThreadPool, QRectF, QTimer, Qt, QRect, QFileInfo, pyqtSignal, QProcess
+from PyQt6.QtWebEngineWidgets import QWebEngineView
+from PyQt6.QtCore import QUrl, QPointF, QThreadPool, QRectF, QTimer, Qt, QRect, QFileInfo, pyqtSignal, QProcess
 from PyQt6.QtGui import  QPainter, QPainterPath, QPixmap, QTextCursor, QKeyEvent, QPainter, QColor, QFont, QTextCursor, QColor, QFileSystemModel, QIcon, QStandardItemModel, QStandardItem
 from PyQt6.QtWidgets import QMessageBox, QFrame, QComboBox, QLabel, QPushButton, QHBoxLayout, QLineEdit, QPlainTextEdit, QVBoxLayout, QWidget, QCompleter, QDockWidget, QTextEdit, QTreeView, QFileIconProvider, QTabBar
+
 from lines import ShowLines
 from multiprocessing import Process, Queue
 from discord_presence import DiscordPresence
@@ -50,6 +53,11 @@ class MainText(QPlainTextEdit):
         self.font_size = font_size
         self.bookmarked_blocks = []
         self.file_name_ = None
+        self.md_file = None
+
+        with open(get_markdownpreview_file(), 'r', encoding = 'utf-8') as md_file:
+            self.md_file = md_file.read()
+
 
         global commenting
         self.clipboard = window
@@ -69,6 +77,9 @@ class MainText(QPlainTextEdit):
         self.jedi_completion_bridge = bridge_
         self.jedi_completion_bridge.result_ready.connect(self.on_autocomplete_results)
 
+
+        self.markdown_preview = None
+        self.is_markdown = False
 
         self.font__ = QFont(get_fontFamily(), get_fontSize())
         self.font__.setStyleStrategy(QFont.StyleStrategy.PreferAntialias)
@@ -138,6 +149,31 @@ class MainText(QPlainTextEdit):
 
         self._last_docstring_position = -1
         self._last_docstring = ""
+
+    def update_markdown(self):
+        if self.markdown_preview:
+            md_text = self.toPlainText()
+            m_html = markdown.markdown(
+                md_text,
+                extensions=["fenced_code", "tables", "sane_lists", "nl2br", "attr_list", "md_in_html", "pymdownx.tilde", "pymdownx.extra", "pymdownx.blocks.admonition", "pymdownx.superfences", "pymdownx.details"]
+            )
+
+
+            html = f"""
+            <html>
+            <head>
+            <style>
+                {self.md_file}
+            </style>
+            </head>
+            <body>
+                {m_html}
+            </body>
+            </html>
+            """
+
+            self.markdown_preview.setHtml(html)
+
 
     def cursor_to_line_column(self, pos):
         text = self.toPlainText()
@@ -998,13 +1034,12 @@ class ShowOpenedFile(QTabBar):
         global file_description
         global commenting
         self.is_panel = True
+        self.markdown_panel = None
         self.tab_paths = {}
         self.previous_index = -1
         self.welcome_page = welcome_page
         self.editor_layout = editor_layout
         self.editor_containter = editor_containter
-        # self.discord_ = DiscordPresence()
-        # self.discord_.connect()
 
         self.editor = editor
         self.layout_ = layout
@@ -1160,6 +1195,23 @@ class ShowOpenedFile(QTabBar):
 
 
                 if file_name.lower().endswith('.py') or file_name.lower().endswith('.pyi'):
+                    if self.editor.markdown_preview:
+                        # self.layout_.removeWidget(self.editor.markdown_preview)
+                        # self.layout_.removeWidget(self.markdown_panel)
+                        self.parent_.removeDockWidget(self.markdown_panel)
+
+                        # self.h_layout.removeWidget(self.editor.markdown_preview)
+                        self.markdown_panel.destroy()
+                        self.markdown_panel.deleteLater()
+
+                        self.markdown_panel = False
+
+                        self.editor.markdown_preview.destroy()
+                        self.editor.markdown_preview.deleteLater()
+                        self.editor.markdown_preview = None
+                        self.editor.is_markdown = False
+
+                    
                     current_file_path = path
                     self.highlighter = PythonSyntaxHighlighter(use_highlighter = True, parent=self.editor.document())
 
@@ -1188,6 +1240,23 @@ class ShowOpenedFile(QTabBar):
 
 
                 elif file_name.lower().endswith('.json') or file_name.lower().endswith('.jsonc'):
+                    if self.editor.markdown_preview:
+                        # self.layout_.removeWidget(self.editor.markdown_preview)
+                        # self.h_layout.removeWidget(self.editor.markdown_preview)
+                        # self.layout_.removeWidget(self.markdown_panel)
+                        self.parent_.removeDockWidget(self.markdown_panel)
+
+                        # self.h_layout.removeWidget(self.editor.markdown_preview)
+                        self.markdown_panel.destroy()
+                        self.markdown_panel.deleteLater()
+
+
+                        self.editor.markdown_preview.destroy()
+                        self.editor.markdown_preview.deleteLater()
+                        self.editor.markdown_preview = None
+                        self.editor.is_markdown = False
+
+
                     self.highlighter = PythonSyntaxHighlighter(False, self.editor.document())
                     self.highlighter.deleteLater()
                     self.highlighter = JsonSyntaxHighlighter(True, self.editor.document())
@@ -1221,9 +1290,12 @@ class ShowOpenedFile(QTabBar):
                     self.is_panel = True
 
                     if file_name.lower().endswith('.jsonc'):
+
+                        self.editor.is_markdown = False
                         self.show_error = ShowJsonErrors(self.editor, self.highlighter, path, True)
 
                     elif file_name.lower().endswith('.json'):
+                        self.editor.is_markdown = False
                         self.show_error = ShowJsonErrors(self.editor, self.highlighter, path, False)
                     self.show_error.error_label = self.error_label
                     # self.layout_.addWidget(self.error_label)
@@ -1232,6 +1304,22 @@ class ShowOpenedFile(QTabBar):
                     self.error_label.show()
 
                 elif file_name.lower().endswith('.css'):
+                    if self.editor.markdown_preview:
+                        # self.layout_.removeWidget(self.editor.markdown_preview)
+                        # self.h_layout.removeWidget(self.editor.markdown_preview)
+                        # self.layout_.removeWidget(self.markdown_panel)
+                        self.parent_.removeDockWidget(self.markdown_panel)
+
+                        # self.h_layout.removeWidget(self.editor.markdown_preview)
+                        self.markdown_panel.destroy()
+                        self.markdown_panel.deleteLater()
+
+                        self.editor.markdown_preview.destroy()
+                        self.editor.markdown_preview.deleteLater()
+                        self.editor.markdown_preview = None
+                        self.editor.is_markdown = False
+
+
                     self.highlighter = PythonSyntaxHighlighter(False, self.editor.document())
                     self.highlighter.deleteLater()
                     self.highlighter = CssSyntaxHighlighter(True, self.editor.document())
@@ -1274,6 +1362,21 @@ class ShowOpenedFile(QTabBar):
 
 
                 elif file_name.lower().endswith('.ini') or file_name.lower().endswith('.settings') or file_name.lower().endswith('.conf') or file_name.lower().endswith('.cfg') or file_name.lower().endswith('.config'):
+                    if self.editor.markdown_preview:
+                        # self.layout_.removeWidget(self.editor.markdown_preview)
+                        # self.h_layout.removeWidget(self.editor.markdown_preview)
+                        # self.layout_.removeWidget(self.markdown_panel)
+                        self.parent_.removeDockWidget(self.markdown_panel)
+
+                        # self.h_layout.removeWidget(self.editor.markdown_preview)
+                        self.markdown_panel.destroy()
+                        self.markdown_panel.deleteLater()
+
+                        self.editor.markdown_preview.destroy()
+                        self.editor.markdown_preview.deleteLater()
+                        self.editor.markdown_preview = None
+                        self.editor.is_markdown = False
+
                     self.highlighter = PythonSyntaxHighlighter(False, self.editor.document())
                     self.highlighter.deleteLater()
                     self.highlighter = ConfigSyntaxHighlighter(True, self.editor.document())
@@ -1310,6 +1413,15 @@ class ShowOpenedFile(QTabBar):
 
 
                 elif file_name.lower().endswith('md') or file_name.lower().endswith('markdown'):
+                    if not self.editor.markdown_preview:
+                        self.editor.is_markdown = True
+                        self.editor.markdown_preview = QWebEngineView()
+                        self.editor.markdown_preview.setObjectName('MarkdownViewer')
+                        self.editor.markdown_preview.setStyleSheet(get_css_style())
+                        self.markdown_panel = MarkdownDock(self.parent_, self.editor.markdown_preview)
+
+                        self.editor.textChanged.connect(self.editor.update_markdown)
+
                     self.highlighter = PythonSyntaxHighlighter(False, self.editor.document())
                     self.highlighter.deleteLater()
                     self.highlighter = MarkdownSyntaxHighlighter(True, self.editor.document())
@@ -1340,6 +1452,19 @@ class ShowOpenedFile(QTabBar):
 
 
                 else:
+                    if self.editor.markdown_preview:
+                        # self.layout_.removeWidget(self.editor.markdown_preview)
+                        # self.h_layout.removeWidget(self.editor.markdown_preview)
+                        self.layout_.removeWidget(self.markdown_panel)
+                        # self.h_layout.removeWidget(self.editor.markdown_preview)
+                        self.markdown_panel.destroy()
+                        self.markdown_panel.deleteLater()
+
+                        self.editor.markdown_preview.destroy()
+                        self.editor.markdown_preview.deleteLater()
+                        self.editor.markdown_preview = None
+
+                    self.editor.is_markdown = False
                     try:
                         if self.show_error:
                             self.show_error.error_label = None
@@ -1436,268 +1561,6 @@ class TerminalEmulator(QWidget):
         self.terminal_selector = QComboBox()
         # self.terminal_selector.setStyleSheet("QComboBox { min-width: 150px; }")
 
-    # def startSession(self):
-    #     process = QProcess(self)
-    #     process.readyReadStandardOutput.connect(self.handle_stdout)
-    #     process.readyReadStandardError.connect(self.handle_stderr)
-    #     self.processes.append(process)
-    #     self.terminal_selector.setCurrentIndex(0)
-
-    #     if platform.system() == 'Linux':
-    #         self.start_shell(0, project_path = folder_path_)
-
-    #     elif platform.system() == 'Windows':
-    #         self.start_powershell(0, project_path=folder_path_)
-    #     else:
-    #         print("Error")
-
-
-
-    # def start_shell(self, index, project_path=None):
-    #     shell_path = self.find_shell()
-        
-    #     if project_path == "" or project_path == None:
-    #         project_path = os.getcwd()
-        
-    #     self.processes[index].setWorkingDirectory(project_path)
-        
-    #     if shell_path:
-    #         self.processes[index].start(shell_path)
-    #     else:
-    #         default_shell = os.environ.get('SHELL', '/bin/bash')
-    #         self.processes[index].start(default_shell)
-        
-    #     self.terminal.appendPlainText(
-    #         f"Your current working directory {project_path}.\n"
-    #     )
-    #     self.display_prompt()
-
-    # def find_shell(self):
-    #     shell_paths = [
-    #         "/bin/bash",   
-    #         "/usr/bin/bash",
-    #         "/bin/zsh",    
-    #         "/usr/bin/zsh",
-    #         "/bin/sh",      
-    #         "/usr/bin/fish",       
-    #         "/bin/dash",           
-    #     ]
-        
-    #     user_shell = os.environ.get('SHELL')
-    #     if user_shell and os.path.exists(user_shell):
-    #         return user_shell
-        
-    #     for shell_path in shell_paths:
-    #         if os.path.exists(shell_path):
-    #             return shell_path
-        
-    #     try:
-    #         result = subprocess.run(
-    #             ["which", "bash"],
-    #             capture_output=True,
-    #             text=True,
-    #             check=True,
-    #         )
-    #         return result.stdout.strip()
-    #     except subprocess.CalledProcessError:
-    #         pass
-        
-    #     try:
-    #         result = subprocess.run(
-    #             ["which", "sh"],
-    #             capture_output=True,
-    #             text=True,
-    #             check=True,
-    #         )
-    #         return result.stdout.strip()
-    #     except subprocess.CalledProcessError:
-    #         return None
-
-
-
-    # def start_powershell(self, index, project_path=None):
-    #     powershell_path = self.find_powershell_core()
-    #     if project_path == "":
-    #         project_path = os.getcwd()
-
-    #     self.processes[index].setWorkingDirectory(project_path)
-
-    #     if powershell_path:
-    #         self.processes[index].start(powershell_path)
-    #         self.terminal.appendPlainText(
-    #             f"Your current working directory {project_path}.\n"
-    #         )
-    #     else:
-    #         self.processes[index].start("powershell.exe")
-    #         self.terminal.appendPlainText(
-    #             f"Your current working directory {project_path}.\n"
-    #         )
-
-    #     self.display_prompt()
-
-    # def find_powershell_core(self):
-    #     paths_maybe = [
-    #         r"C:\Program Files\PowerShell\7\pwsh.exe",
-    #         r"C:\Program Files (x86)\PowerShell\7\pwsh.exe",
-    #         "/usr/local/bin/pwsh",
-    #         "/usr/bin/pwsh",
-    #     ]
-
-    #     for path in paths_maybe:
-    #         if os.path.exists(path):
-    #             return path
-    #     try:
-    #         result = subprocess.run(
-    #             ["where", "pwsh"] if os.name == "nt" else ["which", "pwsh"],
-    #             capture_output=True,
-    #             text=True,
-    #             check=True,
-    #         )
-    #         return result.stdout.strip()
-    #     except subprocess.CalledProcessError:
-    #         return None
-
-    # def handle_stdout(self):
-
-    #     stream = self.processes[self.current_process_index]
-    #     data = stream.readAllStandardOutput().data() 
-
-
-    #     decoded_data = data.decode('utf-8', errors='replace')
-
-
-    #     self.terminal.moveCursor(QTextCursor.MoveOperation.End)
-    #     self.insert_colored_text(decoded_data)
-    #     self.terminal.moveCursor(QTextCursor.MoveOperation.End)
-    #     if not decoded_data.endswith("\n"):
-    #         self.terminal.insertPlainText("\n")
-    #     self.display_prompt()
-
-
-    # def handle_stderr(self):
-
-    #     stream = self.processes[self.current_process_index]
-    #     data = stream.readAllStandardOutput().data() 
-
-    #     decoded_data = data.decode('utf-8', errors='replace')
-
-
-    #     self.terminal.moveCursor(QTextCursor.MoveOperation.End)
-    #     self.insert_colored_text(decoded_data, QColor(255, 0, 0))
-    #     self.terminal.moveCursor(QTextCursor.MoveOperation.End)
-    #     if not decoded_data.endswith("\n"):
-    #         self.terminal.insertPlainText("\n")
-    #     self.display_prompt()
-
-    # def display_prompt(self):
-    #     self.terminal.appendPlainText(self.prompt)
-    #     self.terminal.moveCursor(QTextCursor.MoveOperation.End)
-
-    # def insert_colored_text(self, text, default_color=QColor(255, 255, 255)):
-    #     cursor = self.terminal.textCursor()
-
-    #     ansi_escape = re.compile(r"\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])")
-    #     segments = ansi_escape.split(text)
-    #     codes = ansi_escape.findall(text)
-
-    #     current_color = default_color
-    #     for i, segment in enumerate(segments):
-    #         if segment:
-    #             format = cursor.charFormat()
-    #             format.setForeground(current_color)
-    #             cursor.setCharFormat(format)
-    #             cursor.insertText(segment)
-
-    #         if i < len(codes):
-    #             code = codes[i]
-    #             if code == "\x1B[0m":
-    #                 current_color = default_color
-    #             elif code.startswith("\x1B[38;2;"):
-    #                 rgb = code[7:-1].split(";")
-    #                 if len(rgb) == 3:
-    #                     current_color = QColor(int(rgb[0]), int(rgb[1]), int(rgb[2]))
-
-    #     self.terminal.setTextCursor(cursor)
-
-    # def keyPressEvent(self, event: QKeyEvent):
-    #     if event is not None:
-    #         if event.key() == Qt.Key.Key_Return or event.key() == Qt.Key.Key_Enter:
-    #             self.execute_command()
-    #         elif event.key() == Qt.Key.Key_Up:
-    #             self.show_previous_command()
-    #         elif event.key() == Qt.Key.Key_Down:
-    #             self.show_next_command()
-    #         else:
-    #             super().keyPressEvent(event)
-
-    # def terminal_key_press_event(self, event: QKeyEvent):
-    #     cursor = self.terminal.textCursor()
-
-    #     if event.key() == Qt.Key.Key_Return or event.key() == Qt.Key.Key_Enter:
-    #         self.execute_command()
-    #     elif event.key() == Qt.Key.Key_Backspace:
-    #         if len(self.current_command) > 0:
-    #             self.current_command = self.current_command[:-1]
-    #             cursor.deletePreviousChar()
-    #     elif event.key() == Qt.Key.Key_Up:
-    #         self.show_previous_command()
-    #     elif event.key() == Qt.Key.Key_Down:
-    #         self.show_next_command()
-    #     elif event.key() == Qt.Key.Key_Left:
-    #         if cursor.positionInBlock() > len(self.prompt):
-    #             cursor.movePosition(QTextCursor.MoveOperation.Left)
-    #     elif event.key() == Qt.Key.Key_Home:
-    #         cursor.movePosition(QTextCursor.MoveOperation.StartOfLine)
-    #         cursor.movePosition(
-    #             QTextCursor.MoveOperation.Right,
-    #             QTextCursor.MoveMode.MoveAnchor,
-    #             len(self.prompt),
-    #         )
-    #     else:
-    #         if cursor.positionInBlock() >= len(self.prompt):
-    #             self.current_command += event.text()
-    #             QPlainTextEdit.keyPressEvent(self.terminal, event)
-
-    # def execute_command(self):
-    #     self.terminal.appendPlainText("")
-    #     self.processes[self.current_process_index].write(
-    #         self.current_command.encode() + b"\n"
-    #     )
-    #     self.command_history.append(self.current_command)
-    #     self.history_index = len(self.command_history)
-    #     self.command_input.emit(self.current_command)
-    #     self.current_command = ""
-
-    # def show_previous_command(self):
-    #     if self.history_index > 0:
-    #         self.history_index -= 1
-    #         self.show_command_from_history()
-
-    # def show_next_command(self):
-    #     if self.history_index < len(self.command_history):
-    #         self.history_index += 1
-    #         self.show_command_from_history()
-
-    # def show_command_from_history(self):
-    #     cursor = self.terminal.textCursor()
-    #     cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock)
-    #     cursor.movePosition(
-    #         QTextCursor.MoveOperation.StartOfBlock, QTextCursor.MoveMode.KeepAnchor
-    #     )
-    #     cursor.removeSelectedText()
-
-    #     if self.history_index < len(self.command_history):
-    #         self.current_command = self.command_history[self.history_index]
-    #     else:
-    #         self.current_command = ""
-
-    #     cursor.insertText(f"{self.prompt}{self.current_command}")
-
-    # def run_command(self, command):
-    #     self.terminal.moveCursor(QTextCursor.MoveOperation.End)
-    #     self.terminal.insertPlainText(f"{self.prompt}{command}\n")
-    #     self.processes[self.current_process_index].write(command.encode() + b"\n")
-
     def startSession(self):
         process = QProcess(self)
         process.readyReadStandardOutput.connect(self.handle_stdout)
@@ -1707,14 +1570,11 @@ class TerminalEmulator(QWidget):
         
         self.processes.append(process)
         self.terminal_selector.setCurrentIndex(0)
-        # Ensure a valid current process index
         if self.current_process_index == -1:
             self.current_process_index = 0
         
-        # CRITICAL: Connect terminal input handling
         self.terminal.keyPressEvent = self.terminal_key_press_event
         
-        # Initialize command tracking
         if not hasattr(self, 'current_command'):
             self.current_command = ""
         if not hasattr(self, 'command_history'):
@@ -2024,7 +1884,6 @@ class TerminalEmulator(QWidget):
         self.processes[self.current_process_index].write(command.encode() + b"\n")
 
 class TerminalDock(QDockWidget):
-    # def __init__(self, parent):
     def __init__(self, parent):
 
         super().__init__()
@@ -2038,7 +1897,8 @@ class TerminalDock(QDockWidget):
         self.setWidget(self.termEmulator)
         self.termEmulator.show()
         self.custom_title = QLabel("Terminal")
-        self.custom_title.setStyleSheet("background-color: transparent; color: white; padding: 4px; border-radius: 10px; margin: 4px")
+        self.custom_title.setObjectName("DockTitles")
+        self.custom_title.setStyleSheet(get_css_style())
         self.setTitleBarWidget(self.custom_title)
 
         self.setFeatures(QDockWidget.DockWidgetFeature.DockWidgetMovable)
@@ -2273,6 +2133,7 @@ class ListShortCuts(QWidget):
         shortcut_31 = QLabel(f'Bookmark Current Line: <span style="background-color: #2d2d2d">{bookmarkLine()}</span>')
         shortcut_32 = QLabel(f'Go to Bookmarked Line: <span style="background-color: #2d2d2d">{gotobookmarkedline()}</span>')
         shortcut_33 = QLabel(f'Remove Bookmarked Line: <span style="background-color: #2d2d2d">{removebookmarkedline()}</span>')
+        shortcut_34 = QLabel(f'Open Markdown File: <span style="background-color: #2d2d2d">{OpenMarkDownFile()}</span>')
 
         self.left_column = QVBoxLayout()
         self.right_column = QVBoxLayout()
@@ -2287,7 +2148,7 @@ class ListShortCuts(QWidget):
             self.left_column.addWidget(shortcut)
 
 
-        for shortcut in [shortcut_25, shortcut_26, shortcut_29, shortcut_30, shortcut_27, shortcut_28, shortcut_12, shortcut_13, shortcut_14, shortcut_15 ,shortcut_16, shortcut_17, shortcut_8, shortcut_18, shortcut_22, shortcut_24]:
+        for shortcut in [shortcut_25, shortcut_26, shortcut_29, shortcut_30, shortcut_27, shortcut_28, shortcut_12, shortcut_13, shortcut_14, shortcut_15 ,shortcut_16, shortcut_17, shortcut_8, shortcut_34, shortcut_18, shortcut_22, shortcut_24]:
 
 
             shortcut.setObjectName('ShortCutTexts')
@@ -2528,42 +2389,14 @@ class GitDock(QDockWidget):
         self.show_changes.setText(text)
 
     def update_git_info(self):
-        # Only update git info if git is installed
         if is_gitInstalled():
             worker = GitWorker()
             worker.signals.dataReady.connect(self.update_ui)
             self.thread_pool.start(worker)
 
     def update_ui(self, commit_msg, branch, total, get_latest_commit_time, file_changes, untracked_files):
-        # if self.isVisible() and is_init():
         if self.maximumHeight() != 0 and is_init():
 
-            # if not is_init():
-
-
-                # if self.users_profile.isVisible():
-                #     self.layout_.addWidget(self.image_container, alignment = Qt.AlignmentFlag.AlignHCenter)
-                #     # self.layout_.removeWidget(self.image_container)
-
-                #     self.no_repo_img.show()
-                #     self.no_repo_text.show()
-                #     self.repo_name.hide()
-                #     self.commit.hide()
-                #     self.remote_url.hide()
-                #     self.user_username.hide()
-                #     self.latest_commit.hide()
-                #     self.last_commit.hide()
-                #     self.commit_info.hide()
-                #     self.active_branch_name.hide()
-                #     self.untracked_files.hide()
-                #     self.untracked_header.hide()
-                #     self.header_changes.hide()
-                #     self.show_changes.hide()
-                #     self.users_profile.hide()
-                #     self.repo_info.hide()
-
-
-            # else:
             if not self.users_profile.isVisible():
                 self.layout_.removeWidget(self.image_container)
                 self.no_repo_img.hide()
@@ -2662,7 +2495,6 @@ class GitDock(QDockWidget):
     def gitTimers(self):
         self.timer = QTimer()
         self.timer.timeout.connect(self.update_git_info)
-        # Only start the timer if git is installed
         if is_gitInstalled():
             self.timer.start(1500)
 
@@ -2705,15 +2537,6 @@ class MessageBox(QMessageBox):
 
         self.addButton(ok_button, QMessageBox.ButtonRole.YesRole)
         self.addButton(cancel, QMessageBox.ButtonRole.RejectRole)
-        # if add_buttons:
-        #     to_kurdish = QPushButton(self)
-        #     to_kurdish.setObjectName('MessageBoxSaveNot')
-        #     to_kurdish.setText('کوردی')
-        #     to_kurdish.setStyleSheet(get_css_style())
-        #     self.addButton(to_kurdish, QMessageBox.ButtonRole.AcceptRole)
-        #     to_kurdish.clicked.disconnect()  
-        #     to_kurdish.clicked.connect(lambda: self.change(to_kurdish))
-
 
         self.exec()
 
@@ -2721,20 +2544,6 @@ class MessageBox(QMessageBox):
         if link:
             if self.clickedButton() == ok_button:
                 webbrowser.open(link)
-
-#     def change(self, button: QPushButton):
-#         if button.text() == 'کوردی':
-#             self.setText("بەخێر بێت بۆ Kryypto!\n\n"
-# f"پێش ئەوەی دەست پێ بکەیت configuration file بکەوە بە بەکارهێنانی {OpenConfigFile()}\n"
-# "وە برۆ بۆ بەشی [Python] بۆ pythoninterpreter\n"
-# "وە لەوێ شوێنی python.exe دانێ.\n"
-# "ئەگەر نازانی شۆێنی، دەتوانیت CMD کەیتەوەو بنوسیت: where python"
-# "بەوە شوێنەکەت پیشان ئەیات.")
-#             button.setText('English')
-
-#         else:
-#             button.setText('کوردی')
-#             self.setText(f'Welcome to Kryypto!\n\nbefore you get started please open the configuration file by pressing {OpenConfigFile()} after this Message Box, go to [Python]\npythoninterpreter\nand put your python.exe.\n\nIf you dont know where it is you can open CMD and type: where python\nthis will give you the python interpreter path!')
 
     def open_link(self, url):
         webbrowser.open(url.toString())
@@ -2790,3 +2599,21 @@ def pop_messagebox(parent, event, tab_bar, use_events):
             event.accept()
         else:
             event.ignore()
+
+
+class MarkdownDock(QDockWidget):
+    def __init__(self, parent, widget):
+        super().__init__()
+
+        self.setObjectName('Docks')
+        self.setStyleSheet(get_css_style())
+        self.clearFocus()
+        self.setWidget(widget)
+        self.custom_title = QLabel("MarkDown Preview")
+        self.custom_title.setStyleSheet(get_css_style())
+        self.custom_title.setObjectName('DockTitles')
+        self.setTitleBarWidget(self.custom_title)
+        self.setWindowTitle('MarkDown Preview')
+
+        self.setFeatures(QDockWidget.DockWidgetFeature.DockWidgetMovable)
+        parent.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self)

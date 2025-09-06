@@ -28,10 +28,13 @@ if os.path.exists(src) and not os.path.exists(dst):
     else:
         raise FileNotFoundError(f"Move failed, {new_path} not found")
 
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QApplication, QMainWindow
+from PyQt6.QtWebEngineWidgets import QWebEngineView
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QApplication, QMainWindow, QHBoxLayout
 from PyQt6.QtGui import  QSurfaceFormat, QCloseEvent, QIcon, QPixmap
 from titlebar import CustomTitleBar
 from PyQt6.QtCore import Qt, QPoint, QRect, QCoreApplication
+# from PyQt6.QtCore import Qt, QPoint, QRect
+
 from multiprocessing import freeze_support, active_children
 
 
@@ -170,9 +173,11 @@ class Kryypto(QMainWindow):
         central_widget = QWidget()
 
 
+
         main_layout = QVBoxLayout(central_widget)
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.setSpacing(0)
+
 
         if setCustomTitleBar():
             self.title_bar = CustomTitleBar(self)
@@ -193,9 +198,6 @@ class Kryypto(QMainWindow):
         self.editor_layout = QVBoxLayout(self.editor_containter)
 
         self.main_text = widgets.MainText(self.editor_layout, self.clipboard, self.font_size, self)
-
-
-
 
         self.welcome_page = widgets.WelcomeWidget()
         self.inner_window = QMainWindow()
