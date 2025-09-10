@@ -25,6 +25,7 @@ A lightweight, fully keyboard-supported text editor with deep customization and 
   - Configurable animations (types & duration)
 - Discord presence
 - Live MarkDown Preview
+- Session Restore
 - Git & GitHub Integration
   - View total commits
   - See last commit message & date
