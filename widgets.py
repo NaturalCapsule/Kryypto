@@ -844,12 +844,12 @@ class ShowDirectory(QDockWidget):
             with open (path, 'r', encoding = 'utf-8') as file:
                 cursor = self.main_text.textCursor()
                 cursor.beginEditBlock()
-                self.main_text.setUpdatesEnabled(False)
-                self.main_text.blockSignals(True)
+                # self.main_text.setUpdatesEnabled(False)
+                # self.main_text.blockSignals(True)
                 self.main_text.setPlainText(file.read())
                 cursor.endEditBlock()
-                self.main_text.setUpdatesEnabled(True)
-                self.main_text.blockSignals(False)
+                # self.main_text.setUpdatesEnabled(True)
+                # self.main_text.blockSignals(False)
 
 
         except Exception as e:
@@ -1107,13 +1107,11 @@ class ShowOpenedFile(QTabBar):
 
         if self.count() > 0:
             self.track_tabs(self.currentIndex())
-            # self.editor.show()
         else:
 
             cursor = self.editor.textCursor()
             cursor.beginEditBlock()
             self.editor.setPlainText("")
-            # self.editor.hide()
             cursor.endEditBlock()
 
 
@@ -1143,7 +1141,6 @@ class ShowOpenedFile(QTabBar):
         self.setTabButton(file_index, self.ButtonPosition.RightSide, close_button)
         if not self.editor.isVisible():
             self.welcome_page.hide()
-            # self.parent_.setCentralWidget(self.editor)
             self.parent_.setCentralWidget(self.editor_containter)
             self.editor.show()
 

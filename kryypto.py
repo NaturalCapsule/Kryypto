@@ -33,9 +33,9 @@ from PyQt6.QtWidgets import QWidget, QVBoxLayout, QApplication, QMainWindow, QHB
 from PyQt6.QtGui import  QSurfaceFormat, QCloseEvent, QIcon, QPixmap
 from titlebar import CustomTitleBar
 from PyQt6.QtCore import Qt, QPoint, QRect, QCoreApplication
-# from PyQt6.QtCore import Qt, QPoint, QRect
 
 from multiprocessing import freeze_support, active_children
+from pathlib import Path
 
 
 
@@ -58,16 +58,17 @@ from check_version import checkUpdate
 class Kryypto(QMainWindow):
     def __init__(self, clipboard):
         super().__init__()
-        # self.move_folder()
         from pygit import open_file_dialog
 
         from widgets import MessageBox
 
         if did_transfer:
             if platform.system() == 'Windows':
-                MessageBox(fr"configuration files is now moved to 'C:\Users\{os.getlogin()}\AppData\Roaming\Kryypto' if not. move the 'config' folder manually to 'C:\Users\{os.getlogin()}\AppData\Roaming\Kryypto'")
+                MessageBox(fr"Configuration files have been moved to 'C:\Users\{os.getlogin()}\AppData\Roaming\Kryypto'.\nIf not, please move the 'config' folder manually to 'C:\Users\{os.getlogin()}\AppData\Roaming\Kryypto'.")
+
             elif platform.system() == 'Linux':
-                MessageBox(f"configuration files is now moved to '~/.config/KryyptoConfig/config' if not\nmove the 'config' folder manually to '~/.config/KryyptoConfig'")
+                MessageBox(fr"Configuration files have been moved to '~/.config/KryyptoConfig/config'.\nIf not, please move the 'config' folder manually to '~/.config/KryyptoConfig'.")
+
 
 
         self.clipboard = clipboard
@@ -75,16 +76,8 @@ class Kryypto(QMainWindow):
         self.opened_directory = open_file_dialog(self, True)
         self.font_size = 12
         self.new_user_count = 0
-        # self.settings.setValue('NewUser', self.new_user_count)
-
-        try:
-            self.new_user_count = self.settings.value('NewUser')
-
-        except Exception:
-            self.new_user_count = 0
 
         self.settings.setValue('Font Size', get_fontSize())
-        self.settings.setValue('NewUser', self.new_user_count)
 
 
 
@@ -98,30 +91,13 @@ class Kryypto(QMainWindow):
         self.setupUI()
         self.setupWidgets()
         self.addDocks()
-
-        try:
-            if self.settings.value('NewUser') == 0:
-                self.new_user_count += 1
-                self.settings.setValue('NewUser', self.new_user_count)
-
-                MessageBox(f'Welcome to Kryypto!\n\nbefore you get started please open the configuration file by pressing {OpenConfigFile()} after this Message Box, go to [Python]\npythoninterpreter\nand put your python.exe.\n\nIf you dont know where it is you can open CMD and type: which python\nthis will give you the python interpreter path!', add_buttons=True)
-
-        except Exception:
-            self.settings.setValue('NewUser', self.new_user_count)
-
-    # def move_folder(self):
-    #     import widgets
-    #     if os.path.exists(r'config') and not os.path.exists(fr'C:\Users\{os.getlogin()}\AppData\Roaming\Kryypto'):
-    #         os.makedirs(fr'C:\Users\{os.getlogin()}\AppData\Roaming\Kryypto')
-    #         # print('yes')
-    #         shutil.move('config', fr'C:\Users\{os.getlogin()}\AppData\Roaming\Kryypto')
-    #         widgets.MessageBox(fr"configuration files is now moved to 'C:\Users\{os.getlogin()}\AppData\Roaming\Kryypto' if not\nmove the 'config' folder manually to 'C:\Users\{os.getlogin()}\AppData\Roaming\Kryypto'")
+        self.open_files()
 
     def addDocks(self):
         from pygit import is_gitInstalled
 
         self.inner_window.setWindowFlags(Qt.WindowType.FramelessWindowHint)
-        
+
         if is_gitInstalled():
             self.inner_window.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self.git_panel)
         self.inner_window.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, self.terminal)
@@ -147,6 +123,7 @@ class Kryypto(QMainWindow):
             self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
 
     def settingUP_settings(self):
+        import widgets
         try:
             self.resize(self.settings.value('Window Size'))
             self.move(self.settings.value('Window Position'))
@@ -155,6 +132,38 @@ class Kryypto(QMainWindow):
         except:
             self.setGeometry(100, 100, 400, 800)
             self.font_size = 12
+
+        try:
+           widgets.file_description = self.settings.value('opened_files')
+        except Exception:
+            self.settings.setValue('opened_files', {})
+
+
+    ##Fix style file naming
+    def open_files(self):
+        from pygit import folder_path_
+        from widgets import file_description
+        parent_folder = Path(folder_path_)
+
+        if self.settings.value('opened_files'):
+            for path, file_name in self.settings.value('opened_files').items():
+                sub_folder_file = Path(path)
+                if (os.path.exists(path)) and (sub_folder_file.is_relative_to(parent_folder)):
+                    with open(path, 'r', encoding = 'utf-8') as opened_file:
+                        opened_file_ = opened_file.read()
+                        self.tab_bar.add_file(path = path, file_name = file_name)
+                        self.main_text.setPlainText(opened_file_)
+                else:
+                    file_description.pop(path)
+
+            try:
+                self.tab_bar.setCurrentIndex(self.settings.value('CurrentFileIndex'))
+            except Exception:
+                self.settings.setValue('CurrentFileIndex', 0)
+                self.tab_bar.setCurrentIndex(0)
+        else:
+            self.settings.setValue('opened_files', {})
+
 
     def setupWidgets(self):
         import widgets
@@ -366,7 +375,7 @@ class Kryypto(QMainWindow):
             super().leaveEvent(event)
 
     def closeEvent(self, event: QCloseEvent):
-        from widgets import pop_messagebox
+        from widgets import pop_messagebox, file_description
         from pygit import folder_path_
 
         self.font_size = self.editor_shortcuts.font_size
@@ -388,6 +397,10 @@ class Kryypto(QMainWindow):
             pop_messagebox(self, event, self.tab_bar, True)
 
         self.main_text.discord_presence.disconnect()
+
+        self.settings.setValue('opened_files', file_description)
+        self.settings.setValue('CurrentFileIndex', self.tab_bar.currentIndex())
+
 
 if __name__ == "__main__":
     freeze_support()

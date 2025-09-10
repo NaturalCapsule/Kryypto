@@ -226,10 +226,15 @@ class MainTextShortcuts:
                 parent.setFocus()
 
     def open_css(self, tab, file_desc, bawky_parent, parent):
-        # path = "config/style.css"
         path = get_stylefile()
-        file_name = path.split(r'\\')[-1]
-        path = os.path.expanduser(path)
+
+        if platform.system() == 'Windows':
+            file_name = path.split('\\')[-1]
+
+        elif platform.system() == 'Linux':
+            file_name = path.split('/')[-1]
+            path = os.path.expanduser(path)
+
         with open(path, 'r', encoding = 'utf-8') as css_file:
             if path not in file_desc.keys() and file_name not in file_desc.values():
                 file_desc[path] = file_name

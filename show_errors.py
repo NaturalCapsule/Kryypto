@@ -42,31 +42,16 @@ class AnalysisWorker(QRunnable):
             print(f"Analysis error: {e}")
 
 
-# class ShowErrors(QObject):
 class ShowErrors:
     def __init__(self, parent, highlighter):
         super().__init__()
         parent.textChanged.connect(self.schedule_check)
-        # from heavy import SyntaxBridge, syntax_worker
         self.exec = ProcessPoolExecutor(max_workers = 2)
 
 
         self.timer = QTimer()
         self.timer.setSingleShot(True)
         self.timer.timeout.connect(self.check_syntax)
-
-
-        # self._code_queue = Queue()
-        # self._result_queue = Queue()
-
-        # self.syntax_processor = Process(target=syntax_worker, args=(self._code_queue, self._result_queue))
-        # self.syntax_processor.start()
-
-        # _bridge = SyntaxBridge(self._code_queue, self._result_queue)
-        # self.syntax_bridge = _bridge
-
-        # self.syntax_bridge.result_ready.connect(self.analyze_code)
-
 
         self.error_label = None
         self.nameErrorlabel = None
@@ -103,14 +88,7 @@ class ShowErrors:
 
 
             if set_advancedHighlighting():
-                # self._code_queue.put(code)
-                # with ProcessPoolExecutor(max_workers=2) as executor:
                 self.parse_code(code)
-                #     future = executor.submit(list_classes_functions, code)
-                #     tokens = future.result(timeout=5)
-                #     future.add_done_callback(self.on_done)
-                    # self.analyze_code(tokens)
-
 
         except (SyntaxError, NameError) as e:
             if self.error_label:
@@ -183,16 +161,6 @@ class ShowErrors:
         except Exception as e:
             print(f"Error in analyze_code: {e}")
 
-
-        # try:
-        #     self.highlighter.get_calls(instances)
-        #     self.highlighter.rehighlight()
-        # except Exception as e:
-        #     print(f"Error in analyze_code: {e}")
-        
-    # def cleanup(self):
-    #     self._current_task_id += 1
-    #     self.thread_pool.waitForDone(500)
     
     def enable_sync_fallback(self):
         self._use_sync_fallback = True
