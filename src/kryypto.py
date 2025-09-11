@@ -3,8 +3,11 @@ import os
 import shutil
 import time
 import platform
+if getattr(sys, 'frozen', False):
+    src = r'src\config'
+else:
+    src = r'config'
 
-src = r'src\config'
 if platform.system() == 'Windows':
     dst = fr'C:\Users\{os.getlogin()}\AppData\Roaming\Kryypto'
 elif platform.system() == 'Linux':
@@ -107,7 +110,10 @@ class Kryypto(QMainWindow):
     def setupUI(self):
         self.setWindowTitle("Kryypto")
 
-        pixmap = QPixmap('icons/app/icon.ico')
+        if getattr(sys, 'frozen', False):
+            pixmap = QPixmap('icons/app/icon.ico')
+        else:
+            pixmap = QPixmap('src/icons/app/icon.ico')
 
         pixmap = pixmap.scaled(256, 256)
         self.setWindowIcon(QIcon(pixmap))

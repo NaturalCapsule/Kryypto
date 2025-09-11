@@ -862,13 +862,8 @@ class ShowDirectory(QDockWidget):
             with open (path, 'r', encoding = 'utf-8') as file:
                 cursor = self.main_text.textCursor()
                 cursor.beginEditBlock()
-                # self.main_text.setUpdatesEnabled(False)
-                # self.main_text.blockSignals(True)
                 self.main_text.setPlainText(file.read())
                 cursor.endEditBlock()
-                # self.main_text.setUpdatesEnabled(True)
-                # self.main_text.blockSignals(False)
-
 
         except Exception as e:
             pass
@@ -897,22 +892,14 @@ class ShowDirectory(QDockWidget):
 
             try:
                 with open (path, 'r', encoding = 'utf-8') as file:
-                    # self.main_text.setPlainText(file.read())
-
                     cursor = self.main_text.textCursor()
                     cursor.beginEditBlock()
-                    # self.main_text.setUpdatesEnabled(False)
-                    # self.main_text.blockSignals(True)
                     self.main_text.setPlainText(file.read())
                     cursor.endEditBlock()
-                    # self.main_text.setUpdatesEnabled(True)
-                    # self.main_text.blockSignals(False)
-
             except Exception as e:
                 pass
 
 
-        ############ ADD THIS TO LISTSHORTCUTS
 
         if key == Qt.Key.Key_F and event.modifiers() & Qt.KeyboardModifier.ControlModifier:
             self.new_file_input.show()
@@ -935,7 +922,6 @@ class ShowDirectory(QDockWidget):
             self.new_folder_input.hide()
 
         super().keyPressEvent(event)
-        ############ ADD THIS TO LISTSHORTCUTS
 
 
     def remove_file(self):
