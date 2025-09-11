@@ -54,7 +54,7 @@ you got two options:
 2. Clone the repository:
    ```bash
    git clone git@github.com:NaturalCapsule/Kryypto.git
-   cd kryypto
+   cd Kryypto/src
    pip install -r requirements.txt
    kryypto.py
 

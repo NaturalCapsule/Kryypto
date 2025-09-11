@@ -106,8 +106,11 @@ class Kryypto(QMainWindow):
 
     def setupUI(self):
         self.setWindowTitle("Kryypto")
+        if getattr(sys, 'frozen', False):
+            pixmap = QPixmap('icons/app/icon.ico')
+        else:
+            pixmap = QPixmap('src/icons/app/icon.ico')
 
-        pixmap = QPixmap('icons/app/icon.ico')
 
         pixmap = pixmap.scaled(256, 256)
         self.setWindowIcon(QIcon(pixmap))
@@ -137,7 +140,6 @@ class Kryypto(QMainWindow):
             self.settings.setValue('opened_files', {})
 
 
-    ##Fix style file naming
     def open_files(self):
         from pygit import folder_path_
         from widgets import file_description
