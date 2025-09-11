@@ -586,19 +586,37 @@ class MainText(QPlainTextEdit):
 
     def on_autocomplete_results(self, payload):
         model = QStandardItemModel()
+        if getattr(sys, 'frozen', False):
+            variable_icon_location = 'icons/autocompleterIcons/variable.svg'
+            class_icon_location = 'icons/autocompleterIcons/class.svg'
+            function_icon_location = 'icons/autocompleterIcons/function.svg'
+            keyword_icon_location = 'icons/autocompleterIcons/keyword.svg'
+        else:
+            variable_icon_location = 'src/icons/autocompleterIcons/variable.svg'
+            class_icon_location = 'src/icons/autocompleterIcons/class.svg'
+            function_icon_location = 'src/icons/autocompleterIcons/function.svg'
+            keyword_icon_location = 'src/icons/autocompleterIcons/keyword.svg'
 
         for item_data in payload:
             item = QStandardItem()
             item.setText(item_data["name"])
 
             if item_data["type"] == 'statement':
-                item.setIcon(QIcon('icons/autocompleterIcons/variable.svg'))
+                # item.setIcon(QIcon('icons/autocompleterIcons/variable.svg'))
+                item.setIcon(QIcon(variable_icon_location))
+
             elif item_data["type"] in ('class', 'module'):
-                item.setIcon(QIcon('icons/autocompleterIcons/class.svg'))
+                # item.setIcon(QIcon('icons/autocompleterIcons/class.svg'))
+                item.setIcon(QIcon(class_icon_location))
+
             elif item_data["type"] == 'function':
-                item.setIcon(QIcon('icons/autocompleterIcons/function.svg'))
+                # item.setIcon(QIcon('icons/autocompleterIcons/function.svg'))
+                item.setIcon(QIcon(function_icon_location))
+
             elif item_data["type"] == 'keyword':
-                item.setIcon(QIcon('icons/autocompleterIcons/keyword.svg'))
+                # item.setIcon(QIcon('icons/autocompleterIcons/keyword.svg'))
+                item.setIcon(QIcon(keyword_icon_location))
+
 
             model.appendRow(item)
 
@@ -999,33 +1017,62 @@ class CustomIcons(QFileIconProvider):
             "ico", "psd", "xcf", "dds"
         ]
 
+        if getattr(sys, 'frozen', False):
+
+
         # if info.isDir() and info.suffix().lower() == 'test':
-        if info.isDir():
-            return QIcon("icons/fileIcons/folder.webp")
-        elif info.suffix().lower() == "py" or info.suffix().lower() == 'pyi':
-            return QIcon("icons/fileIcons/python.svg")
-        elif info.suffix().lower() == 'json' or info.suffix().lower() == 'jsonc':
-            return QIcon("icons/fileIcons/json.svg")
-        elif info.suffix().lower() == 'ini' or info.suffix().lower() == 'cfg' or info.suffix().lower() == 'settings' or info.suffix().lower() == 'conf' or info.suffix().lower() == 'config':
-            return QIcon("icons/fileIcons/settings.svg")
-        elif info.suffix().lower() in image_formats:
-            return QIcon("icons/fileIcons/image.svg")
-        elif info.suffix().lower() == 'svg':
-            return QIcon('icons/fileIcons/svg.svg')
-        elif info.suffix().lower() == 'pyc':
-            return QIcon('icons/fileIcons/python-misc.svg')
-        elif info.suffix().lower() == 'css':
-            return QIcon('icons/fileIcons/css.png')
-        elif info.suffix().lower() == 'html':
-                return QIcon('icons/fileIcons/html.svg')
-        elif info.suffix().lower() == 'txt':
-            return QIcon('icons/fileIcons/txt.png')
-        elif info.suffix().lower() == 'md' or info.suffix().lower() == 'markdown':
-            return QIcon('icons/fileIcons/markdown.svg')
+            if info.isDir():
+                return QIcon("icons/fileIcons/folder.webp")
+            elif info.suffix().lower() == "py" or info.suffix().lower() == 'pyi':
+                return QIcon("icons/fileIcons/python.svg")
+            elif info.suffix().lower() == 'json' or info.suffix().lower() == 'jsonc':
+                return QIcon("icons/fileIcons/json.svg")
+            elif info.suffix().lower() == 'ini' or info.suffix().lower() == 'cfg' or info.suffix().lower() == 'settings' or info.suffix().lower() == 'conf' or info.suffix().lower() == 'config':
+                return QIcon("icons/fileIcons/settings.svg")
+            elif info.suffix().lower() in image_formats:
+                return QIcon("icons/fileIcons/image.svg")
+            elif info.suffix().lower() == 'svg':
+                return QIcon('icons/fileIcons/svg.svg')
+            elif info.suffix().lower() == 'pyc':
+                return QIcon('icons/fileIcons/python-misc.svg')
+            elif info.suffix().lower() == 'css':
+                return QIcon('icons/fileIcons/css.png')
+            elif info.suffix().lower() == 'html':
+                    return QIcon('icons/fileIcons/html.svg')
+            elif info.suffix().lower() == 'txt':
+                return QIcon('icons/fileIcons/txt.png')
+            elif info.suffix().lower() == 'md' or info.suffix().lower() == 'markdown':
+                return QIcon('icons/fileIcons/markdown.svg')
 
+            else:
+                return super().icon(info)
         else:
-            return super().icon(info)
+        # if info.isDir() and info.suffix().lower() == 'test':
+            if info.isDir():
+                return QIcon("src/icons/fileIcons/folder.webp")
+            elif info.suffix().lower() == "py" or info.suffix().lower() == 'pyi':
+                return QIcon("src/icons/fileIcons/python.svg")
+            elif info.suffix().lower() == 'json' or info.suffix().lower() == 'jsonc':
+                return QIcon("src/icons/fileIcons/json.svg")
+            elif info.suffix().lower() == 'ini' or info.suffix().lower() == 'cfg' or info.suffix().lower() == 'settings' or info.suffix().lower() == 'conf' or info.suffix().lower() == 'config':
+                return QIcon("src/icons/fileIcons/settings.svg")
+            elif info.suffix().lower() in image_formats:
+                return QIcon("src/icons/fileIcons/image.svg")
+            elif info.suffix().lower() == 'svg':
+                return QIcon('src/icons/fileIcons/svg.svg')
+            elif info.suffix().lower() == 'pyc':
+                return QIcon('src/icons/fileIcons/python-misc.svg')
+            elif info.suffix().lower() == 'css':
+                return QIcon('src/icons/fileIcons/css.png')
+            elif info.suffix().lower() == 'html':
+                    return QIcon('src/icons/fileIcons/html.svg')
+            elif info.suffix().lower() == 'txt':
+                return QIcon('src/icons/fileIcons/txt.png')
+            elif info.suffix().lower() == 'md' or info.suffix().lower() == 'markdown':
+                return QIcon('src/icons/fileIcons/markdown.svg')
 
+            else:
+                return super().icon(info)
 
 class ShowOpenedFile(QTabBar):
     def __init__(self, editor, layout, error_label, parent, welcome_page, editor_containter, editor_layout, nameError):
@@ -1064,35 +1111,69 @@ class ShowOpenedFile(QTabBar):
             "ico", "psd", "xcf", "dds"
         )
 
-        if self.tabText(index).endswith('py') or self.tabText(index).endswith('pyi'):
-            self.setTabIcon(index, QIcon('icons/fileIcons/python.svg'))
+        if getattr(sys, 'frozen', False):
 
-        elif self.tabText(index).endswith('txt'):
-            self.setTabIcon(index, QIcon('icons/fileIcons/txt.png'))
 
-        elif self.tabText(index).endswith('json') or self.tabText(index).endswith('jsonc'):
-            self.setTabIcon(index, QIcon('icons/fileIcons/json.svg'))
+            if self.tabText(index).endswith('py') or self.tabText(index).endswith('pyi'):
+                self.setTabIcon(index, QIcon('icons/fileIcons/python.svg'))
 
-        elif self.tabText(index).endswith('svg'):
-            self.setTabIcon(index, QIcon('icons/fileIcons/svg.svg'))
+            elif self.tabText(index).endswith('txt'):
+                self.setTabIcon(index, QIcon('icons/fileIcons/txt.png'))
 
-        elif self.tabText(index).endswith('html'):
-            self.setTabIcon(index, QIcon('icons/fileIcons/html.svg'))
+            elif self.tabText(index).endswith('json') or self.tabText(index).endswith('jsonc'):
+                self.setTabIcon(index, QIcon('icons/fileIcons/json.svg'))
 
-        elif self.tabText(index).endswith('css'):
-            self.setTabIcon(index, QIcon('icons/fileIcons/css.png'))
+            elif self.tabText(index).endswith('svg'):
+                self.setTabIcon(index, QIcon('icons/fileIcons/svg.svg'))
 
-        elif self.tabText(index).endswith('pyc'):
-            self.setTabIcon(index, QIcon('icons/fileIcons/python-misc.svg'))
+            elif self.tabText(index).endswith('html'):
+                self.setTabIcon(index, QIcon('icons/fileIcons/html.svg'))
 
-        elif self.tabText(index).endswith(image_formats):
-            self.setTabIcon(index, QIcon('icons/fileIcons/image.svg'))
+            elif self.tabText(index).endswith('css'):
+                self.setTabIcon(index, QIcon('icons/fileIcons/css.png'))
 
-        elif self.tabText(index).endswith('md') or self.tabText(index).endswith('markdown'):
-            self.setTabIcon(index, QIcon('icons/fileIcons/markdown.svg'))
+            elif self.tabText(index).endswith('pyc'):
+                self.setTabIcon(index, QIcon('icons/fileIcons/python-misc.svg'))
 
-        elif self.tabText(index).lower().endswith('ini') or self.tabText(index).lower().endswith('settings') or self.tabText(index).lower().endswith('conf') or self.tabText(index).lower().endswith('config') or self.tabText(index).lower().endswith('cfg'):
-            self.setTabIcon(index, QIcon('icons/fileIcons/settings.svg'))
+            elif self.tabText(index).endswith(image_formats):
+                self.setTabIcon(index, QIcon('icons/fileIcons/image.svg'))
+
+            elif self.tabText(index).endswith('md') or self.tabText(index).endswith('markdown'):
+                self.setTabIcon(index, QIcon('icons/fileIcons/markdown.svg'))
+
+            elif self.tabText(index).lower().endswith('ini') or self.tabText(index).lower().endswith('settings') or self.tabText(index).lower().endswith('conf') or self.tabText(index).lower().endswith('config') or self.tabText(index).lower().endswith('cfg'):
+                self.setTabIcon(index, QIcon('icons/fileIcons/settings.svg'))
+
+        else:
+            if self.tabText(index).endswith('py') or self.tabText(index).endswith('pyi'):
+                self.setTabIcon(index, QIcon('src/icons/fileIcons/python.svg'))
+
+            elif self.tabText(index).endswith('txt'):
+                self.setTabIcon(index, QIcon('src/icons/fileIcons/txt.png'))
+
+            elif self.tabText(index).endswith('json') or self.tabText(index).endswith('jsonc'):
+                self.setTabIcon(index, QIcon('src/icons/fileIcons/json.svg'))
+
+            elif self.tabText(index).endswith('svg'):
+                self.setTabIcon(index, QIcon('src/icons/fileIcons/svg.svg'))
+
+            elif self.tabText(index).endswith('html'):
+                self.setTabIcon(index, QIcon('src/icons/fileIcons/html.svg'))
+
+            elif self.tabText(index).endswith('css'):
+                self.setTabIcon(index, QIcon('src/icons/fileIcons/css.png'))
+
+            elif self.tabText(index).endswith('pyc'):
+                self.setTabIcon(index, QIcon('src/icons/fileIcons/python-misc.svg'))
+
+            elif self.tabText(index).endswith(image_formats):
+                self.setTabIcon(index, QIcon('src/icons/fileIcons/image.svg'))
+
+            elif self.tabText(index).endswith('md') or self.tabText(index).endswith('markdown'):
+                self.setTabIcon(index, QIcon('src/icons/fileIcons/markdown.svg'))
+
+            elif self.tabText(index).lower().endswith('ini') or self.tabText(index).lower().endswith('settings') or self.tabText(index).lower().endswith('conf') or self.tabText(index).lower().endswith('config') or self.tabText(index).lower().endswith('cfg'):
+                self.setTabIcon(index, QIcon('src/icons/fileIcons/settings.svg'))
 
 
     def remove_tab(self, index):
@@ -2246,7 +2327,12 @@ class GitDock(QDockWidget):
         self.remote_url.setObjectName('RemoteURL')
         self.remote_url.setStyleSheet(get_css_style())
 
-        pixmap = QPixmap('icons/github/user_profile/users_profile.png')
+
+        if getattr(sys, 'frozen', False):
+            pixmap = QPixmap('icons/github/user_profile/users_profile.png')
+        else:
+            pixmap = QPixmap('src/icons/github/user_profile/users_profile.png')
+
         circular_profile = self.rounded_pixmap(pixmap, 96)
 
 
@@ -2318,7 +2404,11 @@ class GitDock(QDockWidget):
         self.no_repo_text.setObjectName('RepoNotFound')
         self.no_repo_text.setStyleSheet(get_css_style())
 
-        pixmap = QPixmap('icons/github/github.png')
+        if getattr(sys, 'frozen', False):
+            pixmap = QPixmap('icons/github/github.png')
+        else:
+            pixmap = QPixmap('src/icons/github/github.png')
+
         scaled = pixmap.scaled(256, 256, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
         self.no_repo_img.setPixmap(scaled)
 
@@ -2526,7 +2616,12 @@ class MessageBox(QMessageBox):
         cancel.setObjectName('MessageBoxCancel')
         cancel.setStyleSheet(get_css_style())
 
-        pixmap = QPixmap('icons/messagebox/warning.png')
+        if getattr(sys, 'frozen', False):
+
+            pixmap = QPixmap('icons/messagebox/warning.png')
+        else:
+            pixmap = QPixmap('src/icons/messagebox/warning.png')
+
         pixmap.size()
         scaled_pixmap = pixmap.scaled(98, 98, aspectRatioMode=Qt.AspectRatioMode.KeepAspectRatio, transformMode=Qt.TransformationMode.SmoothTransformation)
         self.setIconPixmap(scaled_pixmap)
@@ -2572,8 +2667,11 @@ def pop_messagebox(parent, event, tab_bar, use_events):
 
     cancel.setObjectName('MessageBoxCancel')
     cancel.setStyleSheet(get_css_style())
+    if getattr(sys, 'frozen', False):
+        pixmap = QPixmap('icons/messagebox/warning.png')
+    else:
+        pixmap = QPixmap('src/icons/messagebox/warning.png')
 
-    pixmap = QPixmap('icons/messagebox/warning.png')
     pixmap.size()
 
     scaled_pixmap = pixmap.scaled(98, 98, aspectRatioMode=Qt.AspectRatioMode.KeepAspectRatio, transformMode=Qt.TransformationMode.SmoothTransformation)

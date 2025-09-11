@@ -1,35 +1,8 @@
 from PyQt6.QtGui import QSyntaxHighlighter, QTextCharFormat, QColor, QFont
-from PyQt6.QtCore import QRegularExpression, QRunnable, pyqtSignal, QObject, QThreadPool
+from PyQt6.QtCore import QRegularExpression
 from config import *
 
 from PyQt6.QtGui import QSyntaxHighlighter, QTextCharFormat, QColor, QFont
-
-# class SyntaxBridge(QObject):
-#     result_ready = pyqtSignal(dict)
-
-#     def __init__(self, code_queue, result_queue):
-#         super().__init__()
-#         self.code_queue = code_queue
-#         self.result_queue = result_queue
-#         self.timer = QTimer()
-#         self.timer.timeout.connect(self.check_results)
-#         self.timer.start(100)
-
-#     def request_docstring(self, code_pos_tuple):
-#         self.code_queue.put(code_pos_tuple)
-
-#     def check_results(self):
-#         while not self.result_queue.empty():
-#             results = self.result_queue.get()
-#             self.result_ready.emit(results)
-
-
-# def syntax_worker(code_queue, result_queue):
-#     while True:
-#         code = code_queue.get()
-
-#         instances = list_classes_functions(code)
-#         result_queue.put(instances)
 
 
 
@@ -63,14 +36,6 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
 
         self.comment_format = QTextCharFormat()
         self.comment_format.setForeground(QColor(r, g, b))  
-        # self.highlighting_rules.append((QRegularExpression('#[^\n]*'), self.comment_format, 'comment'))
-
-
-        # self.string_pattern = QRegularExpression(r'"([^"\\]|\\.)*"|\'([^\'\\]|\\.)*\'')
-
-        # self.string_pattern = QRegularExpression(
-        #     r'"(?!""")([^"\\]|\\.)*"|\'(?!\'\'\')([^\'\\]|\\.)*\''
-        # )
 
 
         self.string_pattern = QRegularExpression(
@@ -78,12 +43,6 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
         )
 
         self.comment_pattern = QRegularExpression(r'#[^\n]*')
-
-        # self.highlighting_rules.append((
-        #     QRegularExpression(r'"([^"\\]|\\.)*"|\'([^\'\\]|\\.)*\'|#[^\n]*'),
-        #     string_format,
-        #     'mixed'
-        # ))
 
 
         self.func_args_format = QTextCharFormat()
@@ -130,7 +89,6 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
             'f-string'
         ))
 
-        # fr-strings
         self.highlighting_rules.append((
             QRegularExpression(r'''fr"([^"\\]|\\.)*"'''),
             self.string_format,
@@ -143,7 +101,6 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
             'fr-string'
         ))
 
-        # b-strings
         self.highlighting_rules.append((
             QRegularExpression(r'''b"([^"\\]|\\.)*"'''),
             self.string_format,
@@ -169,71 +126,12 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
             'br-string'
         ))
 
-
-
-        # self.highlighting_rules.append((
-        #     QRegularExpression(r'''(?<=\W|^)f"[^"\\]*(\\.[^"\\]*)*"'''),
-        #     self.string_format,
-        #     'f-string'
-        # ))
-
-        # self.highlighting_rules.append((
-        #     QRegularExpression(r'''(?<=\W|^)f'[^'\\]*(\\.[^'\\]*)*' '''),
-        #     self.string_format,
-        #     'f-string'
-        # ))
-
-
-
-        # self.highlighting_rules.append((
-        #     QRegularExpression(r'''(?<=\W|^)fr"[^"\\]*(\\.[^"\\]*)*"'''),
-        #     self.string_format,
-        #     'fr-string'
-        # ))
-
-        # self.highlighting_rules.append((
-        #     QRegularExpression(r"""fr'[^'\\]*(\\.[^'\\]*)*""" + r"'"),
-        #     self.string_format,
-        #     'fr-string'
-        # ))
-
-
-        # self.highlighting_rules.append((
-        #     QRegularExpression(r'''(?<=\W|^)b"[^"\\]*(\\.[^"\\]*)*"'''),
-        #     self.string_format,
-        #     'b-string'
-        # ))
-
-        # self.highlighting_rules.append((
-        #     QRegularExpression(r"""b'[^'\\]*(\\.[^'\\]*)*""" + r"'"),
-        #     self.string_format,
-        #     'b-string'
-        # ))
-
-        # self.highlighting_rules.append((
-        #     QRegularExpression(r'''(?<=\W|^)br"[^"\\]*(\\.[^"\\]*)*"'''),
-        #     self.string_format,
-        #     'br-string'
-        # ))
-
-        # self.highlighting_rules.append((
-        #     QRegularExpression(r"""br'[^'\\]*(\\.[^'\\]*)*""" + r"'"),
-        #     self.string_format,
-        #     'br-string'
-        # ))
-
         self.highlighting_rules.append((
             QRegularExpression(r'"[^"\\]*(\\.[^"\\]*)*"'),
             self.string_format,
             'string'
         ))
 
-
-        # self.highlighting_rules.append((
-        #     QRegularExpression(r"'[^'\\]*(\\.[^'\\]*)*'"),
-        #     self.string_format,
-        #     'string'
-        # ))
 
         keywords = [
             'and', 'as', 'assert', 'break', 'class', 'continue', 'def',
@@ -360,10 +258,6 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
             QRegularExpression(r'\bfrom\s+([a-zA-Z0-9_.]+)\s+import\b'), self.class_format, 'Fromimport'
         ))
 
-        # self.highlighting_rules.append((
-        #     QRegularExpression(r'\b([a-zA-Z_][a-zA-Z0-9_]*)\b(?=\.)'),
-        #     self.class_format, 'class'
-        # ))
 
         for punctuation in ['!', '@', '$', '%', '^', '&', '*', '-', '=', '+', '>', '<']:
             punction_format = QTextCharFormat()
@@ -618,25 +512,24 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
             #     start_index = start_match.capturedStart() if start_match.hasMatch() else -1
 
 
-            arg_match = QRegularExpression(r"\bdef\s+\w+\s*\(([^)]*)\)").match(text)
-            if arg_match.hasMatch():
-                args_str = arg_match.captured(1)
-                args_start = arg_match.capturedStart(1)
+            # arg_match = QRegularExpression(r"\bdef\s+\w+\s*\(([^)]*)\)").match(text)
+            # if arg_match.hasMatch():
+            #     args_str = arg_match.captured(1)
+            #     args_start = arg_match.capturedStart(1)
 
 
 
-                for arg in args_str.split(','):
-                    arg_name = arg.strip().split('=')[0].strip()
-                    if arg_name:
+            #     for arg in args_str.split(','):
+            #         arg_name = arg.strip().split('=')[0].strip()
+            #         if arg_name:
 
-                        if is_overlapping(args_start, arg_match.capturedLength(1), used_ranges):
-                            continue
+            #             if is_overlapping(args_start, arg_match.capturedLength(1), used_ranges):
+            #                 continue
 
-                        pos = text.find(arg_name, args_start)
-                        if pos != -1:
-                            self.setFormat(pos, len(arg_name), self.arg_def_format)
-                            used_ranges.add((pos, pos + len(arg_name)))
-
+            #             pos = text.find(arg_name, args_start)
+            #             if pos != -1:
+            #                 self.setFormat(pos, len(arg_name), self.arg_def_format)
+            #                 used_ranges.add((pos, pos + len(arg_name)))
 
             try:
                 for name, (pattern, type_name) in self._compiled_patterns.items():
@@ -648,25 +541,20 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
                             continue
 
                         if type_name == 'class':
-                            # self.setFormat(match.capturedStart(), match.capturedLength(), self.c_instance_foramt)
                             self.setFormat(match.capturedStart(), match.capturedLength(), self.c_instance_foramt)
 
                         elif type_name == 'function':
                             self.setFormat(match.capturedStart(), match.capturedLength(), self.function_calls_format)
                         elif type_name == 'method':
-                            # print(name)
                             self.setFormat(match.capturedStart(), match.capturedLength(), self.method_calls_format)
                         # elif type_name == 'attribute':
-                        #     print(name)
                             # self.setFormat(match.capturedStart(), match.capturedLength(), self.c_instance_foramt)
                         # elif type_name == 'variable':
                         #     self.setFormat(match.capturedStart(), match.capturedLength(), self.function_calls_format)
                         elif type_name == 'module':
                             self.setFormat(match.capturedStart(), match.capturedLength(), self.class_format)
-                            # self.setFormat(match.capturedStart(), match.capturedLength(), self.function_calls_format)
                         elif type_name == 'import' or type_name == 'Fromimport':
                             self.setFormat(match.capturedStart(), match.capturedLength(), self.class_format)
-                            # self.setFormat(match.capturedStart(), match.capturedLength(), self.function_calls_format)
 
 
                         elif type_name == 'args':

@@ -4,8 +4,8 @@ import shutil
 import time
 import platform
 
-src = r'config'
-if platform.system() == 'Windows':        
+src = r'src\config'
+if platform.system() == 'Windows':
     dst = fr'C:\Users\{os.getlogin()}\AppData\Roaming\Kryypto'
 elif platform.system() == 'Linux':
     dst = os.path.expanduser('~/.config/KryyptoConfig')
@@ -14,7 +14,6 @@ else:
     sys.exit()
 
 did_transfer = False
-
 if os.path.exists(src) and not os.path.exists(dst):
     os.makedirs(dst, exist_ok=True)
     shutil.move(src, dst)
@@ -36,7 +35,6 @@ from PyQt6.QtCore import Qt, QPoint, QRect, QCoreApplication
 
 from multiprocessing import freeze_support, active_children
 from pathlib import Path
-
 
 
 if getattr(sys, 'frozen', False):

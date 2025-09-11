@@ -1,6 +1,6 @@
 # Kryypto ⌨️​
 
-A lightweight, fully keyboard-supported text editor with deep customization and GitHub integration.
+A lightweight, fully keyboard-supported python text editor with deep customization and GitHub integration.
 
 ## ScreenShots 📸
 ![Kryypto 1](icons/app/readme/kr1.PNG)
@@ -15,6 +15,9 @@ A lightweight, fully keyboard-supported text editor with deep customization and 
 
 - Lightweight – minimal overhead
 - Full Keyboard Support – no need for the mouse, every feature is accessible via hotkeys
+- Discord presence
+- Live MarkDown Preview
+- Session Restore
 - Custom Styling
   - `config\configuration.cfg` for editor settings
   - CSS for theme and style customization
@@ -23,9 +26,7 @@ A lightweight, fully keyboard-supported text editor with deep customization and 
   - Jump to line
   - Adjustable cursor (color & width)
   - Configurable animations (types & duration)
-- Discord presence
-- Live MarkDown Preview
-- Session Restore
+
 - Git & GitHub Integration
   - View total commits
   - See last commit message & date
@@ -63,13 +64,13 @@ you got two options:
 
 
 
-> [!WARNING]  
+> [!WARNING]
 > ~~you might face a git error when you launch Kryypto, you can solve it by installing and setting up git or open CMD and type: set GIT_PYTHON_REFRESH=quiet~~
 
 
 ## License
 
-This project is licensed under a [License](LICENSE.txt).
+This project is licensed under [License](LICENSE.txt).
 
 <!-- 
 ## Kurdish
