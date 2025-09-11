@@ -3,13 +3,12 @@
 A lightweight, fully keyboard-supported python text editor with deep customization and GitHub integration.
 
 ## ScreenShots 📸
-![Kryypto 1](icons/app/readme/kr1.PNG)
-![Kryypto 2](icons/app/readme/kr2.PNG)
-![Kryypto 3](icons/app/readme/kr3.PNG)
-![Kryypto 4](icons/app/readme/kr4.PNG)
-![Kryypto 5](icons/app/readme/kr5.PNG)
-![Kryypto 8](icons/app/readme/kr8.PNG)
-![Kryypto 7](icons/app/readme/kr7.PNG)
+![Kryypto 1](src/icons/app/readme/kr1.PNG)
+![Kryypto 2](src/icons/app/readme/kr2.PNG)
+![Kryypto 3](src/icons/app/readme/kr3.PNG)
+![Kryypto 4](src/icons/app/readme/kr4.PNG)
+![Kryypto 5](src/icons/app/readme/kr5.PNG)
+![Kryypto 8](src/icons/app/readme/kr8.PNG)
 
 ## ✨ Features
 
@@ -54,7 +53,7 @@ you got two options:
 2. Clone the repository:
    ```bash
    git clone git@github.com:NaturalCapsule/Kryypto.git
-   cd kryypto
+   cd Kryypto/src
    pip install -r requirements.txt
    kryypto.py
 
