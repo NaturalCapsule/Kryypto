@@ -144,8 +144,6 @@ def get_github_remote_url(message):
         else:
             return "No URL"
     except Exception as e:
-        # message(f'No Git repository detected:\n{e}')
-
         return f"No Git repository detected"
 
 @safe_git_operation
@@ -163,8 +161,14 @@ def get_github_profile(message):
             avatar_response = requests.get(avatar_url)
 
             if avatar_response.status_code == 200:
-                with open("icons/github/user_profile/users_profile.png", "wb") as f:
-                    f.write(avatar_response.content)
+                if getattr(sys, 'frozen', False):
+
+                    with open("icons/github/user_profile/users_profile.png", "wb") as f:
+                        f.write(avatar_response.content)
+                else:
+                    with open("src/icons/github/user_profile/users_profile.png", "wb") as f:
+                        f.write(avatar_response.content)
+
             else:
                 message('Could not download pfp\nplease make sure you have internet connection')
         else:
@@ -174,7 +178,6 @@ def get_github_profile(message):
 
 @safe_git_operation
 def get_github_username():
-    """Get the GitHub username from git config"""
     try:
         repo = git.Repo(fr'{get_openedDir()}', search_parent_directories=True)
         if repo:
@@ -185,9 +188,15 @@ def get_github_username():
         return f"Error: {e}"
 
 def is_downloaded(message):
-    if not os.path.exists('icons/github/user_profile/users_profile.png'):
-        if is_gitInstalled():
-            get_github_profile(message)
+    if getattr(sys, 'frozen', False):
+        if not os.path.exists('icons/github/user_profile/users_profile.png'):
+            if is_gitInstalled():
+                get_github_profile(message)
+
+    else:
+        if not os.path.exists('src/icons/github/user_profile/users_profile.png'):
+            if is_gitInstalled():
+                get_github_profile(message)
 
 
 
