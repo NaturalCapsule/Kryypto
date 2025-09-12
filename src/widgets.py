@@ -13,6 +13,7 @@ from PyQt6.QtWidgets import QMessageBox, QFrame, QComboBox, QLabel, QPushButton,
 from lines import ShowLines
 from multiprocessing import Process, Queue
 from discord_presence import DiscordPresence
+from settings import Setting
 
 from get_style import get_css_style
 
@@ -38,7 +39,7 @@ nameErrorlabel.setStyleSheet(get_css_style())
 file_description = {}
 
 
-
+setting_ = Setting()
 commenting = ''
 current_file_path = ''
 # file_ = ''
@@ -734,11 +735,26 @@ class DocStringDock(QDockWidget):
             self.setWidget(self.doc_panel)
 
             self.setFeatures(QDockWidget.DockWidgetFeature.DockWidgetMovable)
-            parent.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self)
+
+            docstring_area = parent.dockWidgetArea(self)
+
+            if setting_.value('DocStringDockWidgetPosition') == 'Left':
+                parent.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self)
+            elif setting_.value('DocStringDockWidgetPosition') == 'Right':
+                parent.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self)
+            elif setting_.value('DocStringDockWidgetPosition') == 'Bottom':
+                parent.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, self)
+            elif setting_.value('DocStringDockWidgetPosition') == 'Top':
+                parent.addDockWidget(Qt.DockWidgetArea.TopDockWidgetArea, self)
+            elif docstring_area == Qt.DockWidgetArea.NoDockWidgetArea:
+                parent.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self)
+                setting_.setValue('DocStringDockWidgetPosition', "Right")
+
             self.setObjectName("Docks")
 
             self.setStyleSheet(get_css_style())
             self.setMaximumHeight(0)
+            
 
 class ShowDirectory(QDockWidget):
     def __init__(self, main_text, opened_tabs):
@@ -1260,11 +1276,8 @@ class ShowOpenedFile(QTabBar):
 
                 if file_name.lower().endswith('.py') or file_name.lower().endswith('.pyi'):
                     if self.editor.markdown_preview:
-                        # self.layout_.removeWidget(self.editor.markdown_preview)
-                        # self.layout_.removeWidget(self.markdown_panel)
                         self.parent_.removeDockWidget(self.markdown_panel)
 
-                        # self.h_layout.removeWidget(self.editor.markdown_preview)
                         self.markdown_panel.destroy()
                         self.markdown_panel.deleteLater()
 
@@ -1305,12 +1318,8 @@ class ShowOpenedFile(QTabBar):
 
                 elif file_name.lower().endswith('.json') or file_name.lower().endswith('.jsonc'):
                     if self.editor.markdown_preview:
-                        # self.layout_.removeWidget(self.editor.markdown_preview)
-                        # self.h_layout.removeWidget(self.editor.markdown_preview)
-                        # self.layout_.removeWidget(self.markdown_panel)
                         self.parent_.removeDockWidget(self.markdown_panel)
 
-                        # self.h_layout.removeWidget(self.editor.markdown_preview)
                         self.markdown_panel.destroy()
                         self.markdown_panel.deleteLater()
 
@@ -1406,6 +1415,7 @@ class ShowOpenedFile(QTabBar):
 
                         if self.doc_panelstring:
                             self.parent_.removeDockWidget(self.doc_panelstring)
+
                             self.doc_panelstring.deleteLater()
 
                     except Exception:
@@ -1464,10 +1474,12 @@ class ShowOpenedFile(QTabBar):
 
                         if self.doc_panelstring:
                             self.parent_.removeDockWidget(self.doc_panelstring)
+
                             self.doc_panelstring.deleteLater()
 
                     except Exception:
                         pass
+
                     self.doc_panelstring = None
                     self.editor.doc_panel = None
                     self.editor.show_completer = False

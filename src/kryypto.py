@@ -99,13 +99,87 @@ class Kryypto(QMainWindow):
 
         self.inner_window.setWindowFlags(Qt.WindowType.FramelessWindowHint)
 
-        if is_gitInstalled():
-            self.inner_window.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self.git_panel)
-        self.inner_window.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, self.terminal)
-        self.inner_window.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self.show_files)
         self.inner_window.setDockOptions(QMainWindow.DockOption.AnimatedDocks|
             QMainWindow.DockOption.AllowTabbedDocks |
             QMainWindow.DockOption.AllowNestedDocks)
+
+        show_files_area = self.inner_window.dockWidgetArea(self.show_files)
+        git_panel_area = self.inner_window.dockWidgetArea(self.git_panel)
+        terminal_area = self.inner_window.dockWidgetArea(self.terminal)
+
+        if self.settings.value('FileDockWidgetPosition') == 'Left':
+            self.inner_window.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self.show_files)
+
+        elif self.settings.value('FileDockWidgetPosition') == 'Right':
+            self.inner_window.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.show_files)
+
+        elif self.settings.value('FileDockWidgetPosition') == 'Bottom':
+            self.inner_window.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, self.show_files)
+
+        elif self.settings.value('FileDockWidgetPosition') == 'Top':
+            self.inner_window.addDockWidget(Qt.DockWidgetArea.TopDockWidgetArea, self.show_files)
+
+
+        elif show_files_area == Qt.DockWidgetArea.NoDockWidgetArea:
+            self.inner_window.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self.show_files)
+            self.settings.setValue('FileDockWidgetPosition', "Left")
+
+        # elif self.settings.value('FileDockWidgetPosition') == 'Left':
+        #     self.inner_window.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self.show_files)
+
+        # elif self.settings.value('FileDockWidgetPosition') == 'Right':
+        #     self.inner_window.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.show_files)
+
+        # elif self.settings.value('FileDockWidgetPosition') == 'Bottom':
+        #     self.inner_window.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, self.show_files)
+
+        # elif self.settings.value('FileDockWidgetPosition') == 'Top':
+        #     self.inner_window.addDockWidget(Qt.DockWidgetArea.TopDockWidgetArea, self.show_files)
+
+
+        if is_gitInstalled():
+
+            if self.settings.value('GitDockWidgetPosition') == 'Left':
+                self.inner_window.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self.git_panel)
+
+            elif self.settings.value('GitDockWidgetPosition') == 'Right':
+                self.inner_window.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.git_panel)
+
+            elif self.settings.value('GitDockWidgetPosition') == 'Bottom':
+                self.inner_window.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, self.git_panel)
+
+            elif self.settings.value('GitDockWidgetPosition') == 'Top':
+                self.inner_window.addDockWidget(Qt.DockWidgetArea.TopDockWidgetArea, self.git_panel)
+
+
+            elif git_panel_area == Qt.DockWidgetArea.NoDockWidgetArea:
+                self.inner_window.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self.git_panel)
+                self.settings.setValue('GitDockWidgetPosition', "Left")
+
+
+        if self.settings.value('TerminalDockWidgetPosition') == 'Left':
+            self.inner_window.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self.terminal)
+
+        elif self.settings.value('TerminalDockWidgetPosition') == 'Right':
+            self.inner_window.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.terminal)
+
+        elif self.settings.value('TerminalDockWidgetPosition') == 'Bottom':
+            self.inner_window.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, self.terminal)
+
+        elif self.settings.value('TerminalDockWidgetPosition') == 'Top':
+            self.inner_window.addDockWidget(Qt.DockWidgetArea.TopDockWidgetArea, self.terminal)
+
+
+        elif terminal_area == Qt.DockWidgetArea.NoDockWidgetArea:
+            self.inner_window.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, self.terminal)
+            self.settings.setValue('TerminalDockWidgetPosition', "Bottom")
+
+
+        # if is_gitInstalled():
+            # self.inner_window.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self.git_panel)
+        # self.inner_window.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, self.terminal)
+        # self.inner_window.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self.show_files)
+
 
     def setupUI(self):
         self.setWindowTitle("Kryypto")
@@ -403,6 +477,49 @@ class Kryypto(QMainWindow):
 
         self.settings.setValue('opened_files', file_description)
         self.settings.setValue('CurrentFileIndex', self.tab_bar.currentIndex())
+
+        show_files_area = self.inner_window.dockWidgetArea(self.show_files)
+        git_panel_area = self.inner_window.dockWidgetArea(self.git_panel)
+        terminal_area = self.inner_window.dockWidgetArea(self.terminal)
+
+        if show_files_area == Qt.DockWidgetArea.LeftDockWidgetArea:
+            self.settings.setValue('FileDockWidgetPosition', "Left")
+        elif show_files_area == Qt.DockWidgetArea.RightDockWidgetArea:
+            self.settings.setValue('FileDockWidgetPosition', "Right")
+        elif show_files_area == Qt.DockWidgetArea.TopDockWidgetArea:
+            self.settings.setValue('FileDockWidgetPosition', "Top")
+        elif show_files_area == Qt.DockWidgetArea.BottomDockWidgetArea:
+            self.settings.setValue('FileDockWidgetPosition', "Bottom")
+
+        if git_panel_area == Qt.DockWidgetArea.LeftDockWidgetArea:
+            self.settings.setValue('GitDockWidgetPosition', "Left")
+        elif git_panel_area == Qt.DockWidgetArea.RightDockWidgetArea:
+            self.settings.setValue('GitDockWidgetPosition', "Right")
+        elif git_panel_area == Qt.DockWidgetArea.TopDockWidgetArea:
+            self.settings.setValue('GitDockWidgetPosition', "Top")
+        elif git_panel_area == Qt.DockWidgetArea.BottomDockWidgetArea:
+            self.settings.setValue('GitDockWidgetPosition', "Bottom")
+
+        if terminal_area == Qt.DockWidgetArea.LeftDockWidgetArea:
+            self.settings.setValue('TerminalDockWidgetPosition', "Left")
+        elif terminal_area == Qt.DockWidgetArea.RightDockWidgetArea:
+            self.settings.setValue('TerminalDockWidgetPosition', "Right")
+        elif terminal_area == Qt.DockWidgetArea.TopDockWidgetArea:
+            self.settings.setValue('TerminalDockWidgetPosition', "Top")
+        elif terminal_area == Qt.DockWidgetArea.BottomDockWidgetArea:
+            self.settings.setValue('TerminalDockWidgetPosition', "Bottom")
+
+        if self.tab_bar.doc_panelstring:
+            docstring_area = self.inner_window.dockWidgetArea(self.tab_bar.doc_panelstring)
+
+            if docstring_area == Qt.DockWidgetArea.LeftDockWidgetArea:
+                self.settings.setValue('DocStringDockWidgetPosition', "Left")
+            elif docstring_area == Qt.DockWidgetArea.RightDockWidgetArea:
+                self.settings.setValue('DocStringDockWidgetPosition', "Right")
+            elif docstring_area == Qt.DockWidgetArea.TopDockWidgetArea:
+                self.settings.setValue('DocStringDockWidgetPosition', "Top")
+            elif docstring_area == Qt.DockWidgetArea.BottomDockWidgetArea:
+                self.settings.setValue('DocStringDockWidgetPosition', "Bottom")
 
 
 if __name__ == "__main__":
