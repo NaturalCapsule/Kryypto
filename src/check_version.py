@@ -18,4 +18,3 @@ def checkUpdate():
             return None
     except Exception as e:
         return "Error: "+str(e)
-        
