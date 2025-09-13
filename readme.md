@@ -43,8 +43,10 @@ A lightweight, fully keyboard-supported python text editor with deep customizati
   - JSON
   - Config files
   - Markdown
-  
+
 ## 🚀 Getting Started
+
+Linux version coming soon...
 
 you got two options:
 
