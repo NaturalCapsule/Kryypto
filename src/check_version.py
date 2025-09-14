@@ -2,7 +2,7 @@ import requests
 
 from packaging import version
 
-APP_VERSION = "1.9.0"
+APP_VERSION = "1.9.1"
 VERSION_URL = "https://raw.githubusercontent.com/NaturalCapsule/Kryypto/main/src/version/version.json"
 
 def checkUpdate():

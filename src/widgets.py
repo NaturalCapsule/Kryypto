@@ -116,9 +116,9 @@ class MainText(QPlainTextEdit):
         self.blink_timer.timeout.connect(self.toggle_cursor)
         self.blink_timer.start(get_cursorBlinkingRate())
 
-        self.bookmarked_timer = QTimer(self)
-        self.bookmarked_timer.timeout.connect(self.update_line)
-        self.bookmarked_timer.start(400)
+        # self.bookmarked_timer = QTimer(self)
+        # self.bookmarked_timer.timeout.connect(self.update_line)
+        # self.bookmarked_timer.start(400)
 
 
         self.line_number_area = ShowLines(self, self.font_size)
@@ -235,8 +235,8 @@ class MainText(QPlainTextEdit):
         digits = len(str(self.blockCount()))
         return 3 + font_metrics.horizontalAdvance('9') * digits
 
-    def update_line(self):
-        self.line_number_area.update()
+    # def update_line(self):
+    #     self.line_number_area.update()
 
     def update_line_number_area_width(self, _):
         self.setViewportMargins(self.line_number_area_width(self.line_number_area.font_metrics), 0, 0, 0)

@@ -4,7 +4,7 @@ import os
 
 from PyQt6.QtGui import QFont, QShortcut, QKeySequence, QTextCursor, QFontMetrics
 from PyQt6.QtWidgets import QPlainTextEdit
-from PyQt6.QtCore import QProcess, QCoreApplication
+from PyQt6.QtCore import QProcess, QCoreApplication, Qt
 
 from config import get_fontFamily, write_config
 from pygit import open_file_dialog_again, is_gitInstalled
@@ -37,113 +37,116 @@ def reboot():
         QCoreApplication.quit()
 
 class MainTextShortcuts:
-    def __init__(self, parent, completer, tab, error_label, clipboard, bawky_parent, term, bawky_parent_, opened_tabs, file_desc, list_shortcuts, git_panel, font_size, lines, show_files):
+    def __init__(self, parent, completer, tab, error_label, clipboard, bawky_parent, term, bawky_parent_, opened_tabs, file_desc, list_shortcuts, git_panel, font_size, lines, show_files, inner_window, settings):
         
         self.font_size = font_size
         self.terminal = term
         self.lines = lines
         self.show_files = show_files
         self.index = 0
+        self.inner_window = inner_window
+        self.settings = settings
+        self.last_terminal_position = None
 
-
-        delete_line = QShortcut(QKeySequence(DeleteLine()), parent)
+        delete_line = QShortcut(QKeySequence(DeleteLine().replace(' ', '')), parent)
         delete_line.activated.connect(lambda: self.remove_current_line(parent))
 
-        new_line = QShortcut(QKeySequence(newLine()), parent)
+        new_line = QShortcut(QKeySequence(newLine().replace(' ', '')), parent)
         new_line.activated.connect(lambda: self.goto_next_block(parent))
 
-        increase_font = QShortcut(QKeySequence(IncreaseFont()), parent)
+        increase_font = QShortcut(QKeySequence(IncreaseFont().replace(' ', '')), parent)
         increase_font.activated.connect(lambda: self.increase_font(parent, opened_tabs))
 
-        reduce_font = QShortcut(QKeySequence(DecreaseFont()), parent)
+        reduce_font = QShortcut(QKeySequence(DecreaseFont().replace(' ', '')), parent)
         reduce_font.activated.connect(lambda: self.reduce_font(parent, opened_tabs))
 
         show_completer = QShortcut(QKeySequence("Ctrl+Space"), parent)
         show_completer.activated.connect(lambda: self.pressed(completer))
 
-        indent_line = QShortcut(QKeySequence(IndentCurrentLine()), parent)
+        indent_line = QShortcut(QKeySequence(IndentCurrentLine().replace(' ', '')), parent)
         indent_line.activated.connect(lambda: self.add_indentation(parent))
 
-        remove_indent = QShortcut(QKeySequence(removeIndentCurrent()), parent)
+        remove_indent = QShortcut(QKeySequence(removeIndentCurrent().replace(' ', '')), parent)
         remove_indent.activated.connect(lambda: self.remove_indentation(parent))
 
-        remove_current_tab = QShortcut(QKeySequence(RemoveCurrentTab()), parent)
+        remove_current_tab = QShortcut(QKeySequence(RemoveCurrentTab().replace(' ', '')), parent)
         remove_current_tab.activated.connect(lambda: self.remove_tab_(tab, file_desc))
 
 
-        move_tab_right = QShortcut(QKeySequence(MoveTabRight()), parent)
+        move_tab_right = QShortcut(QKeySequence(MoveTabRight().replace(' ', '')), parent)
         move_tab_right.activated.connect(lambda: self.move_tab_right(tab))
 
-        move_tab_left = QShortcut(QKeySequence(MoveTabLeft()), parent)
+        move_tab_left = QShortcut(QKeySequence(MoveTabLeft().replace(' ', '')), parent)
         move_tab_left.activated.connect(lambda: self.move_tab_left(tab))
 
         get_error_text = QShortcut(QKeySequence("Ctrl+Shift+C"), parent)
         get_error_text.activated.connect(lambda: self.get_text(error_label, clipboard))
 
 
-        goto_block = QShortcut(QKeySequence(GotoBlock_()), parent)
+        goto_block = QShortcut(QKeySequence(GotoBlock_().replace(' ', '')), parent)
         goto_block.activated.connect(lambda: self.goto_block_(parent, bawky_parent))
 
 
-        hide_show_term = QShortcut(QKeySequence(Hide_Show_term()), bawky_parent_)
-        hide_show_term.activated.connect(lambda: self.hide_show_terminal(bawky_parent_, parent))
+        hide_show_term = QShortcut(QKeySequence(Hide_Show_term().replace(' ', '')), self.inner_window)
+        hide_show_term.activated.connect(lambda: self.hide_show_terminal(self.inner_window, parent))
 
-        kill_term = QShortcut(QKeySequence(KillTerminalSession()), parent)
+
+        kill_term = QShortcut(QKeySequence(KillTerminalSession().replace(' ', '')), parent)
         kill_term.activated.connect(self.kill_terminal)
 
-        run_file = QShortcut(QKeySequence(RunCurrentPythonFile()), parent)
+        run_file = QShortcut(QKeySequence(RunCurrentPythonFile().replace(' ' ,'')), parent)
         run_file.activated.connect(lambda: self.run_current_file(opened_tabs, file_desc, bawky_parent_, parent))
 
-        open_css_file = QShortcut(QKeySequence(OpenStyleFile()), bawky_parent_)
+        open_css_file = QShortcut(QKeySequence(OpenStyleFile().replace(' ', '')), bawky_parent_)
         open_css_file.activated.connect(lambda: self.open_css(opened_tabs, file_desc, bawky_parent_, parent))
 
-        open_config_file = QShortcut(QKeySequence(OpenConfigFile()), bawky_parent_)
+        open_config_file = QShortcut(QKeySequence(OpenConfigFile().replace(' ', '')), bawky_parent_)
         open_config_file.activated.connect(lambda: self.open_config(opened_tabs, file_desc, bawky_parent_, parent))
 
-        open_markdown_file = QShortcut(QKeySequence(OpenMarkDownFile()), bawky_parent_)
+        open_markdown_file = QShortcut(QKeySequence(OpenMarkDownFile().replace(' ', '')), bawky_parent_)
         open_markdown_file.activated.connect(lambda: self.open_markdown(opened_tabs, file_desc, bawky_parent_, parent))
 
 
-        hide_show_shortcuts = QShortcut(QKeySequence(Show_Hide_Shortcuts()), bawky_parent_)
+        hide_show_shortcuts = QShortcut(QKeySequence(Show_Hide_Shortcuts().replace(' ', '')), bawky_parent_)
         hide_show_shortcuts.activated.connect(lambda: self.hide_show_shortcuts(bawky_parent_, list_shortcuts))
 
         if is_gitInstalled():
-            hide_show_gitpanel = QShortcut(QKeySequence(Hide_Show_gitpanel()), bawky_parent_)
+            hide_show_gitpanel = QShortcut(QKeySequence(Hide_Show_gitpanel().replace(' ', '')), bawky_parent_)
             hide_show_gitpanel.activated.connect(lambda: self.hide_show_gitpanel(git_panel, parent, bawky_parent_))
 
-        select_folder = QShortcut(QKeySequence(SelectFolder()), bawky_parent_)
+        select_folder = QShortcut(QKeySequence(SelectFolder().replace(' ', '')), bawky_parent_)
         select_folder.activated.connect(lambda: self.show_folderGUI(bawky_parent_))
 
 
-        move_block_above = QShortcut(QKeySequence(MoveBlockUp()), parent)
+        move_block_above = QShortcut(QKeySequence(MoveBlockUp().replace(' ', '')), parent)
         move_block_above.activated.connect(lambda: self.moveBlock_above(parent))
 
-        move_block_below = QShortcut(QKeySequence(MoveBlockDown()), parent)
+        move_block_below = QShortcut(QKeySequence(MoveBlockDown().replace(' ', '')), parent)
         move_block_below.activated.connect(lambda: self.moveBlock_below(parent))
 
-        goto_bookrmarked_block = QShortcut(QKeySequence("Ctrl+R"), parent)
+        goto_bookrmarked_block = QShortcut(QKeySequence(gotobookmarkedline().replace(' ', '')), parent)
         goto_bookrmarked_block.activated.connect(lambda: self.goto_bookrmarked_block(parent))
 
-        bookmark_line = QShortcut(QKeySequence("Ctrl+O"), parent)
+        bookmark_line = QShortcut(QKeySequence(bookmarkLine().replace(' ', '')), parent)
         bookmark_line.activated.connect(lambda: self.bookmark_line(parent))
 
-        pop_bookmark_line = QShortcut(QKeySequence("Ctrl+E"), parent)
+        pop_bookmark_line = QShortcut(QKeySequence(removebookmarkedline().replace(' ', '')), parent)
         # pop_bookmark_line = QShortcut(QKeySequence("Ctrl+Alt+R"), parent)
         pop_bookmark_line.activated.connect(lambda: self.pop_bookmarked_line(parent))
 
 
-        maximize = QShortcut(QKeySequence(Maximize()), bawky_parent_)
+        maximize = QShortcut(QKeySequence(Maximize().replace(' ', '')), bawky_parent_)
         maximize.activated.connect(lambda: self.max_(bawky_parent_))
 
-        minimize = QShortcut(QKeySequence(Minimize()), bawky_parent_)
+        minimize = QShortcut(QKeySequence(Minimize().replace(' ', '')), bawky_parent_)
         minimize.activated.connect(lambda: self.min_(bawky_parent_))
 
 
 
-        close = QShortcut(QKeySequence(Close()), bawky_parent_)
+        close = QShortcut(QKeySequence(Close().replace(' ', '')), bawky_parent_)
         close.activated.connect(self.Close_)
 
-        reboot_ = QShortcut(QKeySequence(Reboot()), bawky_parent_)
+        reboot_ = QShortcut(QKeySequence(Reboot().replace(' ', '')), bawky_parent_)
         reboot_.activated.connect(reboot)
 
     def Close_(self):
@@ -173,16 +176,23 @@ class MainTextShortcuts:
 
             self.index += 1
             text_edit.setTextCursor(cursor)
+            self.lines.update()
+
+
 
     def bookmark_line(self, text_edit: QPlainTextEdit):
         cursor = text_edit.textCursor()
         current_block = cursor.block().blockNumber()
         if current_block not in text_edit.bookmarked_blocks:
             text_edit.bookmarked_blocks.append(current_block)
+        self.lines.update()
+
+
 
     def pop_bookmarked_line(self, text_edit):
         try:
             text_edit.bookmarked_blocks.pop()
+            self.lines.update()
         except IndexError:
             pass
 
@@ -199,7 +209,6 @@ class MainTextShortcuts:
 
 
     def open_config(self, tab, file_desc, bawky_parent, parent):
-        # path = "config/configuration.cfg"
         if platform.system() == 'Windows':
             path = fr'C:\Users\{os.getlogin()}\AppData\Roaming\Kryypto\config\configuration.cfg'
         elif platform.system() == "Linux":
@@ -212,11 +221,7 @@ class MainTextShortcuts:
                 parent.setFocus()
 
     def open_markdown(self, tab, file_desc, bawky_parent, parent):
-        # path = "config/configuration.cfg"
-        # if platform.system() == 'Windows':
-        #     path = fr'C:\Users\{os.getlogin()}\AppData\Roaming\Kryypto\config\configuration.cfg'
-        # elif platform.system() == "Linux":
-        #     path = f'~/.config/KryyptoConfig/config/configuration.cfg'
+
         path = get_markdownpreview_file()
         with open(path, 'r', encoding = 'utf-8') as markdown_file:
             if path not in file_desc.keys() and 'markdown.txt' not in file_desc.values():
@@ -257,7 +262,6 @@ class MainTextShortcuts:
                     self.terminal.show()
                     self.terminal.termEmulator.terminal.show()
                     self.terminal.termEmulator.terminal.setFocus()
-                    # self.terminal.termEmulator.run_command(fr"{sys.executable} {path}")
                     if ' ' in path:
                         self.terminal.termEmulator.run_command(fr"{getInterpreter()} '{path}'")
                     else:
@@ -268,6 +272,7 @@ class MainTextShortcuts:
 
                     self.terminal = TerminalDock(bawky_parent)
                     self.terminal.show()
+                    self.terminal.termEmulator.terminal.show()
                     self.terminal.termEmulator.terminal.setFocus()
 
                     if ' ' in path:
@@ -366,7 +371,6 @@ class MainTextShortcuts:
 
                 next_position = cursor.block().next().position()
 
-                # cursor.setPosition(next_position, QTextCursor.MoveMode.KeepAnchor)
                 cursor.setPosition(next_position)
 
                 cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock)
@@ -388,51 +392,6 @@ class MainTextShortcuts:
 
 
     def moveBlock_above(self, text_edit):
-        # cursor = text_edit.textCursor()
-        # cursor.beginEditBlock()
-
-        # if not cursor.hasSelection():
-        #     cursor.select(QTextCursor.SelectionType.LineUnderCursor)
-
-        # start = cursor.selectionStart()
-        # end = cursor.selectionEnd()
-
-        # cursor.setPosition(start)
-        # cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock)
-        # start_block = cursor.blockNumber()
-
-        # cursor.setPosition(end)
-        # cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock)
-        # end_block = cursor.blockNumber()
-
-
-        # cursor_pos = cursor.block()
-        # prev_block = cursor_pos.previous()
-        # prev_position = prev_block.position()
-
-
-        # if prev_block.isValid():
-        #     for block_num in reversed(range(start_block, end_block + 1)):
-        #         block = text_edit.document().findBlockByNumber(block_num)
-        #         cursor.setPosition(block.position())
-
-        #         cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock)
-        #         cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock, QTextCursor.MoveMode.KeepAnchor)
-
-        #         line_text = cursor.selectedText()
-        #         cursor.removeSelectedText()
-        #         cursor.deleteChar()
-
-
-        #         cursor.setPosition(prev_position)
-        #         cursor.insertText(f'{line_text}\n')
-        #         cursor.setPosition(prev_position)
-
-        #     text_edit.setTextCursor(cursor)
-
-        # cursor.endEditBlock()
-
-
         cursor = text_edit.textCursor()
         cursor.beginEditBlock()
 
@@ -547,33 +506,7 @@ class MainTextShortcuts:
 
         cursor.endEditBlock()
 
-
-        # cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock)
-        # cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock, QTextCursor.MoveMode.KeepAnchor)
-
-        # line_text = cursor.selectedText()
-
-        # new_line = "    " + line_text
-
-        # cursor.insertText(new_line)
-
-        # cursor.endEditBlock()
-
     def remove_indentation(self, text_edit):
-        # cursor = text_edit.textCursor()
-        # cursor.beginEditBlock()
-
-
-        # cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock)
-        # cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock, QTextCursor.MoveMode.KeepAnchor)
-
-        # line_text = cursor.selectedText()
-
-        # stripped_line = line_text[4:] if line_text.startswith("    ") else line_text.lstrip()
-
-        # cursor.insertText(stripped_line)
-        # cursor.endEditBlock()
-
         cursor = text_edit.textCursor()
         cursor.beginEditBlock()
 
@@ -624,15 +557,12 @@ class MainTextShortcuts:
 
         text_edit.completer.popup().setFont(font)
 
-        # self.terminal.termEmulator.terminal.setFont(QFont(get_fontFamily(), self.font_size))
         self.terminal.termEmulator.terminal.setFont(font)
 
         text_edit.line_number_area.update()
-        # font = QFont('Maple Mono', self.font_size)
 
         self.lines.setFont(font)
         self.lines.font_metrics = QFontMetrics(font)
-        # self.show_files.file_viewer.setFont(QFont(get_fontFamily(), self.font_size))
         self.show_files.file_viewer.setFont(font)
 
 
@@ -654,17 +584,14 @@ class MainTextShortcuts:
         font = QFont(get_fontFamily(), self.font_size)
         font.setPixelSize(self.font_size)
         font.setStyleStrategy(QFont.StyleStrategy.PreferAntialias)
-        # text_edit.setFont(QFont(get_fontFamily(), self.font_size))
         text_edit.setFont(font)
         text_edit.completer.popup().setFont(font)
 
-        # self.terminal.termEmulator.terminal.setFont(QFont(get_fontFamily(), self.font_size))
         self.terminal.termEmulator.terminal.setFont(font)
 
 
         self.lines.setFont(font)
         self.lines.font_metrics = QFontMetrics(font)
-        # self.show_files.file_viewer.setFont(QFont(get_fontFamily(), self.font_size))
         self.show_files.file_viewer.setFont(font)
 
 
@@ -723,7 +650,6 @@ class MainTextShortcuts:
         if git_panel.maximumHeight() == 0:
             animatePanel(git_panel, window, show=True, sub_widget = [git_panel.commit, git_panel.active_branch_name, git_panel.remote_url, git_panel.users_profile, git_panel.user_username, git_panel.show_changes, git_panel.header_changes, git_panel.commit_info, git_panel.latest_commit, git_panel.last_commit, git_panel.repo_info, git_panel.untracked_files, git_panel.untracked_header, git_panel.repo_name])
         else:
-            # animatePanel(git_panel, window, show=False)
             animatePanel(git_panel, window, show=False, sub_widget = [git_panel.commit, git_panel.insertions, git_panel.deletion, git_panel.active_branch_name, git_panel.remote_url, git_panel.users_profile, git_panel.user_username, git_panel.show_changes, git_panel.header_changes, git_panel.commit_info, git_panel.latest_commit, git_panel.last_commit, git_panel.repo_info, git_panel.untracked_files, git_panel.untracked_header, git_panel.repo_name])
 
 
@@ -742,9 +668,44 @@ class MainTextShortcuts:
             from widgets import TerminalDock
 
             self.terminal = TerminalDock(bawky_parent)
+            self.settings.sync()
+
+            if self.last_terminal_position == Qt.DockWidgetArea.LeftDockWidgetArea:
+                self.inner_window.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self.terminal)
+                self.settings.setValue('TerminalDockWidgetPosition', 'Left')
+
+            elif self.last_terminal_position == Qt.DockWidgetArea.RightDockWidgetArea:
+                self.inner_window.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.terminal)
+                self.settings.setValue('TerminalDockWidgetPosition', 'Right')
+
+
+            elif self.last_terminal_position == Qt.DockWidgetArea.BottomDockWidgetArea:
+                self.inner_window.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, self.terminal)
+                self.settings.setValue('TerminalDockWidgetPosition', 'Bottom')
+
+
+            elif self.last_terminal_position == Qt.DockWidgetArea.TopDockWidgetArea:
+                self.inner_window.addDockWidget(Qt.DockWidgetArea.TopDockWidgetArea, self.terminal)
+                self.settings.setValue('TerminalDockWidgetPosition', 'Top')
+
+            elif self.last_terminal_position == Qt.DockWidgetArea.NoDockWidgetArea:
+                self.inner_window.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self.terminal)
+                self.settings.setValue('TerminalDockWidgetPosition', 'Left')
+
+
+            self.settings.sync()
+
+
+
+            self.terminal.show()
+            self.terminal.termEmulator.terminal.show()
+            self.terminal.termEmulator.terminal.setFocus()
+
 
     def kill_terminal(self):
         if self.terminal:
+            last_pos = self.inner_window.dockWidgetArea(self.terminal)
+            self.last_terminal_position = last_pos
             self.terminal.deleteLater()
             self.terminal.termEmulator.deleteLater()
             self.terminal.custom_title.deleteLater()

@@ -113,6 +113,7 @@ class Kryypto(QMainWindow):
         elif self.settings.value('FileDockWidgetPosition') == 'Right':
             self.inner_window.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.show_files)
 
+
         elif self.settings.value('FileDockWidgetPosition') == 'Bottom':
             self.inner_window.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, self.show_files)
 
@@ -123,19 +124,6 @@ class Kryypto(QMainWindow):
         elif show_files_area == Qt.DockWidgetArea.NoDockWidgetArea:
             self.inner_window.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self.show_files)
             self.settings.setValue('FileDockWidgetPosition', "Left")
-
-        # elif self.settings.value('FileDockWidgetPosition') == 'Left':
-        #     self.inner_window.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self.show_files)
-
-        # elif self.settings.value('FileDockWidgetPosition') == 'Right':
-        #     self.inner_window.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.show_files)
-
-        # elif self.settings.value('FileDockWidgetPosition') == 'Bottom':
-        #     self.inner_window.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, self.show_files)
-
-        # elif self.settings.value('FileDockWidgetPosition') == 'Top':
-        #     self.inner_window.addDockWidget(Qt.DockWidgetArea.TopDockWidgetArea, self.show_files)
-
 
         if is_gitInstalled():
 
@@ -173,13 +161,6 @@ class Kryypto(QMainWindow):
         elif terminal_area == Qt.DockWidgetArea.NoDockWidgetArea:
             self.inner_window.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, self.terminal)
             self.settings.setValue('TerminalDockWidgetPosition', "Bottom")
-
-
-        # if is_gitInstalled():
-            # self.inner_window.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self.git_panel)
-        # self.inner_window.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, self.terminal)
-        # self.inner_window.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self.show_files)
-
 
     def setupUI(self):
         self.setWindowTitle("Kryypto")
@@ -320,7 +301,7 @@ class Kryypto(QMainWindow):
             widgets.error_label, self.clipboard, self.editor_layout, 
             self.terminal, self, self.tab_bar, widgets.file_description, 
 
-            self.list_shortcuts, self.git_panel, self.font_size, self.main_text.line_number_area, self.show_files
+            self.list_shortcuts, self.git_panel, self.font_size, self.main_text.line_number_area, self.show_files, self.inner_window, self.settings
 
         )
 
@@ -480,7 +461,11 @@ class Kryypto(QMainWindow):
 
         show_files_area = self.inner_window.dockWidgetArea(self.show_files)
         git_panel_area = self.inner_window.dockWidgetArea(self.git_panel)
-        terminal_area = self.inner_window.dockWidgetArea(self.terminal)
+        try:
+            if self.terminal:
+                terminal_area = self.inner_window.dockWidgetArea(self.terminal)
+        except RuntimeError:
+            self.terminal = None
 
         if show_files_area == Qt.DockWidgetArea.LeftDockWidgetArea:
             self.settings.setValue('FileDockWidgetPosition', "Left")
@@ -500,14 +485,15 @@ class Kryypto(QMainWindow):
         elif git_panel_area == Qt.DockWidgetArea.BottomDockWidgetArea:
             self.settings.setValue('GitDockWidgetPosition', "Bottom")
 
-        if terminal_area == Qt.DockWidgetArea.LeftDockWidgetArea:
-            self.settings.setValue('TerminalDockWidgetPosition', "Left")
-        elif terminal_area == Qt.DockWidgetArea.RightDockWidgetArea:
-            self.settings.setValue('TerminalDockWidgetPosition', "Right")
-        elif terminal_area == Qt.DockWidgetArea.TopDockWidgetArea:
-            self.settings.setValue('TerminalDockWidgetPosition', "Top")
-        elif terminal_area == Qt.DockWidgetArea.BottomDockWidgetArea:
-            self.settings.setValue('TerminalDockWidgetPosition', "Bottom")
+        if self.terminal:
+            if terminal_area == Qt.DockWidgetArea.LeftDockWidgetArea:
+                self.settings.setValue('TerminalDockWidgetPosition', "Left")
+            elif terminal_area == Qt.DockWidgetArea.RightDockWidgetArea:
+                self.settings.setValue('TerminalDockWidgetPosition', "Right")
+            elif terminal_area == Qt.DockWidgetArea.TopDockWidgetArea:
+                self.settings.setValue('TerminalDockWidgetPosition', "Top")
+            elif terminal_area == Qt.DockWidgetArea.BottomDockWidgetArea:
+                self.settings.setValue('TerminalDockWidgetPosition', "Bottom")
 
         if self.tab_bar.doc_panelstring:
             docstring_area = self.inner_window.dockWidgetArea(self.tab_bar.doc_panelstring)
