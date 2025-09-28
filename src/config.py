@@ -777,7 +777,7 @@ def bookmarkLine():
     except configparser.NoOptionError:
         write_config('Ctrl+O', 'ShortCuts', 'bookmarkline')
         return 'Ctrl+O'
-    
+
 
 def removebookmarkedline():
     try:
@@ -828,6 +828,39 @@ def get_cursorBlinkingRate():
         return config.getint('Cursor', 'BlinkingRate')
     except configparser.NoOptionError:
         write_config('300', 'Cursor', 'BlinkingRate')
+        return 300
+
+
+def get_docstring_size():
+    try:
+        con = config.getint('Dock', 'docstring-size')
+        return con
+    except configparser.NoOptionError:
+        write_config('300', 'Dock', 'docstring-size')
+        return 300
+
+def get_terminal_size():
+    try:
+        con = config.getint('Dock', 'terminal-size')
+        return con
+    except configparser.NoOptionError:
+        write_config('300', 'Dock', 'terminal-size')
+        return 300
+
+def get_git_size():
+    try:
+        con = config.getint('Dock', 'git-size')
+        return con
+    except configparser.NoOptionError:
+        write_config('300', 'Dock', 'git-size')
+        return 300
+
+def get_directoryviewer_size():
+    try:
+        con = config.getint('Dock', 'directoryviewer-size')
+        return con
+    except configparser.NoOptionError:
+        write_config('300', 'Dock', 'directoryviewer-size')
         return 300
 
 def showCompleter():

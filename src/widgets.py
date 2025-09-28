@@ -6,7 +6,7 @@ import webbrowser
 import markdown
 from datetime import datetime
 from PyQt6.QtWebEngineWidgets import QWebEngineView
-from PyQt6.QtCore import QUrl, QPointF, QThreadPool, QRectF, QTimer, Qt, QRect, QFileInfo, pyqtSignal, QProcess
+from PyQt6.QtCore import QUrl, QPointF, QThreadPool, QRectF, QTimer, Qt, QRect, QFileInfo, pyqtSignal, QProcess, QSize
 from PyQt6.QtGui import  QPainter, QPainterPath, QPixmap, QTextCursor, QKeyEvent, QPainter, QColor, QFont, QTextCursor, QColor, QFileSystemModel, QIcon, QStandardItemModel, QStandardItem
 from PyQt6.QtWidgets import QMessageBox, QFrame, QComboBox, QLabel, QPushButton, QHBoxLayout, QLineEdit, QPlainTextEdit, QVBoxLayout, QWidget, QCompleter, QDockWidget, QTextEdit, QTreeView, QFileIconProvider, QTabBar
 
@@ -49,12 +49,14 @@ current_file_path = ''
 
 
 class MainText(QPlainTextEdit):
-    def __init__(self, parent, window, font_size, window_):
+    def __init__(self, parent, window, font_size, window_, inner_window):
         super().__init__()
         self.font_size = font_size
         self.bookmarked_blocks = []
         self.file_name_ = None
         self.md_file = None
+        self.inner_window = inner_window
+        self.is_doc_shown = False
 
         with open(get_markdownpreview_file(), 'r', encoding = 'utf-8') as md_file:
             self.md_file = md_file.read()
@@ -116,6 +118,8 @@ class MainText(QPlainTextEdit):
         self.blink_timer.timeout.connect(self.toggle_cursor)
         self.blink_timer.start(get_cursorBlinkingRate())
 
+
+        self.last_doc_panel_size = None
         # self.bookmarked_timer = QTimer(self)
         # self.bookmarked_timer.timeout.connect(self.update_line)
         # self.bookmarked_timer.start(400)
@@ -221,7 +225,10 @@ class MainText(QPlainTextEdit):
     def update_presence(self):
         if self.discord_presence.connected:
             if current_file_path != '':
-                directory = current_file_path.split('/')[-2]
+                try:
+                    directory = current_file_path.split('/')[-2]
+                except IndexError:
+                    directory = current_file_path.split('\\')[-2]
                 cursor = self.textCursor()
                 pos = cursor.position()
                 line, column = self.cursor_to_line_column(pos)
@@ -346,27 +353,72 @@ class MainText(QPlainTextEdit):
             self.docstring_timer.start(150)
 
     def on_docstring_result(self, doc):
-        self._last_docstring_position = self.textCursor().position()
-        self._last_docstring = doc
-        if self.doc_panel:
-            if doc == "":
-                animatePanel(self.doc_panel.dock, self.window, False)
-                # self.doc_panel.hide()
-                if self.doc_panel.custom_title:
-                #     self.doc_panel.custom_title.hide()
-                #     self.doc_panel.dock.hide()
-                    animatePanel(self.doc_panel.custom_title, self.window, False)
-                    animatePanel(self.doc_panel, self.window, False)
+        cursor = self.textCursor()
+        if cursor.hasSelection():
+            # print('True')
+            return
+        else:
+            self._last_docstring_position = self.textCursor().position()
+            self._last_docstring = doc
+            if self.doc_panel:
+                if doc == "":
 
-            else:
-                self.doc_viewer = self.parse_docstring(doc)
-                self.doc_panel.setHtml(self.doc_viewer or "")
-                animatePanel(self.doc_panel.dock, self.window, True)
-                # self.doc_panel.dock.show()
-                # self.doc_panel.custom_title.show()
-                # self.doc_panel.show()
-                animatePanel(self.doc_panel.custom_title, self.window, True)
-                animatePanel(self.doc_panel, self.window, True)
+                    self.doc_panel.dock.setMinimumWidth(0)
+                    if self.doc_panel.dock.widget():
+                        self.doc_panel.dock.widget().setMinimumWidth(0)
+
+                    # self.last_doc_panel_size = self.doc_panel.dock.width()
+
+                    # animatePanel(self.doc_panel.dock, self.window, self.inner_window, False, [self.doc_panel.custom_title, self.doc_panel], True)
+                    animatePanel(self.doc_panel.dock, self.window, self.inner_window, show=False, is_dock = True)
+                    animatePanel(self.doc_panel.custom_title, self.window, self.inner_window, show=False, is_dock = False)
+                    animatePanel(self.doc_panel, self.window, self.inner_window, show=False, is_dock = False)
+
+                else:
+                    size = get_docstring_size()
+
+                    self.doc_viewer = self.parse_docstring(doc)
+                    self.doc_panel.setHtml(self.doc_viewer or "")
+                    # animatePanel(self.doc_panel.dock, self.window, self.inner_window, True, [self.doc_panel.custom_title, self.doc_panel], True)
+
+
+                    animatePanel(self.doc_panel.dock, self.window, self.inner_window, show=True, is_dock= True)
+                    animatePanel(self.doc_panel.custom_title, self.window, self.inner_window, show=True, is_dock = False)
+                    animatePanel(self.doc_panel, self.window, self.inner_window, show=True, is_dock = False)
+
+
+                    # if self.last_doc_panel_size:
+                    #     self.doc_panel.dock.resize(self.last_doc_panel_size, self.doc_panel.dock.height())
+                    #     self.doc_panel.resize(self.last_doc_panel_size, self.doc_panel.dock.height())
+                    self.doc_panel.dock.setMinimumWidth(size)
+
+                    if self.doc_panel.dock.widget():
+                        self.doc_panel.dock.widget().setMinimumWidth(size)
+        #     if git_panel.maximumHeight() == 0:
+        #         animatePanel(git_panel, window, self.inner_window, show=True, sub_widget = [git_panel.commit, git_panel.active_branch_name, git_panel.remote_url, git_panel.users_profile, git_panel.user_username, git_panel.show_changes, git_panel.header_changes, git_panel.commit_info, git_panel.latest_commit, git_panel.last_commit, git_panel.repo_info, git_panel.untracked_files, git_panel.untracked_header, git_panel.repo_name], is_dock=True)
+
+        #     else:
+        #         if git_panel.widget():
+        #             git_panel.widget().setMinimumWidth(0)
+        #         animatePanel(git_panel, window, self.inner_window, show=False, sub_widget = [git_panel.commit, git_panel.active_branch_name, git_panel.remote_url, git_panel.users_profile, git_panel.user_username, git_panel.show_changes, git_panel.header_changes, git_panel.commit_info, git_panel.latest_commit, git_panel.last_commit, git_panel.repo_info, git_panel.untracked_files, git_panel.untracked_header, git_panel.repo_name], is_dock=True)
+
+        # else:
+        #     if git_panel.maximumWidth() == 0:
+        #         animatePanel(git_panel, window, self.inner_window, show=True, sub_widget = [git_panel.commit, git_panel.active_branch_name, git_panel.remote_url, git_panel.users_profile, git_panel.user_username, git_panel.show_changes, git_panel.header_changes, git_panel.commit_info, git_panel.latest_commit, git_panel.last_commit, git_panel.repo_info, git_panel.untracked_files, git_panel.untracked_header, git_panel.repo_name, git_panel.custom_title] , is_dock=True)
+
+        #         if git_panel.widget():
+        #             git_panel.widget().setMinimumHeight(size)
+        #             git_panel.widget().setMinimumWidth(size)
+
+
+        #     else:
+        #         if git_panel.widget():
+        #             git_panel.widget().setMinimumHeight(0)
+        #             git_panel.widget().setMinimumWidth(0)
+
+        #         animatePanel(git_panel, window, self.inner_window, show=False, sub_widget = [git_panel.commit, git_panel.active_branch_name, git_panel.remote_url, git_panel.users_profile, git_panel.user_username, git_panel.show_changes, git_panel.header_changes, git_panel.commit_info, git_panel.latest_commit, git_panel.last_commit, git_panel.repo_info, git_panel.untracked_files, git_panel.untracked_header, git_panel.repo_name, git_panel.custom_title], is_dock=True)
+
+
 
 
     def keyPressEvent(self, event: QKeyEvent):
@@ -424,10 +476,10 @@ class MainText(QPlainTextEdit):
 
         if key == Qt.Key.Key_F and event.modifiers() & Qt.KeyboardModifier.ControlModifier:
             if self.finder.maximumHeight() == 0:
-                animatePanel(self.finder, self.window, show=True)
+                animatePanel(self.finder, self.window, self.inner_window, show=True, is_dock = False)
                 self.finder.setFocus()
             else:
-                animatePanel(self.finder, self.window, show=False)
+                animatePanel(self.finder, self.window, self.inner_window, show=False, is_dock = False)
         #     if self.finder.isVisible():
         #         self.finder.hide()
                 self.setFocus()
@@ -716,6 +768,8 @@ class DocStringDock(QDockWidget):
 
         if use:
             self.clearFocus()
+            # self.container = QWidget(self)
+            # self.H_box = QHBoxLayout(self.container)
             self.doc_panel = QTextEdit()
             self.doc_panel.dock = self
             self.doc_panel.custom_title = self.custom_title
@@ -732,7 +786,13 @@ class DocStringDock(QDockWidget):
             font.setPixelSize(get_fontSize())
 
             self.doc_panel.setFont(font)
+
+
+            # self.H_box.addWidget(self.doc_panel)
+
+
             self.setWidget(self.doc_panel)
+            # self.setWidget(self.container)
 
             self.setFeatures(QDockWidget.DockWidgetFeature.DockWidgetMovable)
 
@@ -742,18 +802,23 @@ class DocStringDock(QDockWidget):
                 parent.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self)
             elif setting_.value('DocStringDockWidgetPosition') == 'Right':
                 parent.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self)
-            elif setting_.value('DocStringDockWidgetPosition') == 'Bottom':
-                parent.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, self)
-            elif setting_.value('DocStringDockWidgetPosition') == 'Top':
-                parent.addDockWidget(Qt.DockWidgetArea.TopDockWidgetArea, self)
+            # elif setting_.value('DocStringDockWidgetPosition') == 'Bottom':
+            #     parent.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, self)
+            # elif setting_.value('DocStringDockWidgetPosition') == 'Top':
+            #     parent.addDockWidget(Qt.DockWidgetArea.TopDockWidgetArea, self)
             elif docstring_area == Qt.DockWidgetArea.NoDockWidgetArea:
                 parent.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self)
                 setting_.setValue('DocStringDockWidgetPosition', "Right")
 
             self.setObjectName("Docks")
 
+            self.setAllowedAreas(
+                Qt.DockWidgetArea.LeftDockWidgetArea | Qt.DockWidgetArea.RightDockWidgetArea
+            )
+
             self.setStyleSheet(get_css_style())
-            self.setMaximumHeight(0)
+            # self.setMaximumHeight(0)
+            self.setMaximumWidth(0)
             
 
 class ShowDirectory(QDockWidget):
@@ -818,8 +883,10 @@ class ShowDirectory(QDockWidget):
 
 
         self.hide()
-        self.setMaximumHeight(0)
 
+
+        self.setMaximumHeight(0)
+        self.setMaximumWidth(0)
 
         self.hbox.addWidget(self.new_file_input)
         self.hbox.addWidget(self.new_folder_input)
@@ -1078,7 +1145,6 @@ class CustomIcons(QFileIconProvider):
 
 class ShowOpenedFile(QTabBar):
     def __init__(self, editor, layout, error_label, parent, welcome_page, editor_containter, editor_layout, nameError):
-    # def __init__(self, editor, layout, error_label, parent):
         super().__init__()
         global file_description
         global commenting
@@ -1201,6 +1267,8 @@ class ShowOpenedFile(QTabBar):
             self.previous_path = None
             file_description.clear()
 
+    def tabSizeHint(self, index):
+        return QSize(50, 50)
 
     def add_file(self, path, file_name):
         file_index = self.addTab(str(file_name))
@@ -1601,8 +1669,8 @@ class TerminalEmulator(QWidget):
 
     def __init__(self, parent):
         super().__init__()
-        self.layout = QVBoxLayout(self)
-        self.layout.setContentsMargins(0, 0, 0, 0)
+        self.layout_ = QHBoxLayout(self)
+        # self.layout_.setContentsMargins(0, 0, 0, 0)
 
         self.setObjectName('Terminal')
         self.setStyleSheet(get_css_style())
@@ -1615,12 +1683,12 @@ class TerminalEmulator(QWidget):
         self.terminal.setStyleSheet((get_css_style()))
 
         self.terminal.clearFocus()
-        self.terminal.hide()
+        # self.terminal.hide()
 
 
         self.terminal.keyPressEvent = self.terminal_key_press_event
 
-        self.layout.addWidget(self.terminal)
+        self.layout_.addWidget(self.terminal)
 
         self.processes = []
         self.current_process_index = -1
@@ -1740,6 +1808,9 @@ class TerminalEmulator(QWidget):
             project_path = os.getcwd()
 
         self.processes[index].setWorkingDirectory(project_path)
+
+        # Ensure both stdout and stderr are delivered together to avoid missing output
+        self.processes[index].setProcessChannelMode(QProcess.ProcessChannelMode.MergedChannels)
 
         if powershell_path:
             self.processes[index].start(powershell_path)
@@ -1883,38 +1954,36 @@ class TerminalEmulator(QWidget):
             return
             
         else:
-            # Handle regular text input
             text = event.text()
             if text and text.isprintable():
                 self.current_command += text
-                print(f"Added text: '{text}', current_command now: '{self.current_command}'")  # Debug
+                # print(f"Added text: '{text}', current_command now: '{self.current_command}'")  # Debug
                 
-            # Let the parent handle the visual display
             QPlainTextEdit.keyPressEvent(self.terminal, event)
 
     def execute_command(self):
-        # print(f"Executing command: '{self.current_command}'")  # Debug
-        
-        # Insert a visual newline before sending the command (for all platforms)
         self.terminal.appendPlainText("")
         
-        # Check if process is running
         if (self.current_process_index < len(self.processes) and 
             self.processes[self.current_process_index].state() == QProcess.ProcessState.Running):
             
-            # Send command to the shell process
-            command_bytes = self.current_command.encode() + b"\n"
+            command_to_send = self.current_command
+            if platform.system() == 'Windows':
+                stripped = command_to_send.strip()
+                if stripped.lower().startswith('where '):
+                    command_to_send = 'where.exe' + command_to_send[len('where'):]
+            command_bytes = command_to_send.encode() + b"\n"
             bytes_written = self.processes[self.current_process_index].write(command_bytes)
-            print(f"Wrote {bytes_written} bytes to process")  # Debug
+            # print(f"Wrote {bytes_written} bytes to process")
             
             # Add to history if not empty
-            if self.current_command.strip():
-                self.command_history.append(self.current_command)
+            if command_to_send.strip():
+                self.command_history.append(command_to_send)
                 self.history_index = len(self.command_history)
             
             # Emit signal if you have command_input signal defined
             if hasattr(self, 'command_input'):
-                self.command_input.emit(self.current_command)
+                self.command_input.emit(command_to_send)
             
             # Clear current command
             self.current_command = ""
@@ -1961,24 +2030,34 @@ class TerminalEmulator(QWidget):
 
 class TerminalDock(QDockWidget):
     def __init__(self, parent):
-
         super().__init__()
+        
         self.setObjectName('Docks')
         self.setStyleSheet(get_css_style())
         self.clearFocus()
         self.setMaximumHeight(0)
+        self.setMaximumWidth(0)
+
         self.hide()
 
         self.termEmulator = TerminalEmulator(self)
         self.setWidget(self.termEmulator)
-        self.termEmulator.show()
+        # self.termEmulator.show()
         self.custom_title = QLabel("Terminal")
         self.custom_title.setObjectName("DockTitles")
         self.custom_title.setStyleSheet(get_css_style())
+        self.setWindowTitle("Terminal")
         self.setTitleBarWidget(self.custom_title)
 
-        self.setFeatures(QDockWidget.DockWidgetFeature.DockWidgetMovable)
+        font = QFont(get_fontFamily(), get_fontSize())
 
+        font.setStyleStrategy(QFont.StyleStrategy.PreferAntialias)
+        font.setPixelSize(get_fontSize())
+
+        self.setFont(font)
+        self.termEmulator.terminal.setFont(font)
+
+        self.setFeatures(QDockWidget.DockWidgetFeature.DockWidgetMovable)
 
 class findingText(QLineEdit):
     def __init__(self, bawky_parent, main_text):
@@ -2004,7 +2083,7 @@ class findingText(QLineEdit):
         key = event.key()
         if key == Qt.Key.Key_Escape:
             # self.hide()
-            animatePanel(self, self.main_text.window, show=False)
+            animatePanel(self, self.main_text.window, self.main_text.inner_window, show=False, is_dock = False)
             self.main_text.setFocus()
 
 
@@ -2241,12 +2320,12 @@ class ListShortCuts(QWidget):
 
         self.hide()
         self.setMaximumHeight(0)
+        # self.setMaximumWidth(0)
 
 class GitDock(QDockWidget):
     def __init__(self, parent):
 
         super().__init__()
-        # Only call git functions if git is installed
         if is_gitInstalled():
             is_downloaded(MessageBox)
         self.thread_pool = QThreadPool()
@@ -2254,17 +2333,18 @@ class GitDock(QDockWidget):
         self.setStyleSheet(get_css_style())
         self.clearFocus()
         self.setWindowTitle('Git Panel')
-        content_widget = QWidget()
+        self.content_widget = QWidget()
         self.layout_ = QVBoxLayout()
-        content_widget.setObjectName('GitPanel')
-        content_widget.setStyleSheet(get_css_style())
+        self.content_widget.setObjectName('GitPanel')
+        self.content_widget.setStyleSheet(get_css_style())
         self.gitTimers()
 
         self.labels()
         self._layout()
 
-        self.setWidget(content_widget)
-        content_widget.setLayout(self.layout_)
+
+        self.setWidget(self.content_widget)
+        self.content_widget.setLayout(self.layout_)
 
         self.setTitleBarWidget(self.custom_title)
 
@@ -2272,10 +2352,12 @@ class GitDock(QDockWidget):
         # parent.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self)
 
         self.hide()
-        self.setMaximumHeight(0)
+        self.setMaximumWidth(0)
 
         self.checking()
-
+        self.setAllowedAreas(
+            Qt.DockWidgetArea.LeftDockWidgetArea | Qt.DockWidgetArea.RightDockWidgetArea
+        )
 
     def _layout(self):
         self.layout_.addWidget(self.users_profile)
@@ -2292,8 +2374,6 @@ class GitDock(QDockWidget):
         self.layout_.addWidget(self.untracked_files)
         self.layout_.addWidget(self.header_changes)
         self.layout_.addWidget(self.show_changes)
-        # self.layout_.addStretch()
-        # self.layout_.addStretch()
         self.layout_.addStretch()
 
         self.layout_.addWidget(self.repo_info)
@@ -2384,7 +2464,6 @@ class GitDock(QDockWidget):
         self.untracked_header.setStyleSheet(get_css_style())
 
 
-        # Only call git functions if git is installed
         if is_gitInstalled():
             self.repo_name = QLabel(f"Repository name {get_reopName()}")
         else:

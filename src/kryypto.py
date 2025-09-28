@@ -264,10 +264,12 @@ class Kryypto(QMainWindow):
         self.editor_containter = QWidget()
         self.editor_layout = QVBoxLayout(self.editor_containter)
 
-        self.main_text = widgets.MainText(self.editor_layout, self.clipboard, self.font_size, self)
 
         self.welcome_page = widgets.WelcomeWidget()
         self.inner_window = QMainWindow()
+
+        self.main_text = widgets.MainText(self.editor_layout, self.clipboard, self.font_size, self, self.inner_window)
+
 
         self.tab_bar = widgets.ShowOpenedFile(
             self.main_text, content_layout, widgets.error_label, 
@@ -302,14 +304,11 @@ class Kryypto(QMainWindow):
             self.terminal, self, self.tab_bar, widgets.file_description, 
 
             self.list_shortcuts, self.git_panel, self.font_size, self.main_text.line_number_area, self.show_files, self.inner_window, self.settings
-
         )
-
-
-
+        
         FileDockShortcut(
             self.inner_window, self.show_files, self.show_files.file_viewer, 
-            self.main_text, widgets.file_description, self.tab_bar, self
+            self.main_text, widgets.file_description, self.tab_bar, self, self.inner_window
         )
 
         main_layout.addWidget(content_area)
