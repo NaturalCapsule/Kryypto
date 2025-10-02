@@ -2406,8 +2406,10 @@ class GitDock(QDockWidget):
         self.remote_url.setStyleSheet(get_css_style())
 
 
-        if getattr(sys, 'frozen', False):
-            pixmap = QPixmap('icons/github/user_profile/users_profile.png')
+        if not os.path.exists('src'):
+            appdata_roaming = os.getenv("APPDATA")
+            appdata_roaming
+            pixmap = QPixmap(f'{appdata_roaming}\\Kryypto\\github\\user_profile\\users_profile.png')
         else:
             pixmap = QPixmap('src/icons/github/user_profile/users_profile.png')
 
@@ -2481,7 +2483,7 @@ class GitDock(QDockWidget):
         self.no_repo_text.setObjectName('RepoNotFound')
         self.no_repo_text.setStyleSheet(get_css_style())
 
-        if getattr(sys, 'frozen', False):
+        if not os.path.exists('src'):
             pixmap = QPixmap('icons/github/github.png')
         else:
             pixmap = QPixmap('src/icons/github/github.png')

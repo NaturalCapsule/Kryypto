@@ -161,19 +161,30 @@ def get_github_profile(message):
             avatar_response = requests.get(avatar_url)
 
             if avatar_response.status_code == 200:
-                if getattr(sys, 'frozen', False):
 
-                    with open("icons/github/user_profile/users_profile.png", "wb") as f:
+                if os.path.exists('src'):
+                    with open('src/icons/github/user_profile/users_profile.png', "wb") as f:
                         f.write(avatar_response.content)
                 else:
-                    with open("src/icons/github/user_profile/users_profile.png", "wb") as f:
-                        f.write(avatar_response.content)
+                    appdata_roaming = os.getenv("APPDATA")
+                    pfp_path = os.path.join(appdata_roaming, "Kryypto", "github", "user_profile", "users_profile.png")
+                    pfp_folder = os.path.join(appdata_roaming, "Kryypto", "github", "user_profile")
 
+                    if not os.path.exists(pfp_path):
+
+                        print(pfp_folder)
+
+                        os.makedirs(pfp_folder, exist_ok=True)
+                        print(pfp_folder)
+                    with open(pfp_path, "wb") as f:
+
+                        f.write(avatar_response.content)
             else:
                 message('Could not download pfp\nplease make sure you have internet connection')
         else:
             message('User Not Found!')
     except Exception as e:
+        print("Error:", e)
         return f"No Git repository detected or invalid folder"
 
 @safe_git_operation
@@ -188,17 +199,17 @@ def get_github_username():
         return f"Error: {e}"
 
 def is_downloaded(message):
-    if getattr(sys, 'frozen', False):
-        if not os.path.exists('icons/github/user_profile/users_profile.png'):
-            if is_gitInstalled():
-                get_github_profile(message)
-    else:
+    if os.path.exists('src'):
         if not os.path.exists('src/icons/github/user_profile/users_profile.png'):
             if is_gitInstalled():
+
                 get_github_profile(message)
+    else:
+        appdata_roaming = os.getenv("APPDATA")
+        if not os.path.exists(f'{appdata_roaming}\\Kryypto\\github\\user_profile\\users_profile.png'):
 
-
-
+            if is_gitInstalled():
+                get_github_profile(message)
 
 
 @safe_git_operation
