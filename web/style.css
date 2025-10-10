@@ -1,0 +1,907 @@
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #1a1a2e;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+.hero-section {
+  position: relative;
+  overflow-x: hidden;
+  background-color: #1a1a2e !important;
+}
+
+.ButtonContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  border-radius: 12px;
+  padding: 20px 40px;
+  max-width: 500px;
+  margin: 20px auto;
+  box-sizing: border-box;
+}
+
+.DownloadButtonContainer {
+  gap: 10px;
+  justify-content: center;
+  display: flex;
+  align-items: center;
+}
+
+.bigimage {
+  max-width: 90%;
+  height: auto;
+  display: block;
+  margin: 40px auto 0 auto;
+  padding-top: 0;
+}
+
+.WindowsDownloadButton {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 24px;
+  background-color: #4a90e2;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: 'System UI', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  box-shadow: 0 4px 12px rgba(74, 144, 226, 0.3);
+}
+
+.WindowsDownloadButton:hover {
+  background-color: #5ba3f5;
+  box-shadow: 0 6px 18px rgba(91, 163, 245, 0.4);
+  transform: translateY(-2px);
+}
+
+.WindowsDownloadButton:active {
+  transform: translateY(0);
+  box-shadow: 0 3px 8px rgba(74, 144, 226, 0.3);
+}
+
+.LinuxDownloadButton {
+  background-color: #e94560 !important;
+  color: #ffffff !important;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(233, 69, 96, 0.3);
+  font-family: 'System UI', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+}
+
+.WindowsDownloadButton,
+.LinuxDownloadButton {
+  white-space: nowrap;
+  width: 100%;
+  max-width: 300px;
+  box-sizing: border-box;
+}
+
+.DownloadButtonContainer {
+  gap: 10px;
+  justify-content: center;
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.WindowsDownloadButton,
+.LinuxDownloadButton {
+  flex: 1;
+  box-sizing: border-box;
+}
+
+.LinuxDownloadButton:hover {
+  background-color: #ff6b81 !important;
+  box-shadow: 0 6px 18px rgba(255, 107, 129, 0.4);
+  transform: translateY(-2px);
+}
+
+.LinuxDownloadButton:active {
+  transform: translateY(0);
+  box-shadow: 0 3px 8px rgba(233, 69, 96, 0.3);
+}
+
+.SourceViewButton {
+  background-color: #7b68ee !important;
+  color: #ffffff !important;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: 'System UI', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  box-shadow: 0 4px 12px rgba(123, 104, 238, 0.3);
+}
+
+.SourceViewButton:hover {
+  background-color: #9370db !important;
+  box-shadow: 0 6px 18px rgba(147, 112, 219, 0.4);
+  transform: translateY(-2px);
+}
+
+.SourceViewButton:active {
+  transform: translateY(0);
+  box-shadow: 0 3px 8px rgba(123, 104, 238, 0.3);
+}
+
+.BigText {
+  font-size: 6vw;
+  text-align: center;
+  margin-top: 20px;
+  margin-bottom: 20px;
+  color: #f0f0f0;
+}
+
+.SourceViewButton img.icon {
+  width: 20px;
+  height: 20px;
+  filter: drop-shadow(0 0 2px rgba(0,0,0,0.5));
+  background-color: transparent;
+  border-radius: 4px;
+  padding: 2px;
+}
+
+.hero-content {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  width: 100%;
+  background-color: #1a1a2e;
+}
+
+.WindowsDownloadButton img.icon {
+  width: 22px;
+  height: 22px;
+  filter: drop-shadow(0 0 2px rgba(0,0,0,0.5));
+}
+
+.LinuxDownloadButton img.icon {
+  width: 22px;
+  height: 22px;
+  filter: drop-shadow(0 0 2px rgba(0,0,0,0.5));
+}
+
+@media (max-width: 500px) {
+  .WindowsDownloadButton,
+  .LinuxDownloadButton, .SourceViewButton {
+    font-size: 10px;
+    padding: 10px 16px;
+    max-width: 90%;
+  }
+
+  .ButtonContainer {
+    padding: 16px 20px;
+    max-width: 95%;
+  }
+}
+
+.imageContainer {
+  padding: 2rem;
+}
+
+.slider-wrapper {
+  position: relative;
+  max-width: 75rem;
+  margin: 0 auto;
+}
+
+.slider {
+  background-color: rgba(0, 0, 0, 0) !important;
+  display: flex;
+  aspect-ratio: 16 / 9;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  box-shadow: 0 1.5rem 3rem -0.75rem hsla(0, 0%, 0%, 0.25);
+  border-radius: 0.5rem;
+  box-shadow: none;
+}
+
+.slider img {
+  background-color: transparent;
+  flex: 1 0 100%;
+  scroll-snap-align: start;
+  object-fit: cover;
+}
+
+.slider-nav {
+  display: flex;
+  column-gap: 1rem;
+  position: absolute;
+  bottom: 1.25rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1;
+}
+
+.slider-nav a {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background-color: #4a90e2 !important;
+  opacity: 0.75;
+  transition: opacity ease 250ms;
+}
+
+.slider-nav a:hover {
+  opacity: 1;
+  background-color: #5ba3f5 !important;
+}
+
+.slider-wrapper {
+  background-color: rgba(0, 0, 0, 0) !important;
+}
+
+@media (max-width: 768px) {
+  .imageContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 95%;
+    padding: 0rem;
+    padding-bottom: 10px;
+    margin: 0 auto;
+  }
+
+  .slider-wrapper {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .slider {
+    display: flex;
+    width: 100%;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    box-sizing: border-box;
+  }
+
+  .slider img {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    scroll-snap-align: start;
+    display: block;
+  }
+}
+
+.second-section {
+  padding: 4rem 2rem;
+  box-sizing: border-box;
+  position: relative;
+  background-color: #1a1a2e;
+}
+
+.cards {
+  display: flex;
+  justify-content: center;
+  padding-bottom: 30px;
+  padding-top: 30px;
+  flex-direction: row;
+  align-items: center;
+  background: transparent;
+  gap: 100px;
+  background-color: #1a1a2e;
+}
+
+.first-feature {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  color: #f0f0f0;
+  background: linear-gradient(145deg, rgba(74, 144, 226, 0.1), rgba(123, 104, 238, 0.08));
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(74, 144, 226, 0.3);
+  border-radius: 25px;
+  padding-left: 20px;
+  padding-right: 20px;
+  font-size: 15px;
+  height: 300px;
+  width: 300px;
+  transition: all 0.3s ease;
+  font-family: 'System UI', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.first-header {
+  flex-direction: row;
+  display: flex;
+  align-items: center;
+  text-align: center;
+  text-anchor: middle;
+  justify-content: center;
+  gap: 10px;
+  padding: 10px;
+  margin: 10px;
+  font-family: 'System UI', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.first-feature:hover {
+  background: linear-gradient(145deg, rgba(74, 144, 226, 0.2), rgba(123, 104, 238, 0.15));
+  box-shadow: 0 10px 30px rgba(74, 144, 226, 0.3);
+  border: 1px solid rgba(74, 144, 226, 0.5);
+  transform: translateY(-10px);
+}
+
+.second-feature {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  color: #f0f0f0;
+  background: linear-gradient(145deg, rgba(74, 144, 226, 0.1), rgba(123, 104, 238, 0.08));
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(74, 144, 226, 0.3);
+  border-radius: 25px;
+  padding-left: 20px;
+  padding-right: 20px;
+  font-size: 15px;
+  height: 300px;
+  width: 300px;
+  transition: all 0.3s ease;
+  font-family: 'System UI', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.second-header {
+  flex-direction: row;
+  display: flex;
+  align-items: center;
+  text-align: center;
+  text-anchor: middle;
+  justify-content: center;
+  gap: 10px;
+  padding: 10px;
+  margin: 10px;
+  font-family: 'System UI', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.second-feature:hover {
+  background: linear-gradient(145deg, rgba(74, 144, 226, 0.2), rgba(123, 104, 238, 0.15));
+  box-shadow: 0 10px 30px rgba(74, 144, 226, 0.3);
+  border: 1px solid rgba(74, 144, 226, 0.5);
+  transform: translateY(-10px);
+}
+
+.third-feature {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  color: #f0f0f0;
+  background: linear-gradient(145deg, rgba(74, 144, 226, 0.1), rgba(123, 104, 238, 0.08));
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(74, 144, 226, 0.3);
+  border-radius: 25px;
+  padding-left: 20px;
+  padding-right: 20px;
+  font-size: 15px;
+  height: 300px;
+  width: 300px;
+  transition: all 0.3s ease;
+  font-family: 'System UI', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.third-feature:hover {
+  background: linear-gradient(145deg, rgba(74, 144, 226, 0.2), rgba(123, 104, 238, 0.15));
+  box-shadow: 0 10px 30px rgba(74, 144, 226, 0.3);
+  border: 1px solid rgba(74, 144, 226, 0.5);
+  transform: translateY(-10px);
+}
+
+.third-header {
+  flex-direction: row;
+  display: flex;
+  align-items: center;
+  text-align: center;
+  text-anchor: middle;
+  justify-content: center;
+  gap: 10px;
+  padding: 10px;
+  margin: 10px;
+  font-family: 'System UI', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.keyboard-img {
+  background: linear-gradient(145deg, #4a90e2, #5ba3f5);
+  padding: 10px;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  box-shadow: 0 4px 15px rgba(74, 144, 226, 0.5);
+}
+
+.lightweight-img {
+  background: linear-gradient(145deg, #4a90e2, #5ba3f5);
+  padding: 10px;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  box-shadow: 0 4px 15px rgba(74, 144, 226, 0.5);
+}
+
+.python-img {
+  background: linear-gradient(145deg, #4a90e2, #5ba3f5);
+  padding: 10px;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  box-shadow: 0 4px 15px rgba(74, 144, 226, 0.5);
+}
+
+@media (max-width: 768px) {
+  .cards {
+    flex-direction: column;
+  }
+
+  .keyboard-img {
+    width: 30px;
+    height: 30px;
+  }
+
+  .lightweight-img {
+    width: 30px;
+    height: 30px;
+  }
+
+  .python-img {
+    width: 30px;
+    height: 30px;
+  }
+
+  .first-feature {
+    left: 0px;
+  }
+  
+  .second-feature {
+    left: 0px;
+  }
+}
+
+.third-section {
+  display: flex;
+  padding: 4rem 2rem;
+  box-sizing: border-box;
+  position: relative;
+  flex-direction: column;
+  align-items: center;
+  gap: 100px;
+  font-family: 'System UI', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: #1a1a2e;
+}
+
+.demo-container {
+  gap: 100px;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+}
+
+.first-description {
+  display: flex;
+  justify-content: center;
+  flex-direction: row;
+  font-size: 18px;
+  color: #f0f0f0;
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border-radius: 12px;
+  padding: 20px 40px;
+  max-width: 500px;
+  margin: 20px auto;
+  font-family: 'System UI', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+#demo-video {
+  width: 700px;
+  flex-shrink: 0;
+  aspect-ratio: 16 / 9;
+  border-radius: 12px;
+  object-fit: cover;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+  border: 2px solid rgba(74, 144, 226, 0.4);
+  box-shadow: 0 5px 15px rgba(74, 144, 226, 0.3);
+  transition: all 0.3s ease;
+}
+
+#demo-video:hover {
+  box-shadow: 0 10px 30px rgba(74, 144, 226, 0.5);
+  transform: translateY(-5px);
+}
+
+@media (max-width: 768px) {
+  .first-description, .demo-container {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .first-description {
+    max-width: 90%;
+  }
+
+  #demo-video {
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    object-fit: cover;
+  }
+
+  .third-section {
+    padding: 2rem 1rem;
+  }
+}
+
+.second-description {
+  display: flex;
+  justify-content: center;
+  flex-direction: row;
+  font-size: 18px;
+  color: #f0f0f0;
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border-radius: 12px;
+  padding: 20px 40px;
+  max-width: 500px;
+  margin: 20px auto;
+  font-family: 'System UI', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+#animation-video {
+  max-width: 700px;
+  aspect-ratio: 16 / 9;
+  border-radius: 12px;
+  object-fit: cover;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+  border: 2px solid rgba(74, 144, 226, 0.4);
+  box-shadow: 0 5px 15px rgba(74, 144, 226, 0.3);
+  transition: all 0.3s ease;
+}
+
+#animation-video:hover {
+  box-shadow: 0 10px 30px rgba(74, 144, 226, 0.5);
+  transform: translateY(-5px);
+}
+
+.animation-container {
+  gap: 100px;
+  display: flex;
+  flex-direction: row;
+}
+
+@media (max-width: 768px) {
+  .second-description, .animation-container {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .second-description {
+    max-width: 90%;
+  }
+
+  #animation-video {
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    object-fit: cover;
+  }
+}
+
+.third-description {
+  display: flex;
+  justify-content: center;
+  flex-direction: row;
+  font-size: 18px;
+  color: #f0f0f0;
+  border-radius: 12px;
+  padding: 20px 40px;
+  max-width: 500px;
+  margin: 20px auto;
+  font-family: 'System UI', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  /* background-color: rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px); */
+
+}
+
+.custom-container {
+  gap: 100px;
+  display: flex;
+  flex-direction: row;
+
+}
+
+@media (max-width: 768px) {
+  .third-description, .custom-container {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .third-description {
+    max-width: 90%;
+  }
+}
+
+.customContainer {
+  aspect-ratio: 16 / 9;
+  border-radius: 12px;
+  object-fit: cover;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+  box-shadow: 0 15px 40px rgba(74, 144, 226, 0.3), 0 0 20px rgba(74, 144, 226, 0.2);
+  transition: all 0.3s ease;
+}
+
+.customContainer:hover {
+  box-shadow: 0 10px 30px rgba(74, 144, 226, 0.5);
+  transform: translateY(-5px);
+}
+
+.custom-slider-wrapper {
+  position: relative;
+  max-width: 75rem;
+  margin: 0 auto;
+  width: 700px;
+}
+
+.custom-slider {
+  background-color: rgba(0, 0, 0, 0) !important;
+  display: flex;
+  aspect-ratio: 16 / 9;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  border-radius: 0.5rem;
+  box-shadow: none;
+}
+
+.custom-slider img {
+  background-color: transparent;
+  flex: 1 0 100%;
+  scroll-snap-align: start;
+  object-fit: cover;
+}
+
+.custom-slider-nav {
+  display: flex;
+  column-gap: 1rem;
+  position: absolute;
+  bottom: 1.25rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1;
+}
+
+.custom-slider-nav a {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background-color: #e94560 !important;
+  opacity: 0.75;
+  transition: opacity ease 250ms;
+}
+
+.custom-slider-nav a:hover {
+  opacity: 1;
+  background-color: #ff6b81 !important;
+}
+
+.custom-slider-wrapper {
+  background-color: rgba(0, 0, 0, 0) !important;
+}
+
+@media (max-width: 768px) {
+  .customContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 95%;
+    padding: 0rem;
+    padding-bottom: 10px;
+    margin: 0 auto;
+  }
+
+  .custom-slider-wrapper {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .custom-slider {
+    display: flex;
+    width: 100%;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    box-sizing: border-box;
+  }
+
+  .custom-slider img {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    scroll-snap-align: start;
+    display: block;
+  }
+}
+
+.fourth-description {
+  display: flex;
+  justify-content: center;
+  flex-direction: row;
+  font-size: 18px;
+  color: #f0f0f0;
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border-radius: 12px;
+  padding: 20px 40px;
+  width: 500px;
+  margin: 20px auto;
+  /* background-color: black; */
+  font-family: 'System UI', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.images-container {
+  gap: 100px;
+  display: grid;
+  align-items: flex-start;
+  width: 700px;
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.describe-container {
+  gap: 100px;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+}
+
+.image1, .image2, .image3, .image4, .image5 {
+  --border: 10px;
+  --offset: 30px;
+  --gap: 10px;
+  
+  padding: calc(var(--border) + var(--gap));
+  border: var(--offset) solid #0000;
+  --_m: radial-gradient(50% 50%, #000 calc(100% - var(--offset)),#0000 calc(100% - var(--border)));
+  -webkit-mask: var(--_m);
+          mask: var(--_m);
+  --_g: #0000 calc(99% - var(--border)), var(--color) calc(100% - var(--border)) 99%,#0000;
+  --_s: var(--offset);
+  --_r: 100% 100% at;
+  background:
+    radial-gradient(var(--_r) 0    0   ,var(--_g)) calc(100% + var(--_s)) calc(100% + var(--_s)),
+    radial-gradient(var(--_r) 100% 0   ,var(--_g)) calc(0%   - var(--_s)) calc(100% + var(--_s)),
+    radial-gradient(var(--_r) 0    100%,var(--_g)) calc(100% + var(--_s)) calc(0%   - var(--_s)),
+    radial-gradient(var(--_r) 100% 100%,var(--_g)) calc(0%   - var(--_s)) calc(0%   - var(--_s));
+  background-size: 50% 50%;
+  background-repeat: no-repeat;
+  transition: .4s;
+}
+
+.image1:hover, .image2:hover, .image3:hover, .image4:hover, .image5:hover {
+  --_s: 0px
+}
+
+.image1 {
+  --color: #ffd93d;
+}
+
+.image2 {
+  --color: #ff6b6b;
+}
+
+.image3 {
+  --color: #4ecdc4;
+}
+
+.image4 {
+  --color: #95e1d3;
+}
+
+.image5 {
+  --color: #a78bfa;
+}
+
+@media (max-width: 768px) {
+  .fourth-description, .describe-container {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .fourth-description {
+    width: 50%;
+  }
+
+  .images-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    justify-items: center;
+    align-items: center;
+    place-items: center;
+    width: 90%;
+  }
+  
+  .image1, .image2, .image3, .image4, .image5 {
+    --border: 10px;
+    --offset: 10px;
+    --gap: 5px;
+    
+    padding: calc(var(--border) + var(--gap));
+    border: var(--offset) solid #0000;
+    --_m: radial-gradient(50% 50%, #000 calc(100% - var(--offset)),#0000 calc(100% - var(--border)));
+    -webkit-mask: var(--_m);
+            mask: var(--_m);
+    --_g: #0000 calc(99% - var(--border)), var(--color) calc(100% - var(--border)) 99%,#0000;
+    --_s: var(--offset);
+    --_r: 100% 100% at;
+    background:
+      radial-gradient(var(--_r) 0    0   ,var(--_g)) calc(100% + var(--_s)) calc(100% + var(--_s)),
+      radial-gradient(var(--_r) 100% 0   ,var(--_g)) calc(0%   - var(--_s)) calc(100% + var(--_s)),
+      radial-gradient(var(--_r) 0    100%,var(--_g)) calc(100% + var(--_s)) calc(0%   - var(--_s)),
+      radial-gradient(var(--_r) 100% 100%,var(--_g)) calc(0%   - var(--_s)) calc(0%   - var(--_s));
+    background-size: 50% 50%;
+    background-repeat: no-repeat;
+    transition: .4s;
+  }
+}
+
+.fifth-description {
+  display: flex;
+  justify-content: center;
+  flex-direction: row;
+  font-size: 18px;
+  color: #f0f0f0;
+  border-radius: 12px;
+  padding: 20px 40px;
+  width: 500px;
+  margin: 20px auto;
+  font-family: 'System UI', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.last-container {
+  background-color: #1a1a2e;
+  padding: 4rem 2rem;
+}
+
+@media (max-width: 768px) {
+  .fifth-description, .describe-container {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .fifth-description {
+    width: 70%;
+  }
+}
