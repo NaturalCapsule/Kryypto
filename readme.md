@@ -2,10 +2,13 @@
 
 A lightweight, fully keyboard-supported python text editor with deep customization and GitHub integration.
 
+## Linux version coming soon...
+
+
 ## ScreenShots 📸
 ![Kryypto 1](src/icons/app/readme/kr1.PNG)
-![Kryypto 4](src/icons/app/readme/kr4.PNG)
-![Kryypto 5](src/icons/app/readme/kr5.PNG)
+![Kryypto 2](src/icons/app/readme/kr4.PNG)
+![Kryypto 3](src/icons/app/readme/kr5.PNG)
 
 ## Kryypto Demo
 
@@ -47,7 +50,6 @@ A lightweight, fully keyboard-supported python text editor with deep customizati
 
 ## 🚀 Getting Started
 
-Linux version coming soon...
 
 you got two options:
 
@@ -63,12 +65,6 @@ you got two options:
 
 > [!WARNING]
 > This project is under development. You might face lagging when loading large files or syntax highlighting missmatch, etc.
-
-
-
-> [!WARNING]
-> ~~you might face a git error when you launch Kryypto, you can solve it by installing and setting up git or open CMD and type: set GIT_PYTHON_REFRESH=quiet~~
-
 
 ## License
 

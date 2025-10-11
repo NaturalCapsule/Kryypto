@@ -51,7 +51,7 @@ from settings import Setting
 from shortcuts import *
 from heavy import *
 
-from config import setCustomTitleBar
+from config import setCustomTitleBar, show_titleBar
 from get_style import get_css_style
 from config import get_fontSize
 from check_version import checkUpdate
@@ -177,7 +177,11 @@ class Kryypto(QMainWindow):
         self.setObjectName("MainWindow")
         self.setStyleSheet(get_css_style())
         
-        if setCustomTitleBar():
+        if setCustomTitleBar() and show_titleBar():
+            self.setWindowFlags(Qt.WindowType.FramelessWindowHint)
+            self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
+
+        elif not show_titleBar():
             self.setWindowFlags(Qt.WindowType.FramelessWindowHint)
             self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
 
@@ -246,7 +250,7 @@ class Kryypto(QMainWindow):
         main_layout.setSpacing(0)
 
 
-        if setCustomTitleBar():
+        if setCustomTitleBar() and show_titleBar():
             self.title_bar = CustomTitleBar(self)
             main_layout.addWidget(self.title_bar)
             central_widget.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
@@ -366,7 +370,7 @@ class Kryypto(QMainWindow):
             self.setCursor(Qt.CursorShape.ArrowCursor)
 
 
-    if setCustomTitleBar():
+    if setCustomTitleBar() and show_titleBar():
         def mousePressEvent(self, event):
             if event.button() == Qt.MouseButton.LeftButton:
                 self.resize_mode = self.get_resize_mode(event.position().toPoint())

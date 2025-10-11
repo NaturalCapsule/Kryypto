@@ -534,6 +534,13 @@ def get_openedDir():
         write_config('', 'Appearance', 'openedfolder')
         return None
 
+def show_titleBar():
+    try:
+        return config.getboolean('Appearance', 'showtitlebar')
+    except configparser.NoOptionError:
+        write_config('True', 'Appearance', 'showtitlebar')
+        return True
+
 def get_stylefile():
     try:
         style_file = config.get('Appearance', 'StyleFile')
