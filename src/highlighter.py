@@ -531,6 +531,8 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
             #                 self.setFormat(pos, len(arg_name), self.arg_def_format)
             #                 used_ranges.add((pos, pos + len(arg_name)))
 
+
+
             try:
                 for name, (pattern, type_name) in self._compiled_patterns.items():
                     it = pattern.globalMatch(text)
@@ -545,6 +547,7 @@ class PythonSyntaxHighlighter(QSyntaxHighlighter):
 
                         elif type_name == 'function':
                             self.setFormat(match.capturedStart(), match.capturedLength(), self.function_calls_format)
+                            
                         elif type_name == 'method':
                             self.setFormat(match.capturedStart(), match.capturedLength(), self.method_calls_format)
                         # elif type_name == 'attribute':

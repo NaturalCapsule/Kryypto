@@ -464,6 +464,7 @@ class Kryypto(QMainWindow):
 
         show_files_area = self.inner_window.dockWidgetArea(self.show_files)
         git_panel_area = self.inner_window.dockWidgetArea(self.git_panel)
+        
         try:
             if self.terminal:
                 terminal_area = self.inner_window.dockWidgetArea(self.terminal)

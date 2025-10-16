@@ -6,7 +6,21 @@ import ast
 _cache = {}
 _cache_size_limit = 1000
 
+# class UsedVarsVisitor(ast.NodeVisitor):
+#     def __init__(self):
+#         self.used_vars = set()
 
+#     def visit_Name(self, node):
+#         if isinstance(node.ctx, ast.Load):
+#             self.used_vars.add(node.id)
+#         self.generic_visit(node)
+
+#     def visit_Attribute(self, node):
+#         if isinstance(node.ctx, ast.Load):
+#             if isinstance(node.value, ast.Name):
+#                 full_name = f"{node.value.id}.{node.attr}"
+#                 self.used_vars.add(full_name)
+#         self.generic_visit(node)
 
 class UnusedVariableFinder(ast.NodeVisitor):
     def __init__(self):
@@ -51,6 +65,8 @@ def list_classes_functions(code_text: str):
 
     try:
 
+
+
         tree = ast.parse(code_text)
         finder = UnusedVariableFinder()
         finder.visit(tree)
@@ -60,7 +76,7 @@ def list_classes_functions(code_text: str):
             func_class_instances[unuse] = 'unused'
 
 
-        tokens = tokenize.generate_tokens(io.StringIO(code_text).readline)
+        tokens = list(tokenize.generate_tokens(io.StringIO(code_text).readline))
 
         for i, (tok_type, tok_str, *_ ) in enumerate(tokens):
             # ---------- class ----------
@@ -158,7 +174,9 @@ def list_classes_functions(code_text: str):
                 and prev[0] == tokenize.OP
                 and prev[1] == "."
             ):
-                func_class_instances[tok_str] = "method"
+                next_tok = tokens[i + 1] if i + 1 < len(tokens) else None
+                if next_tok and next_tok[1] == "(":
+                    func_class_instances[tok_str] = "method"
 
             # reset on newline
             if tok_type in (tokenize.NEWLINE, tokenize.ENDMARKER):
