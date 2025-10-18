@@ -6,9 +6,28 @@ html, body {
   background-color: #1a1a2e;
 }
 
+
 html {
   scroll-behavior: smooth;
 }
+
+head {
+  background-color: #1a1a2e;
+  will-change: opacity, transform;
+}
+
+
+.hidden {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: all 0.9s ease-out;
+}
+
+.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 
 .hero-section {
   position: relative;
@@ -284,8 +303,8 @@ html {
 .cards {
   display: flex;
   justify-content: center;
-  padding-bottom: 30px;
-  padding-top: 30px;
+  padding-bottom: 100px;
+  padding-top: 100px;
   flex-direction: row;
   align-items: center;
   background: transparent;
