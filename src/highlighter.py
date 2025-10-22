@@ -1,10 +1,11 @@
 from PyQt6.QtGui import QSyntaxHighlighter, QTextCharFormat, QColor, QFont
-from PyQt6.QtCore import QRegularExpression
+from PyQt6.QtCore import QRegularExpression, QTimer
 from config import *
+import re
 
 from PyQt6.QtGui import QSyntaxHighlighter, QTextCharFormat, QColor, QFont
 
-
+from bash import get_elements
 
 class PythonSyntaxHighlighter(QSyntaxHighlighter):
     def __init__(self,use_highlighter ,parent=None):
@@ -1120,3 +1121,174 @@ class MarkdownSyntaxHighlighter(QSyntaxHighlighter):
 
                 self.setFormat(start, length, fmt)
                 used_ranges.add((start, start + length))
+
+
+
+class BashSyntaxHighlighter(QSyntaxHighlighter):
+    def __init__(self,use_highlighter ,parent=None):
+        super().__init__(parent)
+        
+        self.useit = use_highlighter
+
+        if self.useit:
+            self.highlighting_rules = []
+            self.setup_highlighting_rules()
+
+        else:
+            pass
+
+
+    def setup_highlighting_rules(self):
+        r, g, b = get_string()
+        self.string_format = QTextCharFormat()
+        self.string_format.setForeground(QColor(r, g, b))
+        self.highlighting_rules.append((QRegularExpression('"[^"\\\\]*(\\\\.[^"\\\\]*)*"'), self.string_format, 'string'))
+
+
+        r, g, b = get_comment()
+        self.comment_format = QTextCharFormat()
+        self.comment_format.setForeground(QColor(r, g, b))
+
+        r, g, b = get_number()
+        self.number_format = QTextCharFormat()
+        self.number_format.setForeground(QColor(r, g, b))
+
+        r, g, b = get_bash_boolean()
+        boolean = QTextCharFormat()
+        boolean.setForeground(QColor(r, g, b))
+
+        self.highlighting_rules.append((QRegularExpression('true'), boolean, 'bool'))
+        self.highlighting_rules.append((QRegularExpression('false'), boolean, 'bool'))
+
+        r, g, b = get_bash_keyword()
+
+        self.bash_keyword = QTextCharFormat()
+        self.bash_keyword.setForeground(QColor(r, g, b))
+
+        self.bash_var = QTextCharFormat()
+        self.bash_var.setForeground(QColor(255, 255, 255))
+
+        r, g, b = get_bash_builtin()
+
+        self.bash_builtin = QTextCharFormat()
+        self.bash_builtin.setForeground(QColor(r, g, b))
+
+
+        for bracket in ['(', ')', '[', ']', '{', '}']:
+            bracket_format = QTextCharFormat()
+            r, g, b = get_bracket()
+            bracket_format.setForeground(QColor(r, g, b))
+            escaped = QRegularExpression.escape(bracket)
+            bracket_regex = QRegularExpression(escaped)
+            self.highlighting_rules.append((bracket_regex, bracket_format, 'bracket'))
+
+        self.comment_pattern = QRegularExpression('#[^\n]*')
+        self.string_pattern = QRegularExpression(r'"([^"\\]*(\\.[^"\\]*)*)"')
+        self.var_pattern = QRegularExpression(r'\$[A-Za-z_][A-Za-z0-9_]*|\$\{[^}]+\}')
+        self.number_pattern = QRegularExpression('\\b\\d+\\.?\\d*\\b')
+
+        if useItalic():
+            self.comment_format.setFontItalic(True)
+            self.bash_builtin.setFontItalic(True)
+            self.bash_keyword.setFontItalic(True)
+
+
+    def highlightBlock(self, text):
+        def is_overlapping(start, length, used_ranges):
+            end = start + length
+            for begin, finish in used_ranges:
+                if start < finish and end > begin:
+                    return True
+            return False
+
+        used_ranges = set()
+        elements = get_elements(text)
+
+
+        for pattern, fmt, name in self.highlighting_rules:
+            matches = pattern.globalMatch(text)
+            while matches.hasNext():
+                match = matches.next()
+
+                start = match.capturedStart()
+                length = match.capturedLength()
+
+                if name == 'number':
+                    print(match.captured(0))
+
+                if is_overlapping(start, length, used_ranges):
+                    continue
+
+                self.setFormat(start, length, fmt)
+                used_ranges.add((start, start + length))
+
+            string_ranges = []
+
+            string_it = self.string_pattern.globalMatch(text)
+            while string_it.hasNext():
+                m = string_it.next()
+                start = m.capturedStart()
+                end = m.capturedEnd()
+                self.setFormat(start, end - start, self.string_format)
+                string_ranges.append((start, end))
+                used_ranges.add((start, end))
+
+                string_text = text[start:end]
+                var_it = self.var_pattern.globalMatch(string_text)
+                while var_it.hasNext():
+                    v = var_it.next()
+                    v_start = start + v.capturedStart()
+                    v_end = v_start + v.capturedLength()
+                    self.setFormat(v_start, v_end - v_start, self.bash_var)
+                    used_ranges.add((v_start, v_end))
+
+            number_it = self.number_pattern.globalMatch(text)
+            while number_it.hasNext():
+                m = number_it.next()
+                start = m.capturedStart()
+                end = m.capturedEnd()
+                if is_overlapping(start, end - start, used_ranges):
+                    continue
+                self.setFormat(start, end - start, self.number_format)
+                used_ranges.add((start, end))
+
+            comment_it = self.comment_pattern.globalMatch(text)
+            while comment_it.hasNext():
+                m = comment_it.next()
+                start = m.capturedStart()
+                end = m.capturedEnd()
+
+                in_string = any(s <= start < e for s, e in string_ranges)
+                if in_string:
+                    continue
+
+                self.setFormat(start, end - start, self.comment_format)
+
+            try:
+
+                for token_type, words in elements.items():
+                    if not words:
+                        continue
+
+                    pattern = r'\b(' + '|'.join(map(re.escape, words)) + r')\b'
+                    regex = QRegularExpression(pattern)
+
+                    it = regex.globalMatch(text)
+
+                    while it.hasNext():
+                        match = it.next()
+
+                        if is_overlapping(match.capturedStart(), match.capturedLength(), used_ranges):
+                            continue
+
+
+                        if token_type == 'Token.Keyword':
+                            self.setFormat(match.capturedStart(), match.capturedLength(), self.bash_keyword)
+
+                        elif token_type == 'Token.Name.Builtin':
+                            self.setFormat(match.capturedStart(), match.capturedLength(), self.bash_builtin)
+
+                        used_ranges.add((match.capturedStart(), match.capturedStart() + match.capturedLength()))
+
+            except Exception as e:
+                print(e)

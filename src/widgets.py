@@ -1109,9 +1109,13 @@ class CustomIcons(QFileIconProvider):
             elif info.suffix().lower() == 'html':
                     return QIcon('icons/fileIcons/html.svg')
             elif info.suffix().lower() == 'txt':
-                return QIcon('icons/fileIcons/txt.png')
+                # return QIcon('icons/fileIcons/txt.png')
+                return QIcon('icons/fileIcons/txt.svg')
+
             elif info.suffix().lower() == 'md' or info.suffix().lower() == 'markdown':
                 return QIcon('icons/fileIcons/markdown.svg')
+            elif info.suffix().lower() == 'sh' or info.suffix().lower() == 'bash':
+                return QIcon('icons/fileIcons/bash.svg')
 
             else:
                 return super().icon(info)
@@ -1136,9 +1140,12 @@ class CustomIcons(QFileIconProvider):
             elif info.suffix().lower() == 'html':
                     return QIcon('src/icons/fileIcons/html.svg')
             elif info.suffix().lower() == 'txt':
-                return QIcon('src/icons/fileIcons/txt.png')
+                return QIcon('src/icons/fileIcons/txt.svg')
+                # return QIcon('src/icons/fileIcons/txt.png')
             elif info.suffix().lower() == 'md' or info.suffix().lower() == 'markdown':
                 return QIcon('src/icons/fileIcons/markdown.svg')
+            elif info.suffix().lower() == 'sh' or info.suffix().lower() == 'bash':
+                return QIcon('src/icons/fileIcons/bash.svg')
 
             else:
                 return super().icon(info)
@@ -1186,7 +1193,9 @@ class ShowOpenedFile(QTabBar):
                 self.setTabIcon(index, QIcon('icons/fileIcons/python.svg'))
 
             elif self.tabText(index).endswith('txt'):
-                self.setTabIcon(index, QIcon('icons/fileIcons/txt.png'))
+                # self.setTabIcon(index, QIcon('icons/fileIcons/txt.png'))
+                self.setTabIcon(index, QIcon('icons/fileIcons/txt.svg'))
+
 
             elif self.tabText(index).endswith('json') or self.tabText(index).endswith('jsonc'):
                 self.setTabIcon(index, QIcon('icons/fileIcons/json.svg'))
@@ -1212,12 +1221,18 @@ class ShowOpenedFile(QTabBar):
             elif self.tabText(index).lower().endswith('ini') or self.tabText(index).lower().endswith('settings') or self.tabText(index).lower().endswith('conf') or self.tabText(index).lower().endswith('config') or self.tabText(index).lower().endswith('cfg'):
                 self.setTabIcon(index, QIcon('icons/fileIcons/settings.svg'))
 
+            elif self.tabText(index).lower().endswith('sh') or self.tabText(index).lower().endswith('bash'):
+                self.setTabIcon(index, QIcon('icons/fileIcons/bash.svg'))
+
+
         else:
             if self.tabText(index).endswith('py') or self.tabText(index).endswith('pyi'):
                 self.setTabIcon(index, QIcon('src/icons/fileIcons/python.svg'))
 
             elif self.tabText(index).endswith('txt'):
-                self.setTabIcon(index, QIcon('src/icons/fileIcons/txt.png'))
+                # self.setTabIcon(index, QIcon('src/icons/fileIcons/txt.png'))
+                self.setTabIcon(index, QIcon('src/icons/fileIcons/txt.svg'))
+
 
             elif self.tabText(index).endswith('json') or self.tabText(index).endswith('jsonc'):
                 self.setTabIcon(index, QIcon('src/icons/fileIcons/json.svg'))
@@ -1242,6 +1257,9 @@ class ShowOpenedFile(QTabBar):
 
             elif self.tabText(index).lower().endswith('ini') or self.tabText(index).lower().endswith('settings') or self.tabText(index).lower().endswith('conf') or self.tabText(index).lower().endswith('config') or self.tabText(index).lower().endswith('cfg'):
                 self.setTabIcon(index, QIcon('src/icons/fileIcons/settings.svg'))
+
+            elif self.tabText(index).lower().endswith('sh') or self.tabText(index).lower().endswith('bash'):
+                self.setTabIcon(index, QIcon('src/icons/fileIcons/bash.svg'))
 
 
     def remove_tab(self, index):
@@ -1587,6 +1605,7 @@ class ShowOpenedFile(QTabBar):
 
                     except Exception:
                         pass
+                    
                     self.doc_panelstring = None
                     self.editor.doc_panel = None
                     self.editor.show_completer = False
@@ -1594,13 +1613,58 @@ class ShowOpenedFile(QTabBar):
                     commenting = '<!--'
                     self.is_panel = True
 
+                elif file_name.lower().endswith('bash') or file_name.lower().endswith('sh'):
+                    if self.editor.markdown_preview:
+                        self.parent_.removeDockWidget(self.markdown_panel)
+
+                        self.markdown_panel.destroy()
+                        self.markdown_panel.deleteLater()
+
+                        self.editor.markdown_preview.destroy()
+                        self.editor.markdown_preview.deleteLater()
+                        self.editor.markdown_preview = None
+                        self.editor.is_markdown = False
+
+                    self.highlighter = PythonSyntaxHighlighter(False, self.editor.document())
+                    self.highlighter.deleteLater()
+                    self.highlighter = BashSyntaxHighlighter(True, self.editor.document())
+
+                    try:
+                        if self.show_error:
+                            if hasattr(self.show_error, 'cleanup'):
+                                self.show_error.cleanup()
+                            self.show_error.error_label = None
+                            self.show_error = None
+                    except Exception as e:
+                        pass
+
+                    if self.error_label:
+                        self.error_label.hide()
+
+                    if self.nameErrorlabel:
+                        self.nameErrorlabel.hide()
+
+                    try:
+
+                        if self.doc_panelstring:
+                            self.parent_.removeDockWidget(self.doc_panelstring)
+
+                            self.doc_panelstring.deleteLater()
+
+                    except Exception:
+                        pass
+
+                    self.doc_panelstring = None
+                    self.editor.doc_panel = None
+                    self.editor.show_completer = False
+                    self.editor.completer.setCompletionPrefix("")
+                    commenting = ';'
+                    self.is_panel = True
+
 
                 else:
                     if self.editor.markdown_preview:
-                        # self.layout_.removeWidget(self.editor.markdown_preview)
-                        # self.h_layout.removeWidget(self.editor.markdown_preview)
                         self.layout_.removeWidget(self.markdown_panel)
-                        # self.h_layout.removeWidget(self.editor.markdown_preview)
                         self.markdown_panel.destroy()
                         self.markdown_panel.deleteLater()
 

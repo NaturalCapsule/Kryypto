@@ -3,10 +3,11 @@ import os
 import shutil
 import time
 import platform
-if getattr(sys, 'frozen', False):
-    src = r'src\config'
-else:
-    src = r'config'
+# if getattr(sys, 'frozen', False):
+#     src = r'src\config'
+# else:
+    # src = r'config'
+src = r'config'
 
 if platform.system() == 'Windows':
     dst = fr'C:\Users\{os.getlogin()}\AppData\Roaming\Kryypto'

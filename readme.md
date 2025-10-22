@@ -47,6 +47,7 @@ A lightweight, fully keyboard-supported python text editor with deep customizati
   - JSON
   - Config files
   - Markdown
+  - Bash
 
 ## 🚀 Getting Started
 

@@ -24,6 +24,9 @@ def get_comment():
         con = config.get('AllFormats', 'comment')
         r, g, b = con.split(',')
         return int(r), int(g), int(b)
+    except configparser.NoSectionError:
+        write_config('255, 255, 255', 'AllFormat', 'temp')
+        return 255, 255, 255
     except configparser.NoOptionError:
         write_config("255, 255, 255", 'AllFormats', 'comment')
         return 255, 255, 255
@@ -33,6 +36,9 @@ def get_number():
         con = config.get('AllFormats', 'number')
         r, g, b = con.split(',')
         return int(r), int(g), int(b)
+    except configparser.NoSectionError:
+        write_config('255, 255, 255', 'AllFormat', 'temp')
+        return 255, 255, 255
     except configparser.NoOptionError:
         write_config("255, 255, 255", 'AllFormats', 'number')
         return 255, 255, 255
@@ -42,6 +48,9 @@ def get_punctuation():
         con = config.get('AllFormats', 'punctuation')
         r, g, b = con.split(',')
         return int(r), int(g), int(b)
+    except configparser.NoSectionError:
+        write_config('255, 255, 255', 'AllFormat', 'temp')
+        return 255, 255, 255
     except configparser.NoOptionError:
         write_config("255, 255, 255", 'AllFormats', 'punctuation')
         return 255, 255, 255
@@ -51,6 +60,9 @@ def get_bracket():
         con = config.get('AllFormats', 'bracket')
         r, g, b = con.split(',')
         return int(r), int(g), int(b)
+    except configparser.NoSectionError:
+        write_config('255, 255, 255', 'AllFormat', 'temp')
+        return 255, 255, 255
     except configparser.NoOptionError:
         write_config("255, 255, 255", 'AllFormats', 'bracket')
         return 255, 255, 255
@@ -60,6 +72,9 @@ def get_string():
         con = config.get('AllFormats', 'string')
         r, g, b = con.split(',')
         return int(r), int(g), int(b)
+    except configparser.NoSectionError:
+        write_config('255, 255, 255', 'Python', 'temp')
+        return 255, 255, 255
     except configparser.NoOptionError:
         write_config("255, 255, 255", 'AllFormats', 'string')
         return 255, 255, 255
@@ -71,6 +86,9 @@ def get_python_class():
         con = config.get('Python', 'class')
         r, g, b = con.split(',')
         return int(r), int(g), int(b)
+    except configparser.NoSectionError:
+        write_config('255, 255, 255', 'Python', 'temp')
+        return 255, 255, 255
     except configparser.NoOptionError:
         write_config("255, 255, 255", 'Python', 'class')
         return 255, 255, 255
@@ -80,6 +98,9 @@ def get_python_function():
         con = config.get('Python', 'function')
         r, g, b = con.split(',')
         return int(r), int(g), int(b)
+    except configparser.NoSectionError:
+        write_config('255, 255, 255', 'Python', 'temp')
+        return 255, 255, 255
     except configparser.NoOptionError:
         write_config("255, 255, 255", 'Python', 'function')
         return 255, 255, 255
@@ -90,6 +111,9 @@ def get_python_method():
         con = config.get('Python', 'method')
         r, g, b = con.split(',')
         return int(r), int(g), int(b)
+    except configparser.NoSectionError:
+        write_config('255, 255, 255', 'Python', 'temp')
+        return 255, 255, 255
     except configparser.NoOptionError:
         write_config("255, 255, 255", 'Python', 'method')
         return 255, 255, 255
@@ -99,6 +123,9 @@ def get_python_keyword():
         con = config.get('Python', 'keyword')
         r, g, b = con.split(',')
         return int(r), int(g), int(b)
+    except configparser.NoSectionError:
+        write_config('255, 255, 255', 'Python', 'temp')
+        return 255, 255, 255        
     except configparser.NoOptionError:
         write_config("255, 255, 255", 'Python', 'keyword')
         return 255, 255, 255
@@ -109,6 +136,9 @@ def get_python_argument():
         con = config.get('Python', 'argument')
         r, g, b = con.split(',')
         return int(r), int(g), int(b)
+    except configparser.NoSectionError:
+        write_config('255, 255, 255', 'Python', 'temp')
+        return 255, 255, 255        
     except configparser.NoOptionError:
         write_config("255, 255, 255", 'Python', 'argument')
 
@@ -117,6 +147,9 @@ def get_python_builtin():
         con = config.get('Python', 'builtin')
         r, g, b = con.split(',')
         return int(r), int(g), int(b)
+    except configparser.NoSectionError:
+        write_config('255, 255, 255', 'Python', 'temp')
+        return 255, 255, 255
     except configparser.NoOptionError:
         write_config("255, 255, 255", 'Python', 'builtin')
         return 255, 255, 255
@@ -126,6 +159,9 @@ def get_python_unusedvarColor():
         con = config.get('Python', 'unusedvariable')
         r, g, b = con.split(',')
         return int(r), int(g), int(b)
+    except configparser.NoSectionError:
+        write_config('255, 255, 255', 'Python', 'temp')
+        return 255, 255, 255
     except configparser.NoOptionError:
         write_config("128, 128, 128", 'Python', 'unusedvariable')
         return 128, 128, 128
@@ -143,6 +179,9 @@ def get_config_comment():
         con = config.get('Config', 'comment')
         r, g, b = con.split(',')
         return int(r), int(g), int(b)
+    except configparser.NoSectionError:
+        write_config('255, 255, 255', 'Config', 'temp')
+        return 255, 255, 255
     except configparser.NoOptionError:
         write_config("255, 255, 255", 'Config', 'comment')
         return 255, 255, 255
@@ -152,6 +191,9 @@ def get_config_number():
         con = config.get('Config', 'number')
         r, g, b = con.split(',')
         return int(r), int(g), int(b)
+    except configparser.NoSectionError:
+        write_config('255, 255, 255', 'Config', 'temp')
+        return 255, 255, 255
     except configparser.NoOptionError:
         write_config("255, 255, 255", 'Config', 'number')
         return 255, 255, 255
@@ -161,6 +203,9 @@ def get_config_string():
         con = config.get('Config', 'string')
         r, g, b = con.split(',')
         return int(r), int(g), int(b)
+    except configparser.NoSectionError:
+        write_config('255, 255, 255', 'Config', 'temp')
+        return 255, 255, 255
     except configparser.NoOptionError:
         write_config("255, 255, 255", 'Config', 'string')
         return 255, 255, 255
@@ -170,6 +215,9 @@ def get_config_section():
         con = config.get('Config', 'section')
         r, g, b = con.split(',')
         return int(r), int(g), int(b)
+    except configparser.NoSectionError:
+        write_config('255, 255, 255', 'Config', 'temp')
+        return 255, 255, 255
     except configparser.NoOptionError:
         write_config("255, 255, 255", 'Config', 'section')
         return 255, 255, 255
@@ -179,6 +227,9 @@ def get_config_option():
         con = config.get('Config', 'option')
         r, g, b = con.split(',')
         return int(r), int(g), int(b)
+    except configparser.NoSectionError:
+        write_config('255, 255, 255', 'Config', 'temp')
+        return 255, 255, 255
     except configparser.NoOptionError:
         write_config("255, 255, 255", 'Config', 'option')
 
@@ -187,6 +238,9 @@ def get_config_bracket():
         con = config.get('Config', 'bracket')
         r, g, b = con.split(',')
         return int(r), int(g), int(b)
+    except configparser.NoSectionError:
+        write_config('255, 255, 255', 'Config', 'temp')
+        return 255, 255, 255
     except configparser.NoOptionError:
         write_config("255, 255, 255", 'Config', 'bracket')
         return 255, 255, 255
@@ -197,6 +251,9 @@ def get_json_string():
         con = config.get('Json', 'string')
         r, g, b = con.split(',')
         return int(r), int(g), int(b)
+    except configparser.NoSectionError:
+        write_config('255, 255, 255', 'Json', 'temp')
+        return 255, 255, 255
     except configparser.NoOptionError:
         write_config("255, 255, 255", 'Json', 'string')
 
@@ -205,6 +262,9 @@ def get_json_comment():
         con = config.get('Json', 'comment')
         r, g, b = con.split(',')
         return int(r), int(g), int(b)
+    except configparser.NoSectionError:
+        write_config('255, 255, 255', 'Json', 'temp')
+        return 255, 255, 255
     except configparser.NoOptionError:
         write_config("255, 255, 255", 'Json', 'comment')
         return 255, 255, 255
@@ -214,6 +274,9 @@ def get_json_boolean():
         con = config.get('Json', 'boolean')
         r, g, b = con.split(',')
         return int(r), int(g), int(b)
+    except configparser.NoSectionError:
+        write_config('255, 255, 255', 'Json', 'temp')
+        return 255, 255, 255
     except configparser.NoOptionError:
         write_config("255, 255, 255", 'Json', 'boolean')
         return 255, 255, 255
@@ -223,6 +286,9 @@ def get_json_number():
         con = config.get('Json', 'number')
         r, g, b = con.split(',')
         return int(r), int(g), int(b)
+    except configparser.NoSectionError:
+        write_config('255, 255, 255', 'Json', 'temp')
+        return 255, 255, 255
     except configparser.NoOptionError:
         write_config("255, 255, 255", 'Json', 'number')
 
@@ -231,6 +297,9 @@ def get_json_bracket():
         con = config.get('Json', 'bracket')
         r, g, b = con.split(',')
         return int(r), int(g), int(b)
+    except configparser.NoSectionError:
+        write_config('255, 255, 255', 'Json', 'temp')
+        return 255, 255, 255
     except configparser.NoOptionError:
         write_config("255, 255, 255", 'Json', 'bracket')
 
@@ -239,6 +308,9 @@ def get_json_curlyBracket():
         con = config.get('Json', 'curlyBracket')
         r, g, b = con.split(',')
         return int(r), int(g), int(b)
+    except configparser.NoSectionError:
+        write_config('255, 255, 255', 'Json', 'temp')
+        return 255, 255, 255
     except configparser.NoOptionError:
         write_config("255, 255, 255", 'Json', 'curlyBracket')
         return 255, 255, 255
@@ -260,6 +332,9 @@ def get_css_hexcolor():
         con = config.get('Css', 'hex-color')
         r, g, b = con.split(',')
         return int(r), int(g), int(b)
+    except configparser.NoSectionError:
+        write_config('255, 255, 255', 'Css', 'temp')
+        return 255, 255, 255
     except configparser.NoOptionError:
         write_config("255, 255, 255", 'Css', 'hex-color')
         return 255, 255, 255
@@ -270,6 +345,9 @@ def get_css_property():
         con = config.get('Css', 'property')
         r, g, b = con.split(',')
         return int(r), int(g), int(b)
+    except configparser.NoSectionError:
+        write_config('255, 255, 255', 'Css', 'temp')
+        return 255, 255, 255
     except configparser.NoOptionError:
         write_config("255, 255, 255")
         return 255, 255, 255
@@ -290,6 +368,9 @@ def get_css_class():
         con = config.get('Css', 'class')
         r, g, b = con.split(',')
         return int(r), int(g), int(b)
+    except configparser.NoSectionError:
+        write_config('255, 255, 255', 'Css', 'temp')
+        return 255, 255, 255
     except configparser.NoOptionError:
         write_config("255, 255, 255", 'Css', 'class')
         return 255, 255, 255
@@ -299,6 +380,9 @@ def get_css_none():
         con = config.get('Css', 'none')
         r, g, b = con.split(',')
         return int(r), int(g), int(b)
+    except configparser.NoSectionError:
+        write_config('255, 255, 255', 'Css', 'temp')
+        return 255, 255, 255
     except configparser.NoOptionError:
         write_config("255, 255, 255", 'Css', 'none')
         return 255, 255, 255
@@ -355,6 +439,9 @@ def get_markdown_backtick():
         con = config.get('MarkDown', 'backtick')
         r, g, b = con.split(',')
         return int(r), int(g), int(b)
+    except configparser.NoSectionError:
+        write_config('255, 255, 255', 'MarkDown', 'temp')
+        return 255, 255, 255
     except configparser.NoOptionError:
         write_config("255, 255, 255", 'MarkDown', 'backtick')
         return 255, 255, 255
@@ -364,6 +451,9 @@ def get_markdown_bracket():
         con = config.get('MarkDown', 'bracket')
         r, g, b = con.split(',')
         return int(r), int(g), int(b)
+    except configparser.NoSectionError:
+        write_config('255, 255, 255', 'MarkDown', 'temp')
+        return 255, 255, 255
     except configparser.NoOptionError:
         write_config("255, 255, 255", 'MarkDown', 'bracket')
         return 255, 255, 255
@@ -373,6 +463,9 @@ def get_markdown_strikeThrough():
         con = config.get('MarkDown', 'strikeThrough')
         r, g, b = con.split(',')
         return int(r), int(g), int(b)
+    except configparser.NoSectionError:
+        write_config('255, 255, 255', 'MarkDown', 'temp')
+        return 255, 255, 255
     except configparser.NoOptionError:
         write_config("255, 255, 255", 'MarkDown', 'strikeThrough')
         return 255, 255, 255
@@ -382,6 +475,9 @@ def get_markdown_equal():
         con = config.get('MarkDown', 'equal')
         r, g, b = con.split(',')
         return int(r), int(g), int(b)
+    except configparser.NoSectionError:
+        write_config('255, 255, 255', 'MarkDown', 'temp')
+        return 255, 255, 255
     except configparser.NoOptionError:
         write_config("255, 255, 255", 'MarkDown', 'equal')
         return 255, 255, 255
@@ -392,6 +488,9 @@ def get_markdown_line():
         con = config.get('MarkDown', 'line')
         r, g, b = con.split(',')
         return int(r), int(g), int(b)
+    except configparser.NoSectionError:
+        write_config('255, 255, 255', 'MarkDown', 'temp')
+        return 255, 255, 255
     except configparser.NoOptionError:
         write_config("255, 255, 255", 'MarkDown', 'line')
         return 255, 255, 255
@@ -401,6 +500,9 @@ def get_markdown_header1():
         con = config.get('MarkDown', 'header1')
         r, g, b = con.split(',')
         return int(r), int(g), int(b)
+    except configparser.NoSectionError:
+        write_config('255, 255, 255', 'MarkDown', 'temp')
+        return 255, 255, 255
     except configparser.NoOptionError:
         write_config("255, 255, 255", 'MarkDown', 'header1')
         return 255, 255, 255
@@ -410,6 +512,9 @@ def get_markdown_header2():
         con = config.get('MarkDown', 'header2')
         r, g, b = con.split(',')
         return int(r), int(g), int(b)
+    except configparser.NoSectionError:
+        write_config('255, 255, 255', 'MarkDown', 'temp')
+        return 255, 255, 255
     except configparser.NoOptionError:
         write_config("255, 255, 255", 'MarkDown', 'header2')
         return 255, 255, 255
@@ -419,6 +524,9 @@ def get_markdown_header3():
         con = config.get('MarkDown', 'header3')
         r, g, b = con.split(',')
         return int(r), int(g), int(b)
+    except configparser.NoSectionError:
+        write_config('255, 255, 255', 'MarkDown', 'temp')
+        return 255, 255, 255
     except configparser.NoOptionError:
         write_config("255, 255, 255", 'MarkDown', 'header3')
         return 255, 255, 255
@@ -429,6 +537,9 @@ def get_markdown_header4():
         con = config.get('MarkDown', 'header4')
         r, g, b = con.split(',')
         return int(r), int(g), int(b)
+    except configparser.NoSectionError:
+        write_config('255, 255, 255', 'MarkDown', 'temp')
+        return 255, 255, 255
     except configparser.NoOptionError:
         write_config("255, 255, 255", 'MarkDown', 'header4')
         return 255, 255, 255
@@ -439,6 +550,9 @@ def get_markdown_header5():
         con = config.get('MarkDown', 'header5')
         r, g, b = con.split(',')
         return int(r), int(g), int(b)
+    except configparser.NoSectionError:
+        write_config('255, 255, 255', 'MarkDown', 'temp')
+        return 255, 255, 255
     except configparser.NoOptionError:
         write_config("255, 255, 255", 'MarkDown', 'header5')
         return 255, 255, 255
@@ -448,6 +562,9 @@ def get_markdown_header6():
         con = config.get('MarkDown', 'header6')
         r, g, b = con.split(',')
         return int(r), int(g), int(b)
+    except configparser.NoSectionError:
+        write_config('255, 255, 255', 'MarkDown', 'temp')
+        return 255, 255, 255
     except configparser.NoOptionError:
         write_config("255, 255, 255", 'MarkDown', 'header6')
         return 255, 255, 255
@@ -457,6 +574,9 @@ def get_markdown_italicBold():
         con = config.get('MarkDown', 'italicBold')
         r, g, b = con.split(',')
         return int(r), int(g), int(b)
+    except configparser.NoSectionError:
+        write_config('255, 255, 255', 'MarkDown', 'temp')
+        return 255, 255, 255
     except configparser.NoOptionError:
         write_config('255, 255, 255', 'MarkDown', 'italicBold')
         return 255, 255, 255
@@ -466,6 +586,9 @@ def get_markdown_italic():
         con = config.get('MarkDown', 'italic')
         r, g, b = con.split(',')
         return int(r), int(g), int(b)
+    except configparser.NoSectionError:
+        write_config('255, 255, 255', 'MarkDown', 'temp')
+        return 255, 255, 255
     except configparser.NoOptionError:
         write_config('255, 255, 255', 'MarkDown', 'italic')
         return 255, 255, 255
@@ -475,6 +598,9 @@ def get_markdown_bold():
         con = config.get('MarkDown', 'bold')
         r, g, b = con.split(',')
         return int(r), int(g), int(b)
+    except configparser.NoSectionError:
+        write_config('255, 255, 255', 'MarkDown', 'temp')
+        return 255, 255, 255
     except configparser.NoOptionError:
         write_config('255, 255, 255', 'MarkDown', 'bold')
         return 255, 255, 255
@@ -485,6 +611,11 @@ def get_markdown_blockQotes():
         con = config.get('MarkDown', 'blockQotes')
         r, g, b = con.split(',')
         return int(r), int(g), int(b)
+    except configparser.NoSectionError:
+        write_config('255, 255, 255', 'MarkDown', 'temp')
+        return 255, 255, 255
+
+
     except configparser.NoOptionError:
         write_config('255, 255, 255', 'MarkDown', 'blockQotes')
         return 255, 255, 255
@@ -507,6 +638,41 @@ def get_markdown_bracket():
         write_config('255, 255, 255', 'MarkDown', 'bracket')
         return 255, 255, 255
 
+def get_bash_boolean():
+    try:
+        con = config.get('Bash', 'boolean')
+        r, g, b = con.split(',')
+        return int(r), int(g), int(b)
+    except configparser.NoSectionError:
+        write_config('255, 255, 255', 'Bash', 'temp')
+        return 255, 255, 255
+    except configparser.NoOptionError:
+        write_config("255, 255, 255", 'Bash', 'boolean')
+        return 255, 255, 255
+
+def get_bash_keyword():
+    try:
+        con = config.get('Bash', 'keyword')
+        r, g, b = con.split(',')
+        return int(r), int(g), int(b)
+    except configparser.NoSectionError:
+        write_config('255, 255, 255', 'Bash', 'temp')
+        return 255, 255, 255
+    except configparser.NoOptionError:
+        write_config("255, 255, 255", 'Bash', 'keyword')
+        return 255, 255, 255
+
+def get_bash_builtin():
+    try:
+        con = config.get('Bash', 'builtin')
+        r, g, b = con.split(',')
+        return int(r), int(g), int(b)
+    except configparser.NoSectionError:
+        write_config('255, 255, 255', 'Bash', 'temp')
+        return 255, 255, 255
+    except configparser.NoOptionError:
+        write_config("255, 255, 255", 'Bash', 'builtin')
+        return 255, 255, 255
 
 def get_fontFamily():
     try:
