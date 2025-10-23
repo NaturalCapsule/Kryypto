@@ -1292,3 +1292,100 @@ class BashSyntaxHighlighter(QSyntaxHighlighter):
 
             except Exception as e:
                 print(e)
+
+
+class TOMLSyntaxHighlighter(QSyntaxHighlighter):
+    def __init__(self,use_highlighter ,parent=None):
+        super().__init__(parent)
+
+        self.useit = use_highlighter
+
+        if self.useit:
+            self.highlighting_rules = []
+            self.setup_highlighting_rules()
+
+        else:
+            pass
+
+
+    def setup_highlighting_rules(self):
+        comment_format = QTextCharFormat()
+        r, g, b = get_comment()
+        comment_format.setForeground(QColor(r, g, b))
+        self.highlighting_rules.append((QRegularExpression('#[^\n]*'), comment_format, 'comment'))
+
+        r, g, b = get_string()
+        string_format = QTextCharFormat()
+        string_format.setForeground(QColor(r, g, b))
+        self.highlighting_rules.append((QRegularExpression('"[^"\\\\]*(\\\\.[^"\\\\]*)*"'), string_format, 'string'))
+        self.highlighting_rules.append((QRegularExpression("'[^'\\\\]*(\\\\.[^'\\\\]*)*'"), string_format, 'string'))
+
+        r, g, b = get_number()
+        number_format = QTextCharFormat()
+        number_format.setForeground(QColor(r, g, b))
+
+        self.highlighting_rules.append((QRegularExpression('\\b\\d+\\.?\\d*\\b'), number_format, 'number'))
+
+
+        r, g, b = get_config_section()
+        section_format = QTextCharFormat()
+        section_format.setForeground(QColor(r, g, b))
+
+        self.highlighting_rules.append((QRegularExpression('\[.*?\]'), section_format, 'section'))
+        # self.highlighting_rules.append((QRegularExpression('\[[.*?\]]'), section_format, 'section'))
+
+
+        self.highlighting_rules.append((QRegularExpression('""".*?"""', QRegularExpression.PatternOption.DotMatchesEverythingOption), string_format, 'multiline_string'))
+        self.highlighting_rules.append((QRegularExpression("'''.*?'''", QRegularExpression.PatternOption.DotMatchesEverythingOption), string_format, 'multiline_string'))
+
+        r, g, b = get_config_option()
+        variable_format = QTextCharFormat()
+        variable_format.setForeground(QColor(r, g, b))  # Blue
+
+        self.highlighting_rules.append((QRegularExpression(r'^\s*[\w-]+(?=\s*=)'), variable_format, 'variable'))
+        self.highlighting_rules.append((QRegularExpression('^\s*\w+(?=\s*=)'), variable_format, 'variable'))
+        self.highlighting_rules.append((QRegularExpression('^\s*\w+(?=\s* )'), variable_format, 'variable'))
+        self.highlighting_rules.append((QRegularExpression(r'\b\w+(?=\s*=)'), variable_format, 'variable'))
+
+
+        for bracket in ['(', ')', '{', '}', '[', ']']:
+            bracket_format = QTextCharFormat()
+            r, g, b = get_bracket()
+            bracket_format.setForeground(QColor(r, g, b))
+            escaped = QRegularExpression.escape(bracket)
+            bracket_regex = QRegularExpression(escaped)
+            self.highlighting_rules.append((bracket_regex, bracket_format, 'bracket'))
+
+        if useItalic():
+            comment_format.setFontItalic(True)
+            variable_format.setFontItalic(True)
+            section_format.setFontItalic(True)
+
+
+    def highlightBlock(self, text):
+
+        def is_overlapping(start, length, used_ranges):
+            end = start + length
+            for begin, finish in used_ranges:
+                if start < finish and end > begin:
+                    return True
+            return False
+
+        used_ranges = set()
+
+        for pattern, fmt, name in self.highlighting_rules:
+
+
+            matches = pattern.globalMatch(text)
+            while matches.hasNext():
+                match = matches.next()
+
+                start = match.capturedStart()
+                length = match.capturedLength()
+
+                if is_overlapping(start, length, used_ranges):
+                    continue
+
+
+                self.setFormat(start, length, fmt)
+                used_ranges.add((start, start + length))

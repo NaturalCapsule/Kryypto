@@ -6,21 +6,6 @@ import ast
 _cache = {}
 _cache_size_limit = 1000
 
-# class UsedVarsVisitor(ast.NodeVisitor):
-#     def __init__(self):
-#         self.used_vars = set()
-
-#     def visit_Name(self, node):
-#         if isinstance(node.ctx, ast.Load):
-#             self.used_vars.add(node.id)
-#         self.generic_visit(node)
-
-#     def visit_Attribute(self, node):
-#         if isinstance(node.ctx, ast.Load):
-#             if isinstance(node.value, ast.Name):
-#                 full_name = f"{node.value.id}.{node.attr}"
-#                 self.used_vars.add(full_name)
-#         self.generic_visit(node)
 
 class UnusedVariableFinder(ast.NodeVisitor):
     def __init__(self):
@@ -189,3 +174,99 @@ def list_classes_functions(code_text: str):
         return func_class_instances
 
     return func_class_instances
+
+
+# import importlib.util, io, tokenize, ast, hashlib
+
+# _last_code_hash = None
+# _last_result = None
+
+# class UnusedVariableFinder(ast.NodeVisitor):
+#     def __init__(self):
+#         self.assigned, self.used = set(), set()
+#     def visit_Assign(self, node):
+#         for t in node.targets:
+#             if isinstance(t, ast.Name):
+#                 self.assigned.add(t.id)
+#         self.generic_visit(node)
+#     def visit_Name(self, node):
+#         if isinstance(node.ctx, ast.Load):
+#             self.used.add(node.id)
+
+# def list_classes_functions(code_text: str):
+#     global _last_code_hash, _last_result
+
+#     if not code_text.strip():
+#         return {}
+
+#     code_hash = hashlib.sha1(code_text.encode()).hexdigest()
+#     if code_hash == _last_code_hash:
+#         return _last_result
+
+#     func_class_instances = {}
+#     seen = set()
+
+#     try:
+#         # Parse AST once
+#         tree = ast.parse(code_text)
+#         finder = UnusedVariableFinder()
+#         finder.visit(tree)
+#         unused = finder.assigned - finder.used
+#         for unuse in unused:
+#             func_class_instances[unuse] = 'unused'
+
+#         # Tokenize efficiently
+#         tokens = tokenize.generate_tokens(io.StringIO(code_text).readline)
+#         prev = None
+#         state = None
+#         current_func, collecting_args, args = None, False, []
+
+#         for tok_type, tok_str, *_ in tokens:
+#             if tok_type == tokenize.NAME and tok_str in ("class", "def", "from", "import"):
+#                 state = tok_str
+#                 continue
+
+#             # Handle class/function names
+#             if state == "class":
+#                 func_class_instances[tok_str] = "class"
+#                 state = None
+#             elif state == "def":
+#                 current_func = tok_str
+#                 func_class_instances[current_func] = "function"
+#                 state = None
+#             elif state == "from":
+#                 state = "from_import"
+#             elif state == "from_import" and tok_type == tokenize.NAME:
+#                 if importlib.util.find_spec(tok_str):
+#                     func_class_instances[tok_str] = "import"
+#                 seen.add(tok_str)
+#             elif state == "import" and tok_type == tokenize.NAME:
+#                 if importlib.util.find_spec(tok_str):
+#                     func_class_instances[tok_str] = "import"
+#                 seen.add(tok_str)
+
+#             # Collect function args
+#             if current_func:
+#                 if tok_str == "(":
+#                     collecting_args = True
+#                 elif tok_str == ")":
+#                     for a in args:
+#                         func_class_instances[a] = "args"
+#                     current_func = None
+#                     args.clear()
+#                     collecting_args = False
+#                 elif collecting_args and tok_type == tokenize.NAME:
+#                     args.append(tok_str)
+
+#             # Detect methods (obj.method())
+#             if tok_type == tokenize.NAME and prev and prev[1] == ".":
+#                 func_class_instances[tok_str] = "method"
+
+#             prev = (tok_type, tok_str)
+
+#     except Exception:
+#         pass
+
+#     _last_code_hash = code_hash
+#     _last_result = func_class_instances
+#     return func_class_instances

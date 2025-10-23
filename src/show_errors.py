@@ -5,6 +5,8 @@ import logging
 import re
 import json
 import commentjson
+import importlib.util
+import builtins
 
 from PyQt6.QtGui import QTextCursor, QColor, QTextCharFormat, QTextCursor, QColor
 from PyQt6.QtCore import QTimer, QRunnable, Q_ARG
@@ -46,7 +48,7 @@ class ShowErrors:
     def __init__(self, parent, highlighter):
         super().__init__()
         parent.textChanged.connect(self.schedule_check)
-        self.exec = ProcessPoolExecutor(max_workers = 2)
+        self.exec = ProcessPoolExecutor(max_workers = 4)
 
 
         self.timer = QTimer()
@@ -72,6 +74,9 @@ class ShowErrors:
         self.timer.start(800)
 
     def check_syntax(self):
+        missing_modules = []
+        defined = set()
+        used = set()
         code = self.parent.toPlainText()
         
         if code == self._current_code:
@@ -81,11 +86,54 @@ class ShowErrors:
         self.clear_error_highlighting()
 
         try:
-            ast.parse(code)
+            tree = ast.parse(code)
 
             if self.error_label:
                 self.error_label.setText("✔️ No SyntaxError")
 
+            for node in ast.walk(tree):
+                if isinstance(node, ast.Import):
+                    for alias in node.names:
+                        mod = alias.name.split('.')[0]
+                        if not importlib.util.find_spec(mod):
+                            missing_modules.append(mod)
+                        defined.add(alias.asname or mod)
+
+                elif isinstance(node, ast.ImportFrom):
+                    if node.module:
+                        root_mod = node.module.split('.')[0]
+                        if not importlib.util.find_spec(root_mod):
+                            missing_modules.append(node.module)
+                        for alias in node.names:
+                            defined.add(alias.asname or alias.name)
+
+                elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                    defined.add(node.name)
+                    for arg in node.args.args:
+                        defined.add(arg.arg)
+                    if node.args.vararg:
+                        defined.add(node.args.vararg.arg)
+                    if node.args.kwarg:
+                        defined.add(node.args.kwarg.arg)
+
+                elif isinstance(node, ast.ClassDef):
+                    defined.add(node.name)
+
+                elif isinstance(node, ast.ExceptHandler):
+                    if node.name:
+                        defined.add(node.name)
+
+                elif isinstance(node, ast.Name):
+                    if isinstance(node.ctx, ast.Store):
+                        defined.add(node.id)
+                    elif isinstance(node.ctx, ast.Load):
+                        used.add(node.id)
+
+            undefined = used - defined - set(dir(builtins))
+            if undefined:
+                self.nameErrorlabel.setText(f"⚠️ Undefined: {undefined}")
+            else:
+                self.nameErrorlabel.setText(f'✔️ No NameError')
 
             if set_advancedHighlighting():
                 self.parse_code(code)
@@ -94,22 +142,6 @@ class ShowErrors:
             if self.error_label:
                 self.error_label.setText(f"❌ SyntaxError Line: {e.lineno}: {e.msg}")
             self.underline_error(e.lineno, e.offset)
-
-        try:
-            exec(code, {})
-            self.nameErrorlabel.setText(f'✔️ No NameError')
-
-        except NameError as e:
-            tb = e.__traceback__
-            while tb.tb_next:
-                tb = tb.tb_next
-            if self.nameErrorlabel:
-                self.nameErrorlabel.setText(f'⚠️ NameError Line {tb.tb_lineno}')
-        except ModuleNotFoundError as e:
-            if self.nameErrorlabel:
-                self.nameErrorlabel.setText(f'⚠️ Module Not Found: {e.name}')
-        except Exception as e:
-            pass
 
     def parse_code(self, code):
         if set_advancedHighlighting():
