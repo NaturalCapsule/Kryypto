@@ -4,7 +4,6 @@ from func_classes import list_classes_functions
 from queue import Empty
 import queue
 from config import getInterpreter, is_frozen
-from bash import get_elements
 
 # _cache = {}
 # _cache_size_limit = 1000

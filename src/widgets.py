@@ -1718,6 +1718,59 @@ class ShowOpenedFile(QTabBar):
                     commenting = '#'
                     self.is_panel = True
 
+
+
+                elif file_name.lower().endswith('html'):
+                    if self.editor.markdown_preview:
+                        self.parent_.removeDockWidget(self.markdown_panel)
+
+                        self.markdown_panel.destroy()
+                        self.markdown_panel.deleteLater()
+
+                        self.editor.markdown_preview.destroy()
+                        self.editor.markdown_preview.deleteLater()
+                        self.editor.markdown_preview = None
+                        self.editor.is_markdown = False
+
+                    self.highlighter = PythonSyntaxHighlighter(False, self.editor.document())
+                    self.highlighter.deleteLater()
+                    self.highlighter = HTMLSyntaxHighlighter(True, self.editor.document())
+
+                    try:
+                        if self.show_error:
+                            if hasattr(self.show_error, 'cleanup'):
+                                self.show_error.cleanup()
+                            self.show_error.error_label = None
+                            self.show_error = None
+                    except Exception as e:
+                        pass
+
+                    if self.error_label:
+                        self.error_label.hide()
+
+                    if self.nameErrorlabel:
+                        self.nameErrorlabel.hide()
+
+                    try:
+
+                        if self.doc_panelstring:
+                            self.parent_.removeDockWidget(self.doc_panelstring)
+
+                            self.doc_panelstring.deleteLater()
+
+                    except Exception:
+                        pass
+
+                    self.doc_panelstring = None
+                    self.editor.doc_panel = None
+                    self.editor.show_completer = False
+                    self.editor.completer.setCompletionPrefix("")
+                    # commenting = '#'
+                    commenting = '<!--'
+
+                    self.is_panel = True
+
+
                 else:
                     if self.editor.markdown_preview:
                         self.layout_.removeWidget(self.markdown_panel)

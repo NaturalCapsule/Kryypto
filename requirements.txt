@@ -10,3 +10,4 @@ pypresence==4.3.0
 markdown==3.9
 PyQt6-WebEngine==6.9.0
 pymdown-extensions==10.16.1
+pygments==2.19.1

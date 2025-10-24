@@ -5,7 +5,37 @@ import re
 
 from PyQt6.QtGui import QSyntaxHighlighter, QTextCharFormat, QColor, QFont
 
-from bash import get_elements
+from collections import defaultdict
+from pygments import lex
+from pygments.lexers.html import HtmlLexer
+from pygments.lexers import BashLexer
+
+def get_bash_elements(code):
+    types_elements = defaultdict(list)
+    tokens = lex(code, BashLexer())
+
+    for token_type, value in tokens:
+        if value.strip():
+            types_elements[str(token_type)].append(value)
+
+    return types_elements
+
+
+
+def get_html_elements(code):
+    types_elements = defaultdict(list)
+
+    check = []
+
+    tokens = lex(code, HtmlLexer())
+
+    for token_type, value in tokens:
+        if value.strip():
+            if value not in check:
+                types_elements[str(token_type)].append(value)
+            check.append(value)
+
+    return types_elements
 
 class PythonSyntaxHighlighter(QSyntaxHighlighter):
     def __init__(self,use_highlighter ,parent=None):
@@ -1202,7 +1232,7 @@ class BashSyntaxHighlighter(QSyntaxHighlighter):
             return False
 
         used_ranges = set()
-        elements = get_elements(text)
+        elements = get_bash_elements(text)
 
 
         for pattern, fmt, name in self.highlighting_rules:
@@ -1389,3 +1419,179 @@ class TOMLSyntaxHighlighter(QSyntaxHighlighter):
 
                 self.setFormat(start, length, fmt)
                 used_ranges.add((start, start + length))
+
+
+
+
+
+
+class HTMLSyntaxHighlighter(QSyntaxHighlighter):
+    def __init__(self,use_highlighter ,parent=None):
+        super().__init__(parent)
+        
+        self.useit = use_highlighter
+
+        if self.useit:
+            self.highlighting_rules = []
+            self.setup_highlighting_rules()
+
+        else:
+            pass
+
+
+    def setup_highlighting_rules(self):
+        r, g, b = get_string()
+        self.string_format = QTextCharFormat()
+        self.string_format.setForeground(QColor(r, g, b))
+        self.highlighting_rules.append((QRegularExpression('"[^"\\\\]*(\\\\.[^"\\\\]*)*"'), self.string_format, 'string'))
+
+
+        r, g, b = get_comment()
+        self.comment_format = QTextCharFormat()
+        self.comment_format.setForeground(QColor(r, g, b))
+
+        r, g, b = get_number()
+        self.number_format = QTextCharFormat()
+        self.number_format.setForeground(QColor(r, g, b))
+
+        r, g, b = get_punctuation()
+
+        self.html_punctuation = QTextCharFormat()
+        self.html_punctuation.setForeground(QColor(r, g, b))
+
+        self.html_equal = QTextCharFormat()
+        self.html_equal.setForeground(QColor(r, g, b))
+
+
+        r, g, b = get_html_attribute()
+
+        self.html_attribute = QTextCharFormat()
+        self.html_attribute.setForeground(QColor(r, g, b))
+
+        r, g, b = get_html_tag()
+
+        self.html_tag = QTextCharFormat()
+        self.html_tag.setForeground(QColor(r, g, b))
+
+        for bracket in ['(', ')', '[', ']', '{', '}']:
+            bracket_format = QTextCharFormat()
+            r, g, b = get_bracket()
+            bracket_format.setForeground(QColor(r, g, b))
+            escaped = QRegularExpression.escape(bracket)
+            bracket_regex = QRegularExpression(escaped)
+            self.highlighting_rules.append((bracket_regex, bracket_format, 'bracket'))
+
+        self.comment_pattern = QRegularExpression('<!--[^\n]*')
+        self.string_pattern = QRegularExpression(r'"([^"\\]*(\\.[^"\\]*)*)"')
+        self.var_pattern = QRegularExpression(r'\$[A-Za-z_][A-Za-z0-9_]*|\$\{[^}]+\}')
+        self.number_pattern = QRegularExpression('\\b\\d+\\.?\\d*\\b')
+
+        if useItalic():
+            self.comment_format.setFontItalic(True)
+
+
+    def highlightBlock(self, text):
+        def is_overlapping(start, length, used_ranges):
+            end = start + length
+            for begin, finish in used_ranges:
+                if start < finish and end > begin:
+                    return True
+            return False
+
+        used_ranges = set()
+        elements = get_html_elements(text)
+
+
+        for pattern, fmt, name in self.highlighting_rules:
+            matches = pattern.globalMatch(text)
+            while matches.hasNext():
+                match = matches.next()
+
+                start = match.capturedStart()
+                length = match.capturedLength()
+
+                if is_overlapping(start, length, used_ranges):
+                    continue
+
+                self.setFormat(start, length, fmt)
+                used_ranges.add((start, start + length))
+
+            string_ranges = []
+
+            string_it = self.string_pattern.globalMatch(text)
+            while string_it.hasNext():
+                m = string_it.next()
+                start = m.capturedStart()
+                end = m.capturedEnd()
+                self.setFormat(start, end - start, self.string_format)
+                string_ranges.append((start, end))
+                used_ranges.add((start, end))
+
+                # string_text = text[start:end]
+                # var_it = self.var_pattern.globalMatch(string_text)
+                # while var_it.hasNext():
+                #     v = var_it.next()
+                #     v_start = start + v.capturedStart()
+                #     v_end = v_start + v.capturedLength()
+                #     self.setFormat(v_start, v_end - v_start, self.bash_var)
+                #     used_ranges.add((v_start, v_end))
+
+            number_it = self.number_pattern.globalMatch(text)
+            while number_it.hasNext():
+                m = number_it.next()
+                start = m.capturedStart()
+                end = m.capturedEnd()
+                if is_overlapping(start, end - start, used_ranges):
+                    continue
+                self.setFormat(start, end - start, self.number_format)
+                used_ranges.add((start, end))
+
+            comment_it = self.comment_pattern.globalMatch(text)
+            while comment_it.hasNext():
+                m = comment_it.next()
+                start = m.capturedStart()
+                end = m.capturedEnd()
+
+                in_string = any(s <= start < e for s, e in string_ranges)
+                if in_string:
+                    continue
+
+                self.setFormat(start, end - start, self.comment_format)
+
+            try:
+
+                for token_type, words in elements.items():
+                    if not words:
+                        continue
+
+                    pattern = r'\b(' + '|'.join(map(re.escape, words)) + r')\b'
+                    if token_type == 'Token.Punctuation' or 'Token.Operator':
+                        pattern = '(' + '|'.join(map(re.escape, words)) + ')'
+
+                    regex = QRegularExpression(pattern)
+
+                    it = regex.globalMatch(text)
+
+                    while it.hasNext():
+                        match = it.next()
+
+                        if is_overlapping(match.capturedStart(), match.capturedLength(), used_ranges):
+                            continue
+
+
+                        if token_type == 'Token.Punctuation':
+                            self.setFormat(match.capturedStart(), match.capturedLength(), self.html_punctuation)
+
+                        elif token_type == 'Token.Name.Tag':
+                            self.setFormat(match.capturedStart(), match.capturedLength(), self.html_tag)
+
+                        elif token_type == 'Token.Name.Attribute':
+                            self.setFormat(match.capturedStart(), match.capturedLength(), self.html_attribute)
+
+                        elif token_type == 'Token.Name.Operator':
+                            self.setFormat(match.capturedStart(), match.capturedLength(), self.html_equal)
+
+                        used_ranges.add((match.capturedStart(), match.capturedStart() + match.capturedLength()))
+
+            except Exception as e:
+                print(e)

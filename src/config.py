@@ -674,6 +674,31 @@ def get_bash_builtin():
         write_config("255, 255, 255", 'Bash', 'builtin')
         return 255, 255, 255
 
+
+def get_html_tag():
+    try:
+        con = config.get('Html', 'tag')
+        r, g, b = con.split(',')
+        return int(r), int(g), int(b)
+    except configparser.NoSectionError:
+        write_config('255, 255, 255', 'Html', 'temp')
+        return 255, 255, 255
+    except configparser.NoOptionError:
+        write_config("255, 255, 255", 'Html', 'tag')
+        return 255, 255, 255
+
+def get_html_attribute():
+    try:
+        con = config.get('Html', 'attribute')
+        r, g, b = con.split(',')
+        return int(r), int(g), int(b)
+    except configparser.NoSectionError:
+        write_config('255, 255, 255', 'Html', 'temp')
+        return 255, 255, 255
+    except configparser.NoOptionError:
+        write_config("255, 255, 255", 'Html', 'attribute')
+        return 255, 255, 255
+
 def get_fontFamily():
     try:
         return config.get('Appearance', 'FontFamily')
