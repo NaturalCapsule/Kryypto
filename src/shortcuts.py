@@ -214,8 +214,10 @@ class MainTextShortcuts:
     def open_config(self, tab, file_desc, bawky_parent, parent):
         if platform.system() == 'Windows':
             path = fr'C:\Users\{os.getlogin()}\AppData\Roaming\Kryypto\config\configuration.cfg'
+
         elif platform.system() == "Linux":
             path = f'~/.config/KryyptoConfig/config/configuration.cfg'
+            
         with open(path, 'r', encoding = 'utf-8') as css_file:
             if path not in file_desc.keys() and 'configuration.cfg' not in file_desc.values():
                 file_desc[path] = 'configuration.cfg'
@@ -224,14 +226,23 @@ class MainTextShortcuts:
                 parent.setFocus()
 
     def open_markdown(self, tab, file_desc, bawky_parent, parent):
-
         path = get_markdownpreview_file()
+
+
+        if platform.system() == 'Windows':
+            file_name = path.split('\\')[-1]
+
+        elif platform.system() == 'Linux':
+            file_name = path.split('/')[-1]
+            path = os.path.expanduser(path)
+
         with open(path, 'r', encoding = 'utf-8') as markdown_file:
-            if path not in file_desc.keys() and 'markdown.txt' not in file_desc.values():
-                file_desc[path] = 'markdown.txt'
-                tab.add_file(path, 'markdown.txt')
+            if path not in file_desc.keys() and file_name not in file_desc.values():
+                file_desc[path] = file_name
+                tab.add_file(path, file_name)
                 parent.setPlainText(markdown_file.read())
                 parent.setFocus()
+
 
     def open_css(self, tab, file_desc, bawky_parent, parent):
         path = get_stylefile()

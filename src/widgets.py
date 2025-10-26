@@ -1514,6 +1514,7 @@ class ShowOpenedFile(QTabBar):
 
                     except Exception:
                         pass
+
                     self.doc_panelstring = None
                     self.editor.doc_panel = None
                     self.editor.show_completer = False
@@ -1521,12 +1522,12 @@ class ShowOpenedFile(QTabBar):
                     commenting = '/*'
                     self.is_panel = True
 
-                    self.show_error = ShowCssErrors(self.editor, self.highlighter)
+                    # self.show_error = ShowCssErrors(self.editor, self.highlighter)
 
-                    self.show_error.error_label = self.error_label
-                    # self.layout_.addWidget(self.error_label)
-                    self.editor_layout.addWidget(self.error_label)
-                    self.error_label.show()
+                    # self.show_error.error_label = self.error_label
+                    # # self.layout_.addWidget(self.error_label)
+                    # self.editor_layout.addWidget(self.error_label)
+                    # self.error_label.show()
 
 
                 elif file_name.lower().endswith('.ini') or file_name.lower().endswith('.settings') or file_name.lower().endswith('.conf') or file_name.lower().endswith('.cfg') or file_name.lower().endswith('.config'):

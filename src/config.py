@@ -316,28 +316,17 @@ def get_json_curlyBracket():
         return 255, 255, 255
 
 
-# def get_css_string():
+# def get_css_hexcolor():
 #     try:
-#         con = config.get('Css', 'string')
+#         con = config.get('Css', 'hex-color')
 #         r, g, b = con.split(',')
 #         return int(r), int(g), int(b)
-
-# def get_css_comment():
-#     con = config.get('Css', 'comment')
-#     r, g, b = con.split(',')
-#     return int(r), int(g), int(b)
-
-def get_css_hexcolor():
-    try:
-        con = config.get('Css', 'hex-color')
-        r, g, b = con.split(',')
-        return int(r), int(g), int(b)
-    except configparser.NoSectionError:
-        write_config('255, 255, 255', 'Css', 'temp')
-        return 255, 255, 255
-    except configparser.NoOptionError:
-        write_config("255, 255, 255", 'Css', 'hex-color')
-        return 255, 255, 255
+#     except configparser.NoSectionError:
+#         write_config('255, 255, 255', 'Css', 'temp')
+#         return 255, 255, 255
+#     except configparser.NoOptionError:
+#         write_config("255, 255, 255", 'Css', 'hex-color')
+#         return 255, 255, 255
 
 
 def get_css_property():
@@ -352,16 +341,29 @@ def get_css_property():
         write_config("255, 255, 255")
         return 255, 255, 255
 
-# def get_css_bracket():
+def get_css_tag():
+    try:
+        con = config.get('Css', 'tag')
+        r, g, b = con.split(',')
+        return int(r), int(g), int(b)
+    except configparser.NoSectionError:
+        write_config('255, 255, 255', 'Css', 'temp')
+        return 255, 255, 255
+    except configparser.NoOptionError:
+        write_config("255, 255, 255", 'Css', 'tag')
+        return 255, 255, 255
 
-#     con = config.get('Css', 'bracket')
-#     r, g, b = con.split(',')
-#     return int(r), int(g), int(b)
-
-# def get_css_number():
-#     con = config.get('Css', 'number')
-#     r, g, b = con.split(',')
-#     return int(r), int(g), int(b)
+def get_css_decorator():
+    try:
+        con = config.get('Css', 'decorator')
+        r, g, b = con.split(',')
+        return int(r), int(g), int(b)
+    except configparser.NoSectionError:
+        write_config('255, 255, 255', 'Css', 'temp')
+        return 255, 255, 255
+    except configparser.NoOptionError:
+        write_config("255, 255, 255", 'Css', 'decorator')
+        return 255, 255, 255
 
 def get_css_class():
     try:
@@ -375,62 +377,30 @@ def get_css_class():
         write_config("255, 255, 255", 'Css', 'class')
         return 255, 255, 255
 
-def get_css_none():
-    try:
-        con = config.get('Css', 'none')
-        r, g, b = con.split(',')
-        return int(r), int(g), int(b)
-    except configparser.NoSectionError:
-        write_config('255, 255, 255', 'Css', 'temp')
-        return 255, 255, 255
-    except configparser.NoOptionError:
-        write_config("255, 255, 255", 'Css', 'none')
-        return 255, 255, 255
-
-# def get_markdown_comment():
-#     con = config.get('MarkDown', 'comment')
-#     r, g, b = con.split(',')
-#     return int(r), int(g), int(b)
-
-
-# def get_markdown_number():
-#     con = config.get('MarkDown', 'number')
-#     r, g, b = con.split(',')
-#     return int(r), int(g), int(b)
-
 def get_markdownpreview_file():
     try:
         con = config.get('MarkDown', 'markdownpreview')
-        # r, g, b = con.split(',')
         if con:
             return con
-        
-        # return int(r), int(g), int(b)
-    # except configparser.NoOptionError:
-    #     write_config("255, 255, 255", 'MarkDown', 'markdownpreview')
-    #     return 255, 255, 255
+
     
         else:
             if platform.system() == 'Windows':
-                write_config(fr'C:\Users\{os.getlogin()}\AppData\Roaming\Kryypto\config\markdown.txt', 'MarkDown', 'markdownpreview')
-                return fr'C:\Users\{os.getlogin()}\AppData\Roaming\Kryypto\config\markdown.txt'
+                write_config(fr'C:\Users\{os.getlogin()}\AppData\Roaming\Kryypto\config\markdown.css', 'MarkDown', 'markdownpreview')
+                return fr'C:\Users\{os.getlogin()}\AppData\Roaming\Kryypto\config\markdown.css'
             elif platform.system() == "Linux":
-                write_config(fr'~/.config/KryyptoConfig/config/markdown.txt', 'MarkDown', 'markdownpreview')
-                # return f'~/.config/KryyptoConfig/config/markdown.txt'
-                path = os.path.expanduser('~/.config/KryyptoConfig/config/markdown.txt')
+                write_config(fr'~/.config/KryyptoConfig/config/markdown.css', 'MarkDown', 'markdownpreview')
+                path = os.path.expanduser('~/.config/KryyptoConfig/config/markdown.css')
                 return path
 
 
     except configparser.NoOptionError:
-        # write_config(fr'C:\Users\{os.getlogin()}\AppData\Roaming\Kryypto\config\markdown.txt', 'MarkDown', 'markdownpreview')
-        # return fr'C:\Users\{os.getlogin()}\AppData\Roaming\Kryypto\config\markdown.txt'
         if platform.system() == 'Windows':
-            write_config(fr'C:\Users\{os.getlogin()}\AppData\Roaming\Kryypto\config\markdown.txt', 'MarkDown', 'markdownpreview')
-            return fr'C:\Users\{os.getlogin()}\AppData\Roaming\Kryypto\config\markdown.txt'
+            write_config(fr'C:\Users\{os.getlogin()}\AppData\Roaming\Kryypto\config\markdown.css', 'MarkDown', 'markdownpreview')
+            return fr'C:\Users\{os.getlogin()}\AppData\Roaming\Kryypto\config\markdown.css'
         elif platform.system() == "Linux":
-            write_config(fr'~/.config/KryyptoConfig/config/markdown.txt', 'MarkDown', 'markdownpreview')
-            # return fr'~/.config/KryyptoConfig/config/markdown.txt'
-            path = os.path.expanduser('~/.config/KryyptoConfig/config/markdown.txt')
+            write_config(fr'~/.config/KryyptoConfig/config/markdown.css', 'MarkDown', 'markdownpreview')
+            path = os.path.expanduser('~/.config/KryyptoConfig/config/markdown.css')
             return path
 
 
