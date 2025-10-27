@@ -9,6 +9,7 @@ from collections import defaultdict
 from pygments import lex
 from pygments.lexers.html import HtmlLexer
 from pygments.lexers import BashLexer, CssLexer
+from pygments.lexers.configs import DockerLexer
 
 
 import re
@@ -25,6 +26,23 @@ def get_bash_elements(code):
     for token_type, value in tokens:
         if value.strip():
             types_elements[str(token_type)].append(value)
+
+    return types_elements
+
+
+def get_docker_elements(code):
+    types_elements = defaultdict(list)
+
+    check = []
+
+    tokens = lex(code, DockerLexer())
+
+    for token_type, value in tokens:
+        if value.strip():
+            if value not in check:
+                # if str(token_type) != 'Token.Comment':
+                types_elements[str(token_type)].append(value)
+            check.append(value)
 
     return types_elements
 
@@ -792,16 +810,6 @@ class JsonSyntaxHighlighter(QSyntaxHighlighter):
 
         self.highlighting_rules.append((QRegularExpression('\\b\\d+\\.?\\d*\\b'), number_format, 'number'))
 
-
-        # for punctuation in ['#', '!', '@', '$', '%', '^', '&', '*', '-', '=', '+']:
-        #     punction_format = QTextCharFormat()
-        #     punction_format.setForeground(QColor(243, 139, 168))
-
-        #     escaped = QRegularExpression.escape(punctuation)
-        #     punction_regex = QRegularExpression(escaped)
-        #     self.highlighting_rules.append((punction_regex, punction_format, 'punctuation'))
-
-
         for bracket in ['{', '}']:
             bracket_format = QTextCharFormat()
             r, g, b = get_number()
@@ -847,140 +855,6 @@ class JsonSyntaxHighlighter(QSyntaxHighlighter):
 
                 self.setFormat(start, length, fmt)
                 used_ranges.add((start, start + length))
-
-
-# class CssSyntaxHighlighter(QSyntaxHighlighter):
-#     def __init__(self,use_highlighter ,parent=None):
-#         super().__init__(parent)
-
-#         self.useit = use_highlighter
-
-#         if self.useit:
-#             self.highlighting_rules = []
-#             self.setup_highlighting_rules()
-
-#         else:
-#             pass
-
-
-#     def setup_highlighting_rules(self):
-#         r, g, b = get_comment()
-#         comment_format = QTextCharFormat()
-#         comment_format.setForeground(QColor(r, g, b))
-#         # comment_format.setFontItalic(True)
-#         self.highlighting_rules.append((QRegularExpression('/\*.*?\*/'), comment_format, 'comment'))
-
-
-#         r, g, b = get_string()
-#         string_format = QTextCharFormat()
-#         string_format.setForeground(QColor(r, g, b))
-#         self.highlighting_rules.append((QRegularExpression('"[^"\\\\]*(\\\\.[^"\\\\]*)*"'), string_format, 'string'))
-#         self.highlighting_rules.append((QRegularExpression("'[^'\\\\]*(\\\\.[^'\\\\]*)*'"), string_format, 'string'))
-
-#         # class_format = QTextCharFormat()
-#         # class_format.setForeground(QColor(249, 226, 175))
-
-#         r, g, b = get_css_class()
-#         self.class_format = QTextCharFormat()
-#         self.class_format.setForeground(QColor(r, g, b))  # Choose your color
-#         # class_format.setFontWeight(QFont.Weight.Bold)
-#         # class_format.setFontItalic(True)
-
-#         self.highlighting_rules.append((
-#             QRegularExpression(r'#(?![0-9a-fA-F]{3}(?:[0-9a-fA-F]{3})?\b)[\w-]+'),
-#             self.class_format,
-#             'css-id'
-#         ))
-
-#         self.highlighting_rules.append((
-#             QRegularExpression(r'\.(?!\d)\w[\w-]*'),
-#             self.class_format,
-#             'css-class'
-#         ))
-
-
-#         r, g, b = get_css_hexcolor()
-#         color_format = QTextCharFormat()
-#         color_format.setForeground(QColor(r, g, b))
-
-#         self.highlighting_rules.append((
-#             QRegularExpression(r'#(?:[0-9a-fA-F]{3}){1,2}\b'),
-#             color_format,
-#             'hex-color'
-#         ))
-
-#         r, g, b = get_css_property()
-#         property_format = QTextCharFormat()
-#         property_format.setForeground(QColor(r, g, b))
-#         # property_format.setFontWeight(QFont.Weight.Bold)
-#         # property_format.setFontItalic(True)
-
-#         self.highlighting_rules.append((QRegularExpression(r'[a-zA-Z-]+(?=:)'), property_format, 'property'))
-
-#         r, g, b = get_number()
-
-#         number_format = QTextCharFormat()
-#         number_format.setForeground(QColor(r, g, b))
-
-#         self.highlighting_rules.append((QRegularExpression(r'\b\d+\.?\d*(px|em|rem|%|vh|vw|vmin|vmax|pt|cm|mm|in)?\b'), number_format, 'number')
-# )
-#         r, g, b = get_css_none()
-#         none_format = QTextCharFormat()
-#         none_format.setForeground(QColor(r, g, b))
-
-
-#         self.highlighting_rules.append((QRegularExpression('none'), none_format, 'none'))
-
-
-#         # for punctuation in ['!', '@', '$', '%', '^', '&', '*', '-', '=', '+']:
-#         #     punction_format = QTextCharFormat()
-#         #     punction_format.setForeground(QColor(243, 139, 168))
-
-#         #     escaped = QRegularExpression.escape(punctuation)
-#         #     punction_regex = QRegularExpression(escaped)
-#         #     self.highlighting_rules.append((punction_regex, punction_format, 'punctuation'))
-
-
-#         for bracket in ['(', ')', '[', ']', '{', '}']:
-#             bracket_format = QTextCharFormat()
-#             r, g, b = get_bracket()
-#             bracket_format.setForeground(QColor(r, g, b))
-#             escaped = QRegularExpression.escape(bracket)
-#             bracket_regex = QRegularExpression(escaped)
-#             self.highlighting_rules.append((bracket_regex, bracket_format, 'bracket'))
-
-#         if useItalic():
-#             comment_format.setFontItalic(True)
-#             self.class_format.setFontItalic(True)
-#             property_format.setFontItalic(True)
-
-
-#     def highlightBlock(self, text):
-#         def is_overlapping(start, length, used_ranges):
-#             end = start + length
-#             for begin, finish in used_ranges:
-#                 if start < finish and end > begin:
-#                     return True
-#             return False
-
-#         used_ranges = set()
-
-#         for pattern, fmt, name in self.highlighting_rules:
-
-
-#             matches = pattern.globalMatch(text)
-#             while matches.hasNext():
-#                 match = matches.next()
-
-#                 start = match.capturedStart()
-#                 length = match.capturedLength()
-
-#                 if is_overlapping(start, length, used_ranges):
-#                     continue
-
-#                 self.setFormat(start, length, fmt)
-#                 used_ranges.add((start, start + length))
-
 
 
 class CssSyntaxHighlighter(QSyntaxHighlighter):
@@ -1890,6 +1764,190 @@ class HTMLSyntaxHighlighter(QSyntaxHighlighter):
 
                         elif token_type == 'Token.Name.Operator':
                             self.setFormat(match.capturedStart(), match.capturedLength(), self.html_equal)
+
+                        used_ranges.add((match.capturedStart(), match.capturedStart() + match.capturedLength()))
+
+            except Exception as e:
+                print(e)
+
+
+
+class DockerSyntaxHighlighter(QSyntaxHighlighter):
+    def __init__(self,use_highlighter ,parent=None, code = None):
+        super().__init__(parent)
+
+        self.code = code
+        
+        self.useit = use_highlighter
+
+        if self.useit:
+            self.highlighting_rules = []
+            self.setup_highlighting_rules()
+
+        else:
+            pass
+
+
+    def setup_highlighting_rules(self):
+        r, g, b = get_string()
+        self.string_format = QTextCharFormat()
+        self.string_format.setForeground(QColor(r, g, b))
+        self.highlighting_rules.append((QRegularExpression('"[^"\\\\]*(\\\\.[^"\\\\]*)*"'), self.string_format, 'string'))
+        # self.highlighting_rules.append((QRegularExpression(r'''(?:(?:f|fr|r|b|br)?)"([^"\\]|\\.)*"|(?:(?:f|fr|r|b|br)?)'([^'\\]|\\.)*' ''', self.string_format, 'string'))
+
+        self.string_pattern = QRegularExpression(
+            r'''(?:(?:f|fr|r|b|br)?)"([^"\\]|\\.)*"|(?:(?:f|fr|r|b|br)?)'([^'\\]|\\.)*' '''
+        )
+
+        self.highlighting_rules.append((self.string_pattern, self.string_format, 'string'))
+
+
+
+        r, g, b = get_comment()
+        self.comment_format = QTextCharFormat()
+        self.comment_format.setForeground(QColor(r, g, b))
+
+        r, g, b = get_number()
+        self.number_format = QTextCharFormat()
+        self.number_format.setForeground(QColor(r, g, b))
+
+        r, g, b = get_punctuation()
+
+        self.docker_punctuation = QTextCharFormat()
+        self.docker_punctuation.setForeground(QColor(r, g, b))
+
+        r, g, b = get_docker_keyword()
+
+
+        self.docker_keyword = QTextCharFormat()
+        self.docker_keyword.setForeground(QColor(r, g, b))
+
+        r, g, b = get_docker_builtin()
+
+
+        self.docker_builtin = QTextCharFormat()
+        self.docker_builtin.setForeground(QColor(r, g, b))
+
+
+
+        for bracket in ['(', ')', '[', ']', '{', '}']:
+            bracket_format = QTextCharFormat()
+            r, g, b = get_bracket()
+            bracket_format.setForeground(QColor(r, g, b))
+            escaped = QRegularExpression.escape(bracket)
+            bracket_regex = QRegularExpression(escaped)
+            self.highlighting_rules.append((bracket_regex, bracket_format, 'bracket'))
+
+        self.comment_pattern = QRegularExpression(r'#[^\n]*')
+
+
+
+        self.string_pattern = QRegularExpression(r'"([^"\\]*(\\.[^"\\]*)*)"')
+        self.var_pattern = QRegularExpression(r'\$[A-Za-z_][A-Za-z0-9_]*|\$\{[^}]+\}')
+
+
+        if useItalic():
+            self.comment_format.setFontItalic(True)
+
+
+    def highlightBlock(self, text):
+        def is_overlapping(start, length, used_ranges):
+            end = start + length
+            for begin, finish in used_ranges:
+                if start < finish and end > begin:
+                    return True
+            return False
+
+
+        default_format = QTextCharFormat()
+        default_format.setForeground(QColor("white"))
+        self.setFormat(0, len(text), default_format)
+
+        used_ranges = set()
+        elements = get_docker_elements(text)
+
+
+        for pattern, fmt, name in self.highlighting_rules:
+            matches = pattern.globalMatch(text)
+            while matches.hasNext():
+                match = matches.next()
+
+                start = match.capturedStart()
+                length = match.capturedLength()
+
+                if is_overlapping(start, length, used_ranges):
+                    continue
+
+                self.setFormat(start, length, fmt)
+                used_ranges.add((start, start + length))
+
+            string_ranges = []
+
+            string_it = self.string_pattern.globalMatch(text)
+            while string_it.hasNext():
+                m = string_it.next()
+                start = m.capturedStart()
+                end = m.capturedEnd()
+                self.setFormat(start, end - start, self.string_format)
+                string_ranges.append((start, end))
+                used_ranges.add((start, end))
+
+
+            comment_it = self.comment_pattern.globalMatch(text)
+            while comment_it.hasNext():
+                m = comment_it.next()
+                start = m.capturedStart()
+                end = m.capturedEnd()
+
+                in_string = any(s <= start < e for s, e in string_ranges)
+                if in_string:
+                    continue
+
+                self.setFormat(start, end - start, self.comment_format)
+
+            try:
+
+                for token_type, words in elements.items():
+                    if not words:
+                        continue
+
+                    pattern = r'\b(' + '|'.join(map(re.escape, words)) + r')\b'
+                    if token_type == 'Token.Punctuation' or 'Token.Operator':
+                        pattern = '(' + '|'.join(map(re.escape, words)) + ')'
+
+                    regex = QRegularExpression(pattern)
+
+                    it = regex.globalMatch(text)
+
+                    while it.hasNext():
+                        match = it.next()
+
+                        if is_overlapping(match.capturedStart(), match.capturedLength(), used_ranges):
+                            continue
+
+
+                        if token_type == 'Token.Punctuation':
+                            self.setFormat(match.capturedStart(), match.capturedLength(), self.docker_punctuation)
+
+                        elif token_type == 'Token.Literal.String.Single':
+                            self.setFormat(match.capturedStart(), match.capturedLength(), self.string_format)
+
+
+                        elif token_type == 'Token.Keyword':
+                            self.setFormat(match.capturedStart(), match.capturedLength(), self.docker_keyword)
+
+                        elif token_type == 'Token.Operator' or token_type == 'Token.Keyword.Type':
+                            self.setFormat(match.capturedStart(), match.capturedLength(), self.number_format)
+
+                        elif token_type == 'Token.Name.Builtin':
+                            self.setFormat(match.capturedStart(), match.capturedLength(), self.docker_builtin)
+
+                        elif token_type == 'Token.Comment':
+                            self.setFormat(match.capturedStart(), match.capturedLength(), self.comment_format)
+
+                        else:
+                            self.setFormat(match.capturedStart(), match.capturedLength(), default_format)
+
 
                         used_ranges.add((match.capturedStart(), match.capturedStart() + match.capturedLength()))
 

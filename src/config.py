@@ -669,6 +669,31 @@ def get_html_attribute():
         write_config("255, 255, 255", 'Html', 'attribute')
         return 255, 255, 255
 
+
+def get_docker_keyword():
+    try:
+        con = config.get('Docker', 'keyword')
+        r, g, b = con.split(',')
+        return int(r), int(g), int(b)
+    except configparser.NoSectionError:
+        write_config('255, 255, 255', 'Docker', 'temp')
+        return 255, 255, 255
+    except configparser.NoOptionError:
+        write_config("255, 255, 255", 'Docker', 'keyword')
+        return 255, 255, 255
+
+def get_docker_builtin():
+    try:
+        con = config.get('Docker', 'builtin')
+        r, g, b = con.split(',')
+        return int(r), int(g), int(b)
+    except configparser.NoSectionError:
+        write_config('255, 255, 255', 'Docker', 'temp')
+        return 255, 255, 255
+    except configparser.NoOptionError:
+        write_config("255, 255, 255", 'Docker', 'builtin')
+        return 255, 255, 255
+
 def get_fontFamily():
     try:
         return config.get('Appearance', 'FontFamily')

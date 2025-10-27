@@ -834,7 +834,7 @@ head {
   align-items: flex-start;
 }
 
-.image1, .image2, .image3, .image4, .image5, .image6, .image7 {
+.image1, .image2, .image3, .image4, .image5, .image6, .image7, .image8 {
   --border: 10px;
   --offset: 30px;
   --gap: 10px;
@@ -857,7 +857,7 @@ head {
   transition: .4s;
 }
 
-.image1:hover, .image2:hover, .image3:hover, .image4:hover, .image5:hover, .image6:hover, .image7:hover {
+.image1:hover, .image2:hover, .image3:hover, .image4:hover, .image5:hover, .image6:hover, .image7:hover, .image8:hover {
   --_s: 0px
 }
 
@@ -889,6 +889,10 @@ head {
   --color: #E65100;
 }
 
+.image8 {
+  --color: #0288d1;
+}
+
 
 @media (max-width: 768px) {
   .fourth-description, .describe-container {
@@ -909,7 +913,7 @@ head {
     width: 90%;
   }
   
-  .image1, .image2, .image3, .image4, .image5, .image6, .image7 {
+  .image1, .image2, .image3, .image4, .image5, .image6, .image7, .image8 {
     --border: 10px;
     --offset: 10px;
     --gap: 5px;
