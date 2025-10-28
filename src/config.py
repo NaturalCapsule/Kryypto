@@ -31,6 +31,18 @@ def get_comment():
         write_config("255, 255, 255", 'AllFormats', 'comment')
         return 255, 255, 255
 
+def get_boolean():
+    try:
+        con = config.get('AllFormats', 'boolean')
+        r, g, b = con.split(',')
+        return int(r), int(g), int(b)
+    except configparser.NoSectionError:
+        write_config('255, 255, 255', 'AllFormat', 'temp')
+        return 255, 255, 255
+    except configparser.NoOptionError:
+        write_config("255, 255, 255", 'AllFormats', 'boolean')
+        return 255, 255, 255
+
 def get_number():
     try:
         con = config.get('AllFormats', 'number')
@@ -694,6 +706,42 @@ def get_docker_builtin():
         write_config("255, 255, 255", 'Docker', 'builtin')
         return 255, 255, 255
 
+def get_yaml_items():
+    try:
+        con = config.get('Yaml', 'items')
+        r, g, b = con.split(',')
+        return int(r), int(g), int(b)
+    except configparser.NoSectionError:
+        write_config('255, 255, 255', 'Yaml', 'temp')
+        return 255, 255, 255
+    except configparser.NoOptionError:
+        write_config("255, 255, 255", 'Yaml', 'items')
+        return 255, 255, 255
+
+def get_yaml_null():
+    try:
+        con = config.get('Yaml', 'null')
+        r, g, b = con.split(',')
+        return int(r), int(g), int(b)
+    except configparser.NoSectionError:
+        write_config('255, 255, 255', 'Yaml', 'temp')
+        return 255, 255, 255
+    except configparser.NoOptionError:
+        write_config("255, 255, 255", 'Yaml', 'null')
+        return 255, 255, 255
+
+def get_yaml_types():
+    try:
+        con = config.get('Yaml', 'type')
+        r, g, b = con.split(',')
+        return int(r), int(g), int(b)
+    except configparser.NoSectionError:
+        write_config('255, 255, 255', 'Yaml', 'temp')
+        return 255, 255, 255
+    except configparser.NoOptionError:
+        write_config("255, 255, 255", 'Yaml', 'type')
+        return 255, 255, 255
+
 def get_fontFamily():
     try:
         return config.get('Appearance', 'FontFamily')
@@ -754,6 +802,7 @@ def get_stylefile():
             # return fr'~/.config/KryyptoConfig/config/style.css'
             path = os.path.expanduser('~/.config/KryyptoConfig/config/style.css')
             return path
+
 
 
 def useItalic():

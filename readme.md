@@ -44,10 +44,12 @@ A lightweight, fully keyboard-supported python text editor with deep customizati
 - Syntax Highlighting for
   - Python
   - CSS
+  - HTML
   - JSON
   - Config files
   - Markdown
   - Bash
+  -Dockerfile
 
 ## 🚀 Getting Started
 
@@ -59,10 +61,10 @@ you got two options:
 2. Clone the repository:
    ```bash
    git clone git@github.com:NaturalCapsule/Kryypto.git
-   cd Kryypto/src
    pip install -r requirements.txt
+   cd Kryypto/src
    kryypto.py
-
+  ```
 
 > [!WARNING]
 > This project is under development. You might face lagging when loading large files or syntax highlighting missmatch, etc.

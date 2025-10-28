@@ -10,6 +10,7 @@ from pygments import lex
 from pygments.lexers.html import HtmlLexer
 from pygments.lexers import BashLexer, CssLexer
 from pygments.lexers.configs import DockerLexer
+from pygments.lexers.data import YamlLexer
 
 
 import re
@@ -29,6 +30,32 @@ def get_bash_elements(code):
 
     return types_elements
 
+def get_yaml_elements(code):
+    types_elements = defaultdict(list)
+    tokens = lex(code, YamlLexer())
+
+    for token_type, value in tokens:
+        if value.strip():
+            if value == 'true' or value == 'false':
+                token_type = 'Token.Boolean'
+
+            elif value == 'null':
+                token_type = 'Token.Null'
+
+            elif value.isnumeric():
+                token_type = 'Token.Number'
+
+            else:
+                try:
+                    float(value)
+                    token_type = 'Token.Number'
+                except ValueError:
+                    pass
+
+
+            types_elements[str(token_type)].append(value)
+
+    return types_elements
 
 def get_docker_elements(code):
     types_elements = defaultdict(list)
@@ -797,7 +824,9 @@ class JsonSyntaxHighlighter(QSyntaxHighlighter):
         self.highlighting_rules.append((QRegularExpression('//[^\n]*'), comment_format, 'comment'))
 
 
-        r, g, b = get_json_boolean()
+        # r, g, b = get_json_boolean()
+        r, g, b = get_boolean()
+
         boolean = QTextCharFormat()
         boolean.setForeground(QColor(r, g, b))
 
@@ -1361,7 +1390,9 @@ class BashSyntaxHighlighter(QSyntaxHighlighter):
         self.number_format = QTextCharFormat()
         self.number_format.setForeground(QColor(r, g, b))
 
-        r, g, b = get_bash_boolean()
+        # r, g, b = get_bash_boolean()
+        r, g, b = get_boolean()
+
         boolean = QTextCharFormat()
         boolean.setForeground(QColor(r, g, b))
 
@@ -1944,6 +1975,198 @@ class DockerSyntaxHighlighter(QSyntaxHighlighter):
 
                         elif token_type == 'Token.Comment':
                             self.setFormat(match.capturedStart(), match.capturedLength(), self.comment_format)
+
+                        else:
+                            self.setFormat(match.capturedStart(), match.capturedLength(), default_format)
+
+
+                        used_ranges.add((match.capturedStart(), match.capturedStart() + match.capturedLength()))
+
+            except Exception as e:
+                print(e)
+
+
+class YamlSyntaxHighlighter(QSyntaxHighlighter):
+    def __init__(self,use_highlighter ,parent=None, code = None):
+        super().__init__(parent)
+
+        self.code = code
+        
+        self.useit = use_highlighter
+
+        if self.useit:
+            self.highlighting_rules = []
+            self.setup_highlighting_rules()
+
+        else:
+            pass
+
+
+    def setup_highlighting_rules(self):
+        r, g, b = get_string()
+        self.string_format = QTextCharFormat()
+        self.string_format.setForeground(QColor(r, g, b))
+        self.highlighting_rules.append((QRegularExpression('"[^"\\\\]*(\\\\.[^"\\\\]*)*"'), self.string_format, 'string'))
+        # self.highlighting_rules.append((QRegularExpression(r'''(?:(?:f|fr|r|b|br)?)"([^"\\]|\\.)*"|(?:(?:f|fr|r|b|br)?)'([^'\\]|\\.)*' ''', self.string_format, 'string'))
+
+
+        r, g, b = get_comment()
+        self.comment_format = QTextCharFormat()
+        self.comment_format.setForeground(QColor(r, g, b))
+
+        r, g, b = get_number()
+        self.number_format = QTextCharFormat()
+        self.number_format.setForeground(QColor(r, g, b))
+
+
+        r, g, b = get_boolean()
+        self.boolean = QTextCharFormat()
+        self.boolean.setForeground(QColor(r, g, b))
+
+        # self.highlighting_rules.append((QRegularExpression('true'), boolean, 'bool'))
+        # self.highlighting_rules.append((QRegularExpression('false'), boolean, 'bool'))
+        r, g, b = get_punctuation()
+
+        self.yaml_punctuation = QTextCharFormat()
+        self.yaml_punctuation.setForeground(QColor(r, g, b))
+        r, g, b = get_yaml_null()
+
+        self.yaml_null = QTextCharFormat()
+        self.yaml_null.setForeground(QColor(r, g, b))
+
+        r, g, b = get_yaml_types()
+
+        self.yaml_types = QTextCharFormat()
+        self.yaml_types.setForeground(QColor(r, g, b))
+
+        r, g, b = get_yaml_items()
+
+        self.yaml_items = QTextCharFormat()
+        self.yaml_items.setForeground(QColor(r, g, b))
+
+
+        for bracket in ['(', ')', '[', ']', '{', '}']:
+            bracket_format = QTextCharFormat()
+            r, g, b = get_bracket()
+            bracket_format.setForeground(QColor(r, g, b))
+            escaped = QRegularExpression.escape(bracket)
+            bracket_regex = QRegularExpression(escaped)
+            self.highlighting_rules.append((bracket_regex, bracket_format, 'bracket'))
+
+        self.comment_pattern = QRegularExpression(r'#[^\n]*')
+
+
+
+        self.string_pattern = QRegularExpression(r'"([^"\\]*(\\.[^"\\]*)*)"')
+        self.var_pattern = QRegularExpression(r'\$[A-Za-z_][A-Za-z0-9_]*|\$\{[^}]+\}')
+
+
+        if useItalic():
+            self.comment_format.setFontItalic(True)
+
+
+    def highlightBlock(self, text):
+        def is_overlapping(start, length, used_ranges):
+            end = start + length
+            for begin, finish in used_ranges:
+                if start < finish and end > begin:
+                    return True
+            return False
+
+
+        default_format = QTextCharFormat()
+        default_format.setForeground(QColor("white"))
+        self.setFormat(0, len(text), default_format)
+
+        used_ranges = set()
+        elements = get_yaml_elements(text)
+
+
+        for pattern, fmt, name in self.highlighting_rules:
+            matches = pattern.globalMatch(text)
+            while matches.hasNext():
+                match = matches.next()
+
+                start = match.capturedStart()
+                length = match.capturedLength()
+
+                if is_overlapping(start, length, used_ranges):
+                    continue
+
+                self.setFormat(start, length, fmt)
+                used_ranges.add((start, start + length))
+
+            string_ranges = []
+
+            string_it = self.string_pattern.globalMatch(text)
+            while string_it.hasNext():
+                m = string_it.next()
+                start = m.capturedStart()
+                end = m.capturedEnd()
+                self.setFormat(start, end - start, self.string_format)
+                string_ranges.append((start, end))
+                used_ranges.add((start, end))
+
+
+            comment_it = self.comment_pattern.globalMatch(text)
+            while comment_it.hasNext():
+                m = comment_it.next()
+                start = m.capturedStart()
+                end = m.capturedEnd()
+
+                in_string = any(s <= start < e for s, e in string_ranges)
+                if in_string:
+                    continue
+
+                self.setFormat(start, end - start, self.comment_format)
+
+            try:
+
+                for token_type, words in elements.items():
+                    if not words:
+                        continue
+
+                    pattern = r'\b(' + '|'.join(map(re.escape, words)) + r')\b'
+                    if token_type == 'Token.Punctuation' or 'Token.Operator':
+                        pattern = '(' + '|'.join(map(re.escape, words)) + ')'
+
+                    regex = QRegularExpression(pattern)
+
+                    it = regex.globalMatch(text)
+
+                    while it.hasNext():
+                        match = it.next()
+
+                        if is_overlapping(match.capturedStart(), match.capturedLength(), used_ranges):
+                            continue
+
+
+                        if token_type == 'Token.Punctuation':
+                            self.setFormat(match.capturedStart(), match.capturedLength(), self.yaml_punctuation)
+
+                        elif token_type == 'Token.Literal.String' or token_type == 'Token.Literal.Scalar.Plain':
+                            self.setFormat(match.capturedStart(), match.capturedLength(), self.string_format)
+
+
+                        elif token_type == 'Token.Operator' or token_type == 'Token.Number':
+                            self.setFormat(match.capturedStart(), match.capturedLength(), self.number_format)
+
+                        elif token_type == 'Token.Keyword.Type':
+                            self.setFormat(match.capturedStart(), match.capturedLength(), self.yaml_types)
+
+
+                        elif token_type == 'Token.Comment':
+                            self.setFormat(match.capturedStart(), match.capturedLength(), self.comment_format)
+
+                        elif token_type == 'Token.Name.Tag' or token_type == 'Token.Name.Variable':
+                            self.setFormat(match.capturedStart(), match.capturedLength(), self.yaml_items)
+
+                        elif token_type == 'Token.Boolean':
+                            self.setFormat(match.capturedStart(), match.capturedLength(), self.boolean)
+
+                        elif token_type == 'Token.Null':
+                            self.setFormat(match.capturedStart(), match.capturedLength(), self.yaml_null)
+
 
                         else:
                             self.setFormat(match.capturedStart(), match.capturedLength(), default_format)

@@ -1123,6 +1123,9 @@ class CustomIcons(QFileIconProvider):
             elif info.suffix().lower() == 'dockerfile':
                 return QIcon('icons/fileIcons/docker.svg')
 
+            elif info.suffix().lower() == 'yaml' or info.suffix().lower() == 'yml':
+                return QIcon('icons/fileIcons/yaml.svg')
+
             else:
                 return super().icon(info)
         else:
@@ -1156,6 +1159,9 @@ class CustomIcons(QFileIconProvider):
                 return QIcon('src/icons/fileIcons/toml.svg')
             elif info.suffix().lower() == 'dockerfile':
                 return QIcon('src/icons/fileIcons/docker.svg')
+
+            elif info.suffix().lower() == 'yaml' or info.suffix().lower() == 'yml':
+                return QIcon('src/icons/fileIcons/yaml.svg')
 
             else:
                 return super().icon(info)
@@ -1240,6 +1246,10 @@ class ShowOpenedFile(QTabBar):
             elif self.tabText(index).lower().endswith('dockerfile'):
                 self.setTabIcon(index, QIcon('icons/fileIcons/docker.svg'))
 
+            elif self.tabText(index).lower().endswith('yaml') or self.tabText(index).lower().endswith('yml'):
+                self.setTabIcon(index, QIcon('icons/fileIcons/yaml.svg'))
+
+
         else:
             if self.tabText(index).endswith('py') or self.tabText(index).endswith('pyi'):
                 self.setTabIcon(index, QIcon('src/icons/fileIcons/python.svg'))
@@ -1281,6 +1291,9 @@ class ShowOpenedFile(QTabBar):
 
             elif self.tabText(index).lower().endswith('dockerfile'):
                 self.setTabIcon(index, QIcon('src/icons/fileIcons/docker.svg'))
+
+            elif self.tabText(index).lower().endswith('yaml') or self.tabText(index).lower().endswith('yml'):
+                self.setTabIcon(index, QIcon('src/icons/fileIcons/yaml.svg'))
 
 
     def remove_tab(self, index):
@@ -1684,6 +1697,53 @@ class ShowOpenedFile(QTabBar):
                     self.is_panel = True
 
 
+                elif file_name.lower().endswith('yaml') or file_name.lower().endswith('yml'):
+                    if self.editor.markdown_preview:
+                        self.parent_.removeDockWidget(self.markdown_panel)
+
+                        self.markdown_panel.destroy()
+                        self.markdown_panel.deleteLater()
+
+                        self.editor.markdown_preview.destroy()
+                        self.editor.markdown_preview.deleteLater()
+                        self.editor.markdown_preview = None
+                        self.editor.is_markdown = False
+
+                    self.highlighter = PythonSyntaxHighlighter(False, self.editor.document())
+                    self.highlighter.deleteLater()
+                    self.highlighter = YamlSyntaxHighlighter(True, self.editor.document())
+
+                    try:
+                        if self.show_error:
+                            if hasattr(self.show_error, 'cleanup'):
+                                self.show_error.cleanup()
+                            self.show_error.error_label = None
+                            self.show_error = None
+                    except Exception as e:
+                        pass
+
+                    if self.error_label:
+                        self.error_label.hide()
+
+                    if self.nameErrorlabel:
+                        self.nameErrorlabel.hide()
+
+                    try:
+
+                        if self.doc_panelstring:
+                            self.parent_.removeDockWidget(self.doc_panelstring)
+
+                            self.doc_panelstring.deleteLater()
+
+                    except Exception:
+                        pass
+
+                    self.doc_panelstring = None
+                    self.editor.doc_panel = None
+                    self.editor.show_completer = False
+                    self.editor.completer.setCompletionPrefix("")
+                    commenting = '#'
+                    self.is_panel = True
 
                 elif file_name.lower().endswith('dockerfile'):
                     if self.editor.markdown_preview:
