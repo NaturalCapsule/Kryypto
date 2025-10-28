@@ -64,7 +64,6 @@ you got two options:
    pip install -r requirements.txt
    cd Kryypto/src
    kryypto.py
-  ```
 
 > [!WARNING]
 > This project is under development. You might face lagging when loading large files or syntax highlighting missmatch, etc.
